@@ -38,7 +38,7 @@
         <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
             <i class="ti ti-layout-dashboard"></i> Tableau de bord
         </a>
-        <a href="#" class="nav-item {{ request()->routeIs('clients.*') ? 'active' : '' }}">
+        <a href="{{ route('clients.index') }}" class="nav-item {{ request()->routeIs('clients.*') ? 'active' : '' }}">
             <i class="ti ti-users"></i> Clients
         </a>
         <a href="#" class="nav-item {{ request()->routeIs('contrats.*') ? 'active' : '' }}">
