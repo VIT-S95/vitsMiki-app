@@ -41,7 +41,7 @@ class ContratController extends Controller
 
         $data = $request->all();
         $data['date_fin'] = \Carbon\Carbon::parse($request->date_debut)
-            ->addMonths($request->duree_mois)
+            ->addMonths((int)$request->duree_mois)
             ->subDay();
 
         $client = Client::find($request->client_id);
@@ -78,7 +78,7 @@ class ContratController extends Controller
 
         $data = $request->all();
         $data['date_fin'] = \Carbon\Carbon::parse($request->date_debut)
-            ->addMonths($request->duree_mois)
+            ->addMonths((int)$request->duree_mois)
             ->subDay();
 
         $contrat->update($data);

@@ -29,19 +29,20 @@
         </div>
     </div>
     <div style="display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid #f0f0f0">
-        <div><div style="font-size:11px;color:#aaa;text-transform:uppercase">Client</div><div style="font-size:13px;font-weight:500">{{ $contrat->client->nom_societe }}</div></div>
         <div><div style="font-size:11px;color:#aaa;text-transform:uppercase">Début</div><div style="font-size:13px;font-weight:500">{{ $contrat->date_debut?->format('d/m/Y') ?? '—' }}</div></div>
         <div><div style="font-size:11px;color:#aaa;text-transform:uppercase">Fin</div><div style="font-size:13px;font-weight:500">{{ $contrat->date_fin?->format('d/m/Y') ?? '—' }}</div></div>
         <div><div style="font-size:11px;color:#aaa;text-transform:uppercase">Durée</div><div style="font-size:13px;font-weight:500">{{ $contrat->duree_mois == 12 ? '1 an' : ($contrat->duree_mois == 24 ? '2 ans' : '3 ans') }}</div></div>
         <div><div style="font-size:11px;color:#aaa;text-transform:uppercase">Période</div><div style="font-size:13px;font-weight:500">{{ $contrat->duree_periode_mois }} mois</div></div>
         <div><div style="font-size:11px;color:#aaa;text-transform:uppercase">H / période</div><div style="font-size:13px;font-weight:500">{{ $contrat->heures_par_periode }}h</div></div>
-        <div><div style="font-size:11px;color:#aaa;text-transform:uppercase">Échéance</div><div style="font-size:13px;font-weight:500;color:{{ $contrat->jours_restants < 0 ? '#aaa' : ($contrat->jours_restants <= 90 ? '#E8720C' : '#166534') }}">{{ $contrat->echeance_label }}</div></div>
+        <div><div style="font-size:11px;color:#aaa;text-transform:uppercase">Échéance</div>
+            <div style="font-size:13px;font-weight:500;color:{{ ($contrat->jours_restants ?? 0) < 0 ? '#aaa' : (($contrat->jours_restants ?? 999) <= 90 ? '#E8720C' : '#166534') }}">{{ $contrat->echeance_label }}</div>
+        </div>
     </div>
 </div>
 
 <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem">
     <div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:0.75rem">Progression</div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+    <div style="display:flex;align-items:center;gap:10px">
         <span style="font-size:12px;color:#888;width:220px">Avancement du contrat</span>
         <div style="flex:1;height:8px;background:#f0f0f0;border-radius:99px;overflow:hidden">
             <div style="width:{{ $contrat->avancement }}%;height:100%;background:{{ $contrat->avancement >= 80 ? '#E8720C' : '#166534' }};border-radius:99px"></div>
@@ -55,10 +56,9 @@
 
     @foreach($periodes as $periode)
     @php
-        $interventionsPeriode = $contrat->interventions
-            ->filter(function($i) use ($periode) {
-                return $i->date_intervention >= $periode['debut'] && $i->date_intervention <= $periode['fin'];
-            });
+        $interventionsPeriode = $contrat->interventions->filter(function($i) use ($periode) {
+            return $i->date_intervention >= $periode['debut'] && $i->date_intervention <= $periode['fin'];
+        });
         $minutesConsommees = $interventionsPeriode->sum('duree_minutes');
         $heuresConsommees = floor($minutesConsommees / 60);
         $minRestants = $minutesConsommees % 60;
@@ -69,13 +69,13 @@
     @endphp
     <div style="border:1px solid #e0e0e0;border-radius:8px;margin-bottom:8px;overflow:hidden">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#f5f5f5;cursor:pointer"
-             onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+             onclick="var el=this.nextElementSibling;el.style.display=el.style.display==='none'?'block':'none'">
             <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500">
                 ▶ Année {{ $periode['numero'] }} — {{ $periode['debut']->year }}/{{ $periode['fin']->year }}
                 @if($enCours)<span style="font-size:11px;color:#888;font-weight:400">(période en cours)</span>@endif
             </div>
             <div style="display:flex;align-items:center;gap:10px">
-                <span style="font-size:12px;color:#888">{{ $heuresConsommees }}h {{ $minRestants > 0 ? $minRestants.'min' : '' }} / {{ $heuresAllouees }}h</span>
+                <span style="font-size:12px;color:#888">{{ $heuresConsommees }}h @if($minRestants > 0){{ $minRestants }}min @endif / {{ $heuresAllouees }}h</span>
                 <div style="width:80px;height:5px;background:#e0e0e0;border-radius:99px;overflow:hidden">
                     <div style="width:{{ $pct }}%;height:100%;background:{{ $couleur }};border-radius:99px"></div>
                 </div>
@@ -91,6 +91,7 @@
                         <th style="padding:6px 12px;text-align:left;font-size:10px;color:#aaa;text-transform:uppercase">N° bon Kizeo</th>
                         <th style="padding:6px 12px;text-align:left;font-size:10px;color:#aaa;text-transform:uppercase">Type</th>
                         <th style="padding:6px 12px;text-align:right;font-size:10px;color:#aaa;text-transform:uppercase">Durée</th>
+                        <th style="padding:6px 12px;border-bottom:1px solid #f0f0f0"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -111,8 +112,13 @@
                             @if($intervention->type === 'flash' && $intervention->flash_numero < 3)
                                 —
                             @else
-                                {{ floor($intervention->duree_minutes/60) > 0 ? floor($intervention->duree_minutes/60).'h ' : '' }}{{ $intervention->duree_minutes%60 > 0 ? $intervention->duree_minutes%60.'min' : '' }}
+                                @php $h = floor($intervention->duree_minutes/60); $m = $intervention->duree_minutes%60; @endphp
+                                @if($h > 0){{ $h }}h @endif
+                                @if($m > 0){{ $m }}min @endif
                             @endif
+                        </td>
+                        <td style="padding:6px 12px;text-align:right">
+                            <a href="{{ route('interventions.edit', $intervention) }}" style="font-size:11px;color:#888;text-decoration:none;padding:3px 7px;border:1px solid #ddd;border-radius:5px">✏</a>
                         </td>
                     </tr>
                     @endforeach

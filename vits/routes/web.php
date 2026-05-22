@@ -26,3 +26,12 @@ Route::middleware(['auth'])->group(function () {
 
 use App\Http\Controllers\ContratController;
 Route::resource('contrats', ContratController::class)->middleware('auth');
+
+use App\Http\Controllers\InterventionController;
+Route::middleware(['auth'])->group(function () {
+    Route::get('/interventions/create', [InterventionController::class, 'create'])->name('interventions.create');
+    Route::post('/interventions', [InterventionController::class, 'store'])->name('interventions.store');
+    Route::get('/interventions/{intervention}/edit', [InterventionController::class, 'edit'])->name('interventions.edit');
+    Route::put('/interventions/{intervention}', [InterventionController::class, 'update'])->name('interventions.update');
+    Route::delete('/interventions/{intervention}', [InterventionController::class, 'destroy'])->name('interventions.destroy');
+});

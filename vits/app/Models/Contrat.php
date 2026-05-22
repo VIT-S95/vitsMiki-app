@@ -1,4 +1,4 @@
-php artisan serve<?php
+<?php
 namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,24 +19,15 @@ class Contrat extends Model
         'date_fin'   => 'date',
     ];
 
-    public function client()
-    {
-        return $this->belongsTo(Client::class);
-    }
+    public function client() { return $this->belongsTo(Client::class); }
+    public function interventions() { return $this->hasMany(Intervention::class); }
 
-    public function interventions()
-    {
-        return $this->hasMany(Intervention::class);
-    }
-
-    public function getJoursRestantsAttribute()
-    {
+    public function getJoursRestantsAttribute() {
         if (!$this->date_fin) return null;
         return now()->diffInDays($this->date_fin, false);
     }
 
-    public function getEcheanceLabelAttribute()
-    {
+    public function getEcheanceLabelAttribute() {
         $jours = $this->jours_restants;
         if ($jours === null) return '—';
         if ($jours < 0) {
@@ -50,8 +41,7 @@ class Contrat extends Model
         return $mois > 0 ? "{$mois} mois {$j}j" : "{$jours}j";
     }
 
-    public function getAvancementAttribute()
-    {
+    public function getAvancementAttribute() {
         if (!$this->date_debut || !$this->date_fin) return 0;
         $total = $this->date_debut->diffInDays($this->date_fin);
         $ecoule = $this->date_debut->diffInDays(now());
@@ -59,8 +49,7 @@ class Contrat extends Model
         return min(100, round(($ecoule / $total) * 100));
     }
 
-    public function getPeriodes()
-    {
+    public function getPeriodes() {
         if (!$this->date_debut) return collect();
         $periodes = collect();
         $debut = $this->date_debut->copy();
@@ -68,12 +57,9 @@ class Contrat extends Model
         while ($debut->lt($this->date_fin ?? now())) {
             $fin = $debut->copy()->addMonths($this->duree_periode_mois)->subDay();
             $periodes->push([
-                'numero'    => $numero,
-                'debut'     => $debut->copy(),
-                'fin'       => $fin->copy(),
-                'label'     => $debut->year === $fin->year
-                    ? "Année {$numero} — {$debut->year}/{$fin->year}"
-                    : "Année {$numero} — {$debut->year}/{$fin->year}",
+                'numero' => $numero,
+                'debut'  => $debut->copy(),
+                'fin'    => $fin->copy(),
             ]);
             $debut->addMonths($this->duree_periode_mois);
             $numero++;
