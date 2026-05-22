@@ -45,3 +45,10 @@ use App\Http\Controllers\PdfController;
 Route::middleware(['auth'])->group(function () {
     Route::get('/contrats/{contrat}/pdf', [PdfController::class, 'rapport'])->name('contrats.pdf');
 });
+
+use App\Http\Controllers\ParametreController;
+Route::middleware(['auth'])->group(function () {
+    Route::get('/parametres', [ParametreController::class, 'index'])->name('parametres.index');
+    Route::post('/parametres', [ParametreController::class, 'update'])->name('parametres.update');
+    Route::post('/parametres/motifs', [ParametreController::class, 'updateMotifs'])->name('parametres.motifs');
+});
