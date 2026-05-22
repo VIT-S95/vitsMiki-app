@@ -31,6 +31,17 @@ return [
     */
 
     'connections' => [
+        'wordpress' => [
+            'driver'    => 'mysql',
+            'host'      => 'localhost',
+            'port'      => '3306',
+            'database'  => 'sraza_gestion',
+            'username'  => 'sraza_gestion',
+            'password'  => 'Ax@lys.95',
+            'charset'   => 'utf8',
+            'collation' => 'utf8_unicode_ci',
+            'prefix'    => '',
+        ],
 
         'sqlite' => [
             'driver' => 'sqlite',
