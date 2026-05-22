@@ -23,3 +23,6 @@ use App\Http\Controllers\ClientController;
 Route::middleware(['auth'])->group(function () {
     Route::resource('clients', ClientController::class);
 });
+
+use App\Http\Controllers\ContratController;
+Route::resource('contrats', ContratController::class)->middleware('auth');
