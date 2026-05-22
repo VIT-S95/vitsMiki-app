@@ -60,7 +60,7 @@
         $interventionsPeriode = $contrat->interventions->filter(function($i) use ($periode) {
             return $i->date_intervention >= $periode['debut'] && $i->date_intervention <= $periode['fin'];
         });
-        $minutesConsommees = $interventionsPeriode->sum('duree_minutes');
+        $minutesConsommees = $interventionsPeriode->where('deductible', true)->sum('duree_minutes');
         $heuresConsommees = floor($minutesConsommees / 60);
         $minRestants = $minutesConsommees % 60;
         $heuresAllouees = $contrat->heures_par_periode;
@@ -97,7 +97,8 @@
                 </thead>
                 <tbody>
                     @foreach($interventionsPeriode as $intervention)
-                    <tr style="border-top:1px solid #f5f5f5">
+                    @php $nonDed = !$intervention->deductible; @endphp
+                    <tr style="border-top:1px solid #f5f5f5;{{ $nonDed ? 'opacity:0.45' : '' }}">
                         <td style="padding:6px 12px;color:#888">{{ $intervention->date_intervention->format('d/m/Y') }}</td>
                         <td style="padding:6px 12px;font-family:monospace;font-size:11px;color:#888">{{ $intervention->numero_bon_kizeo ?? '—' }}</td>
                         <td style="padding:6px 12px">
@@ -105,13 +106,19 @@
                                 <span style="background:#E6F1FB;color:#0C447C;padding:2px 6px;border-radius:4px;font-size:10px">sur site</span>
                             @elseif($intervention->type === 'distance')
                                 <span style="background:#E1F5EE;color:#085041;padding:2px 6px;border-radius:4px;font-size:10px">à distance</span>
+                            @elseif($intervention->type === 'administrateur')
+                                <span style="background:#F3F0FF;color:#4C1D95;padding:2px 6px;border-radius:4px;font-size:10px">admin</span>
                             @else
                                 <span style="background:#FFF3E6;color:#854F0B;padding:2px 6px;border-radius:4px;font-size:10px">flash {{ $intervention->flash_numero }}/3</span>
                             @endif
+                            @if($nonDed)<span style="font-size:10px;color:#aaa;margin-left:4px">hors contrat</span>@endif
                         </td>
                         <td style="padding:6px 12px;text-align:right;font-weight:500">
                             @if($intervention->type === 'flash' && $intervention->flash_numero < 3)
                                 —
+                            @elseif($intervention->duree_minutes < 0)
+                                @php $abs = abs($intervention->duree_minutes); $h=floor($abs/60); $m=$abs%60; @endphp
+                                <span style="color:#166534">+{{ $h>0?$h.'h ':'' }}{{ $m>0?$m.'min':'' }}</span>
                             @else
                                 @php $h = floor($intervention->duree_minutes/60); $m = $intervention->duree_minutes%60; @endphp
                                 @if($h > 0){{ $h }}h @endif

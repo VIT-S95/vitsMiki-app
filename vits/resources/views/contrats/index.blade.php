@@ -27,14 +27,38 @@
 
 <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;overflow:hidden">
     <table style="width:100%;border-collapse:collapse;font-size:13px">
-        <thead style="background:#f5f5f5">
+                <thead style="background:#f5f5f5">
             <tr>
-                <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">Client</th>
-                <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">Durée</th>
-                <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">H / période</th>
-                <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">Échéance</th>
-                <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">Avancement</th>
-                <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">Statut</th>
+                <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">
+                    <a href="{{ request()->fullUrlWithQuery(['sort'=>'nom_societe','dir'=>($sort=='nom_societe' && $dir=='asc')?'desc':'asc']) }}" style="color:#888;text-decoration:none">
+                        Client {{ $sort=='nom_societe' ? ($dir=='asc'?'↑':'↓') : '' }}
+                    </a>
+                </th>
+                <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">
+                    <a href="{{ request()->fullUrlWithQuery(['sort'=>'duree_mois','dir'=>($sort=='duree_mois' && $dir=='asc')?'desc':'asc']) }}" style="color:#888;text-decoration:none">
+                        Durée {{ $sort=='duree_mois' ? ($dir=='asc'?'↑':'↓') : '' }}
+                    </a>
+                </th>
+                <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">
+                    <a href="{{ request()->fullUrlWithQuery(['sort'=>'heures_par_periode','dir'=>($sort=='heures_par_periode' && $dir=='asc')?'desc':'asc']) }}" style="color:#888;text-decoration:none">
+                        H / période {{ $sort=='heures_par_periode' ? ($dir=='asc'?'↑':'↓') : '' }}
+                    </a>
+                </th>
+                <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">
+                    <a href="{{ request()->fullUrlWithQuery(['sort'=>'date_fin','dir'=>($sort=='date_fin' && $dir=='asc')?'desc':'asc']) }}" style="color:#888;text-decoration:none">
+                        Échéance {{ $sort=='date_fin' ? ($dir=='asc'?'↑':'↓') : '' }}
+                    </a>
+                </th>
+                <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">
+                    <a href="{{ request()->fullUrlWithQuery(['sort'=>'duree_periode_mois','dir'=>($sort=='duree_periode_mois' && $dir=='asc')?'desc':'asc']) }}" style="color:#888;text-decoration:none">
+                        Avancement {{ $sort=='duree_periode_mois' ? ($dir=='asc'?'↑':'↓') : '' }}
+                    </a>
+                </th>
+                <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">
+                    <a href="{{ request()->fullUrlWithQuery(['sort'=>'statut','dir'=>($sort=='statut' && $dir=='asc')?'desc':'asc']) }}" style="color:#888;text-decoration:none">
+                        Statut {{ $sort=='statut' ? ($dir=='asc'?'↑':'↓') : '' }}
+                    </a>
+                </th>
             </tr>
         </thead>
         <tbody>

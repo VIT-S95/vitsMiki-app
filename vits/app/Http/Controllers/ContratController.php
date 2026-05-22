@@ -6,56 +6,65 @@ use Illuminate\Http\Request;
 
 class ContratController extends Controller
 {
-    public function index(Request $request)
+        public function index(Request $request)
     {
-        $query = Contrat::with('client');
+        $query = Contrat::with('client')
+            ->join('clients', 'contrats.client_id', '=', 'clients.id')
+            ->select('contrats.*');
+
         if ($request->search) {
-            $query->whereHas('client', function($q) use ($request) {
-                $q->where('nom_societe', 'like', '%'.$request->search.'%');
-            });
+            $query->where('clients.nom_societe', 'like', '%'.$request->search.'%');
         }
         if ($request->statut) {
-            $query->where('statut', $request->statut);
+            $query->where('contrats.statut', $request->statut);
         }
-        $contrats = $query->orderBy('date_fin')->paginate(20);
-        return view('contrats.index', compact('contrats'));
+
+        $sort = $request->get('sort', 'date_fin');
+        $dir  = $request->get('dir', 'asc');
+
+        $allowedSorts = ['date_fin', 'heures_par_periode', 'duree_mois', 'duree_periode_mois', 'statut', 'nom_societe'];
+        if (!in_array($sort, $allowedSorts)) $sort = 'date_fin';
+        if (!in_array($dir, ['asc', 'desc'])) $dir = 'asc';
+
+        if ($sort === 'nom_societe') {
+            $query->orderBy('clients.nom_societe', $dir);
+        } else {
+            $query->orderBy('contrats.'.$sort, $dir);
+        }
+
+        $contrats = $query->paginate(20)->withQueryString();
+        return view('contrats.index', compact('contrats', 'sort', 'dir'));
     }
 
     public function create()
     {
-        $clients = Client::whereDoesntHave('contrats', function($q) {
-            $q->where('statut', 'en-cours');
-        })->orderBy('nom_societe')->get();
+        $clients = Client::orderBy('nom_societe')->get();
         return view('contrats.create', compact('clients'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'client_id'          => 'required|exists:clients,id',
-            'date_debut'         => 'required|date',
-            'duree_mois'         => 'required|integer|in:12,24,36',
-            'heures_par_periode' => 'required|integer|min:1',
-            'duree_periode_mois' => 'required|integer|in:1,3,6,12',
+            'client_id'           => 'required|exists:clients,id',
+            'numero_contrat_vits' => 'required|string|unique:contrats',
+            'date_debut'          => 'required|date',
+            'duree_mois'          => 'required|in:12,24,36',
+            'duree_periode_mois'  => 'required|in:1,3,6,12',
+            'heures_par_periode'  => 'required|integer|min:1',
         ]);
-
         $data = $request->all();
-        $data['date_fin'] = \Carbon\Carbon::parse($request->date_debut)
-            ->addMonths((int)$request->duree_mois)
-            ->subDay();
-
-        $client = Client::find($request->client_id);
-        $data['titre'] = 'Contrat maintenance ' . now()->year;
-        $data['numero_renouvellement'] = $client->contrats()->count();
-        $data['numero_contrat_vits'] = $client->numero_contrat_vits;
-
+        $data['date_fin'] = \Carbon\Carbon::parse($data['date_debut'])->addMonths((int)$data['duree_mois'])->toDateString();
+        $data['statut'] = 'en-cours';
+        $data['numero_renouvellement'] = 0;
         Contrat::create($data);
-        return redirect()->route('contrats.index')->with('success', 'Contrat créé avec succès.');
+        return redirect()->route('contrats.index')->with('success', 'Contrat créé.');
     }
 
     public function show(Contrat $contrat)
     {
-        $contrat->load('client', 'interventions');
+        $contrat->load(['client', 'interventions' => function($q) {
+            $q->orderBy('date_intervention', 'asc');
+        }]);
         $periodes = $contrat->getPeriodes();
         return view('contrats.show', compact('contrat', 'periodes'));
     }
@@ -69,20 +78,16 @@ class ContratController extends Controller
     public function update(Request $request, Contrat $contrat)
     {
         $request->validate([
-            'date_debut'         => 'required|date',
-            'duree_mois'         => 'required|integer|in:12,24,36',
-            'heures_par_periode' => 'required|integer|min:1',
-            'duree_periode_mois' => 'required|integer|in:1,3,6,12',
-            'statut'             => 'required|in:non-actif,en-cours,expire',
+            'numero_contrat_vits' => 'required|string|unique:contrats,numero_contrat_vits,'.$contrat->id,
+            'date_debut'          => 'required|date',
+            'duree_mois'          => 'required|in:12,24,36',
+            'duree_periode_mois'  => 'required|in:1,3,6,12',
+            'heures_par_periode'  => 'required|integer|min:1',
         ]);
-
         $data = $request->all();
-        $data['date_fin'] = \Carbon\Carbon::parse($request->date_debut)
-            ->addMonths((int)$request->duree_mois)
-            ->subDay();
-
+        $data['date_fin'] = \Carbon\Carbon::parse($data['date_debut'])->addMonths((int)$data['duree_mois'])->toDateString();
         $contrat->update($data);
-        return redirect()->route('contrats.show', $contrat)->with('success', 'Contrat mis à jour.');
+        return redirect()->route('contrats.show', $contrat)->with('success', 'Contrat modifié.');
     }
 
     public function destroy(Contrat $contrat)

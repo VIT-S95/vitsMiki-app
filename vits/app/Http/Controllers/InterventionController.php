@@ -11,6 +11,7 @@ class InterventionController extends Controller
         $contrat = Contrat::with('client')->findOrFail($request->contrat_id);
         $motifs = config('vits.motifs_intervention', [
             'Dépassement de quota n-1',
+            'Report période précédente',
             'Intervention proactive',
             'Mise à jour planifiée',
             'Urgence hors contrat',
@@ -24,25 +25,41 @@ class InterventionController extends Controller
         $request->validate([
             'contrat_id'        => 'required|exists:contrats,id',
             'date_intervention' => 'required|date',
-            'type'              => 'required|in:site,distance,flash',
-            'motif'             => 'nullable|string',
+            'type'              => 'required|in:site,distance,flash,administrateur',
+            'motif'             => 'nullable|string|max:255',
+            'notes'             => 'nullable|string',
         ]);
 
-        $data = $request->all();
-        $data['source_kizeo'] = false;
+        $dureeMinutes = (int)$request->input('duree_minutes', 0);
+
+        $data = [
+            'contrat_id'        => $request->contrat_id,
+            'date_intervention' => $request->date_intervention,
+            'numero_bon_kizeo'  => $request->numero_bon_kizeo ?: null,
+            'type'              => $request->type,
+            'duree_minutes'     => $dureeMinutes,
+            'motif'             => $request->motif ?: null,
+            'notes'             => $request->notes ?: null,
+            'statut'            => 'traitee',
+            'type_tri'          => $request->boolean('deductible') ? 'standard' : 'hors-contrat',
+            'deductible'        => $request->boolean('deductible'),
+            'source_kizeo'      => false,
+            'flash_numero'      => null,
+            'flash_consomme'    => false,
+        ];
 
         if ($request->type === 'flash') {
-            $data['duree_minutes'] = 0;
-            $data['flash_numero'] = 1;
-            $data['flash_consomme'] = false;
-        } else {
-            $heures = intval($request->input('heures', 0));
-            $minutes = intval($request->input('minutes', 0));
-            $data['duree_minutes'] = ($heures * 60) + $minutes;
+            $flashNumero = (int)$request->input('flash_numero', 1);
+            $data['flash_numero']   = $flashNumero;
+            $data['flash_consomme'] = ($flashNumero === 3);
+            $data['duree_minutes']  = ($flashNumero === 3) ? 20 : 0;
+            $data['deductible']     = true;
+            $data['type_tri']       = 'standard';
         }
 
         $intervention = Intervention::create($data);
 
+        // Recalculer les flash si nécessaire
         if ($request->type === 'flash') {
             Intervention::recalculerFlash($request->contrat_id, $request->date_intervention);
         }
@@ -53,8 +70,10 @@ class InterventionController extends Controller
 
     public function edit(Intervention $intervention)
     {
+        $intervention->load('contrat.client');
         $motifs = config('vits.motifs_intervention', [
             'Dépassement de quota n-1',
+            'Report période précédente',
             'Intervention proactive',
             'Mise à jour planifiée',
             'Urgence hors contrat',
@@ -67,38 +86,52 @@ class InterventionController extends Controller
     {
         $request->validate([
             'date_intervention' => 'required|date',
-            'type'              => 'required|in:site,distance,flash',
+            'type'              => 'required|in:site,distance,flash,administrateur',
+            'motif'             => 'nullable|string|max:255',
+            'notes'             => 'nullable|string',
         ]);
 
-        $data = $request->all();
+        $dureeMinutes = (int)$request->input('duree_minutes', 0);
 
-        if ($request->type !== 'flash') {
-            $heures = intval($request->input('heures', 0));
-            $minutes = intval($request->input('minutes', 0));
-            $data['duree_minutes'] = ($heures * 60) + $minutes;
+        $data = [
+            'date_intervention' => $request->date_intervention,
+            'numero_bon_kizeo'  => $request->numero_bon_kizeo ?: null,
+            'type'              => $request->type,
+            'duree_minutes'     => $dureeMinutes,
+            'motif'             => $request->motif ?: null,
+            'notes'             => $request->notes ?: null,
+            'type_tri'          => $request->boolean('deductible') ? 'standard' : 'hors-contrat',
+            'deductible'        => $request->boolean('deductible'),
+        ];
+
+        if ($request->type === 'flash') {
+            $flashNumero = (int)$request->input('flash_numero', 1);
+            $data['flash_numero']   = $flashNumero;
+            $data['flash_consomme'] = ($flashNumero === 3);
+            $data['duree_minutes']  = ($flashNumero === 3) ? 20 : 0;
+            $data['deductible']     = true;
         }
 
         $intervention->update($data);
 
         if ($request->type === 'flash') {
-            Intervention::recalculerFlash($intervention->contrat_id, $intervention->date_intervention);
+            Intervention::recalculerFlash($intervention->contrat_id, $request->date_intervention);
         }
 
         return redirect()->route('contrats.show', $intervention->contrat_id)
-            ->with('success', 'Intervention mise à jour.');
+            ->with('success', 'Intervention modifiée.');
     }
 
     public function destroy(Intervention $intervention)
     {
-        $contrat_id = $intervention->contrat_id;
-        $type = $intervention->type;
+        $contratId = $intervention->contrat_id;
+        $estFlash  = $intervention->type === 'flash';
+        $date      = $intervention->date_intervention;
         $intervention->delete();
-
-        if ($type === 'flash') {
-            Intervention::recalculerFlash($contrat_id, now());
+        if ($estFlash) {
+            Intervention::recalculerFlash($contratId, $date);
         }
-
-        return redirect()->route('contrats.show', $contrat_id)
+        return redirect()->route('contrats.show', $contratId)
             ->with('success', 'Intervention supprimée.');
     }
 }

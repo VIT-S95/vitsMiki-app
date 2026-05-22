@@ -2,28 +2,24 @@
 namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
 class Intervention extends Model
 {
     use HasFactory;
-
     protected $fillable = [
         'contrat_id','date_intervention','numero_bon_kizeo',
         'type','flash_numero','flash_consomme','duree_minutes',
-        'motif','statut','type_tri','source_kizeo'
+        'motif','notes','statut','type_tri','source_kizeo','deductible'
     ];
-
     protected $casts = [
         'date_intervention' => 'date',
         'flash_consomme'    => 'boolean',
         'source_kizeo'      => 'boolean',
+        'deductible'        => 'boolean',
     ];
-
     public function contrat()
     {
         return $this->belongsTo(Contrat::class);
     }
-
     public function getDureeFormateeAttribute()
     {
         if ($this->type === 'flash' && $this->flash_numero < 3) return '—';
@@ -33,7 +29,6 @@ class Intervention extends Model
         if ($h > 0) return "{$h}h";
         return "{$m}min";
     }
-
     public static function recalculerFlash($contrat_id, $date_insertion)
     {
         $interventions = self::where('contrat_id', $contrat_id)
@@ -41,7 +36,6 @@ class Intervention extends Model
             ->orderBy('date_intervention')
             ->orderBy('id')
             ->get();
-
         $compteur = 1;
         foreach ($interventions as $intervention) {
             $intervention->flash_numero = $compteur;

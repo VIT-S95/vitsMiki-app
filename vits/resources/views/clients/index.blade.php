@@ -35,7 +35,7 @@
             <tr onclick="window.location='{{ route('clients.show', $client) }}'" style="cursor:pointer;border-bottom:1px solid #f0f0f0" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='#fff'">
                 <td style="padding:10px 14px;font-weight:500">{{ $client->nom_societe }}</td>
                 <td style="padding:10px 14px;color:#888;font-family:monospace;font-size:12px">{{ $client->numero_client_kizeo ?? '—' }}</td>
-                <td style="padding:10px 14px;color:#888;font-family:monospace;font-size:12px">{{ $client->numero_contrat_vits ?? '—' }}</td>
+                <td style="padding:10px 14px;color:#888;font-family:monospace;font-size:12px">{{ $client->contrats->first()->numero_contrat_vits ?? '—' }}</td>
                 <td style="padding:10px 14px">
                     @if($client->statut === 'actif')
                         <span style="background:#f0fdf4;color:#166534;padding:3px 8px;border-radius:99px;font-size:11px;font-weight:500">✓ Actif</span>
