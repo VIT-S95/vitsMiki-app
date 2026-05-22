@@ -11,4 +11,5 @@ return [
     'seuil_heures_pct'    => 80,
     'kizeo_frequence_min' => 15,
     'session_heures'      => 8,
+    'kizeo_api_key'       => env('KIZEO_API_KEY', ''),
 ];

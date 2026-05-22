@@ -35,3 +35,8 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/interventions/{intervention}', [InterventionController::class, 'update'])->name('interventions.update');
     Route::delete('/interventions/{intervention}', [InterventionController::class, 'destroy'])->name('interventions.destroy');
 });
+
+use App\Http\Controllers\KizeoController;
+Route::middleware(['auth'])->group(function () {
+    Route::post('/kizeo/forcer', [KizeoController::class, 'forcer'])->name('kizeo.forcer');
+});
