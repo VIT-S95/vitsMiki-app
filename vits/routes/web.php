@@ -40,3 +40,8 @@ use App\Http\Controllers\KizeoController;
 Route::middleware(['auth'])->group(function () {
     Route::post('/kizeo/forcer', [KizeoController::class, 'forcer'])->name('kizeo.forcer');
 });
+
+use App\Http\Controllers\PdfController;
+Route::middleware(['auth'])->group(function () {
+    Route::get('/contrats/{contrat}/pdf', [PdfController::class, 'rapport'])->name('contrats.pdf');
+});
