@@ -29,6 +29,8 @@ Route::resource('contrats', ContratController::class)->middleware('auth');
 
 use App\Http\Controllers\InterventionController;
 Route::middleware(['auth'])->group(function () {
+    Route::post('/periodes/traiter', [PeriodeAjustementController::class, 'traiter'])->name('periodes.traiter');
+    Route::get('/interventions', [InterventionController::class, 'index'])->name('interventions.index');
     Route::get('/interventions/create', [InterventionController::class, 'create'])->name('interventions.create');
     Route::post('/interventions', [InterventionController::class, 'store'])->name('interventions.store');
     Route::get('/interventions/{intervention}/edit', [InterventionController::class, 'edit'])->name('interventions.edit');
@@ -42,6 +44,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 use App\Http\Controllers\PdfController;
+use App\Http\Controllers\PeriodeAjustementController;
 Route::middleware(['auth'])->group(function () {
     Route::get('/contrats/{contrat}/pdf', [PdfController::class, 'rapport'])->name('contrats.pdf');
 });

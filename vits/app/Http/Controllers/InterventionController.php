@@ -6,7 +6,28 @@ use Illuminate\Http\Request;
 
 class InterventionController extends Controller
 {
-    public function create(Request $request)
+    public function index(Request $request)
+    {
+        $query = Intervention::with(['contrat.client'])
+            ->orderBy('date_intervention', 'desc');
+
+        if ($request->search) {
+            $query->whereHas('contrat.client', function($q) use ($request) {
+                $q->where('nom_societe', 'like', '%'.$request->search.'%');
+            });
+        }
+        if ($request->type) {
+            $query->where('type', $request->type);
+        }
+        if ($request->deductible !== null && $request->deductible !== '') {
+            $query->where('deductible', $request->deductible === '1');
+        }
+
+        $interventions = $query->paginate((int)request('per_page', 20))->withQueryString();
+        return view('interventions.index', compact('interventions'));
+    }
+
+        public function create(Request $request)
     {
         $contrat = Contrat::with('client')->findOrFail($request->contrat_id);
         $motifs = config('vits.motifs_intervention', [

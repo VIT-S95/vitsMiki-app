@@ -121,6 +121,70 @@
         </div>
     </div>
 
+    {{-- Périodes à régler --}}
+    @if($periodesARegler->count() > 0)
+    <div style="background:#fff;border:2px solid #E8720C;border-radius:12px;overflow:hidden;margin-bottom:1rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #f0e0d0;background:#FFF9F5">
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:#E8720C">
+                ⚠ Périodes terminées — ajustement requis
+            </div>
+            <span style="background:#FFF3E6;color:#E8720C;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:500">{{ $periodesARegler->count() }}</span>
+        </div>
+        <div style="padding:4px 0">
+            @foreach($periodesARegler as $item)
+            @php
+                $solde = $item['solde_minutes'];
+                $h = $item['h'];
+                $m = $item['m'];
+                $dureeLabel = ($h > 0 ? $h.'h' : '').($m > 0 ? $m.'min' : '');
+            @endphp
+            <div style="padding:10px 14px;border-bottom:1px solid #f5f5f5">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem">
+                    <div>
+                        <div style="font-size:13px;font-weight:500;color:#1a1a1a">
+                            {{ $item['contrat']->client->nom_societe }}
+                            <span style="font-size:11px;font-family:monospace;color:#888;margin-left:6px">{{ $item['contrat']->numero_contrat_vits }}</span>
+                        </div>
+                        <div style="font-size:12px;color:#888;margin-top:2px">
+                            Période {{ $item['periode']['numero'] }} — terminée le {{ $item['periode']['fin']->format('d/m/Y') }}
+                            @if($item['credit'])
+                                <span style="color:#166534;font-weight:500">· Crédit : +{{ $dureeLabel }} non consommées</span>
+                            @else
+                                <span style="color:#dc2626;font-weight:500">· Dépassement : {{ $dureeLabel }} en trop</span>
+                            @endif
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:6px;flex-shrink:0">
+                        <form method="POST" action="{{ route('periodes.traiter') }}">
+                            @csrf
+                            <input type="hidden" name="contrat_id"     value="{{ $item['contrat']->id }}">
+                            <input type="hidden" name="periode_numero" value="{{ $item['periode']['numero'] }}">
+                            <input type="hidden" name="periode_fin"    value="{{ $item['periode']['fin']->format('Y-m-d') }}">
+                            <input type="hidden" name="solde_minutes"  value="{{ $solde }}">
+                            <input type="hidden" name="action"         value="reporte">
+                            <button type="submit" style="padding:5px 10px;font-size:11px;background:#E8720C;color:#fff;border:none;border-radius:6px;cursor:pointer">
+                                {{ $item['credit'] ? '↪ Reporter crédit' : '↪ Reporter dépassement' }}
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ route('periodes.traiter') }}">
+                            @csrf
+                            <input type="hidden" name="contrat_id"     value="{{ $item['contrat']->id }}">
+                            <input type="hidden" name="periode_numero" value="{{ $item['periode']['numero'] }}">
+                            <input type="hidden" name="periode_fin"    value="{{ $item['periode']['fin']->format('Y-m-d') }}">
+                            <input type="hidden" name="solde_minutes"  value="{{ $solde }}">
+                            <input type="hidden" name="action"         value="ignore">
+                            <button type="submit" style="padding:5px 10px;font-size:11px;background:#fff;color:#888;border:1px solid #ddd;border-radius:6px;cursor:pointer">
+                                Ignorer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
     {{-- Alertes informatives --}}
     <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;overflow:hidden">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #e0e0e0">

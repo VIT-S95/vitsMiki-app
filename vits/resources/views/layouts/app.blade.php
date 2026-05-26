@@ -44,7 +44,7 @@
         <a href="{{ route('contrats.index') }}" class="nav-item {{ request()->routeIs('contrats.*') ? 'active' : '' }}">
             <i class="ti ti-file-text"></i> Contrats
         </a>
-        <a href="#" class="nav-item {{ request()->routeIs('interventions.*') ? 'active' : '' }}">
+        <a href="{{ route('interventions.index') }}" class="nav-item {{ request()->routeIs('interventions.*') ? 'active' : '' }}">
             <i class="ti ti-tool"></i> Interventions
         </a>
 
