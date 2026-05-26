@@ -8,11 +8,15 @@ class PdfController extends Controller
     {
         $contrat->load('client', 'interventions');
         $periodes = $contrat->getPeriodes();
-        $periodesAvecInterventions = $periodes->map(function($periode) use ($contrat) {
+        $periodesAvecInterventions = $periodes->filter(function($periode) {
+            // Ne montrer que les périodes commencées
+            return $periode['debut']->lte(now());
+        })->map(function($periode) use ($contrat) {
             $interventions = $contrat->interventions->filter(function($i) use ($periode) {
                 return $i->deductible
                     && $i->date_intervention >= $periode['debut']
-                    && $i->date_intervention <= $periode['fin'];
+                    && $i->date_intervention <= $periode['fin']
+                    && $i->date_intervention->lte(now());
             })->sortBy('date_intervention');
             $mois = collect();
             $current = $periode['debut']->copy();
@@ -31,7 +35,9 @@ class PdfController extends Controller
             $totalMinutes = $interventions->sum('duree_minutes');
             $heuresAllouees = $contrat->heures_par_periode;
             $diff = ($heuresAllouees * 60) - $totalMinutes;
+            $periodeFinie = $periode['fin']->lt(now());
             return array_merge($periode, [
+                'periode_finie' => $periodeFinie,
                 'mois'            => $mois,
                 'total_minutes'   => $totalMinutes,
                 'heures_allouees' => $heuresAllouees,
