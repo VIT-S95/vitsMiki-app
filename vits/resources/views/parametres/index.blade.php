@@ -10,7 +10,7 @@
 <div style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;border-radius:8px;padding:8px 14px;font-size:13px;margin-bottom:1rem">{{ session('success') }}</div>
 @endif
 
-<form method="POST" action="{{ route('parametres.update') }}">
+<form method="POST" action="{{ route('parametres.update') }}" enctype="multipart/form-data">
 @csrf
 <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;margin-bottom:1rem;overflow:hidden">
     <div style="padding:12px 16px;border-bottom:1px solid #e0e0e0">
@@ -76,6 +76,31 @@
     </div>
 </div>
 
+{{-- LOGO --}}
+<div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;margin-bottom:1rem;overflow:hidden">
+    <div style="padding:12px 16px;border-bottom:1px solid #e0e0e0">
+        <div style="font-size:13px;font-weight:500">Logo VIT-S</div>
+        <div style="font-size:12px;color:#aaa">Affiché dans la sidebar et sur les rapports PDF</div>
+    </div>
+    <div style="padding:12px 16px;display:flex;align-items:center;gap:16px">
+        @if($logoPath)
+            <img src="{{ $logoPath }}" style="height:48px;object-fit:contain;border:1px solid #eee;border-radius:6px;padding:4px">
+            <div>
+                <div style="font-size:12px;color:#166534;margin-bottom:6px">✓ Logo actuel</div>
+                <button type="button" onclick="document.getElementById('form-delete-logo').submit()" style="font-size:11px;color:#dc2626;background:#fff;border:1px solid #fca5a5;padding:4px 10px;border-radius:6px;cursor:pointer">🗑 Supprimer</button>
+            </div>
+        @else
+            <div style="width:80px;height:48px;border:2px dashed #ddd;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:11px">Aucun</div>
+        @endif
+        <div style="flex:1">
+            <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">{{ $logoPath ? 'Remplacer le logo' : 'Ajouter un logo' }}</label>
+            <input type="file" name="logo" accept="image/png,image/jpeg,image/svg+xml" style="font-size:12px;color:#666">
+            <div style="font-size:11px;color:#aaa;margin-top:3px">PNG, JPG ou SVG — max 2 Mo</div>
+        </div>
+    </div>
+</div>
+
+
 <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:1rem">
     <button type="submit" style="padding:8px 20px;font-size:13px;font-weight:500;background:#E8720C;color:#fff;border:none;border-radius:8px;cursor:pointer">Enregistrer</button>
 </div>
@@ -120,4 +145,7 @@ function addMotif(){
     document.getElementById('new-motif').value = '';
 }
 </script>
+<form id="form-delete-logo" method="POST" action="{{ route('parametres.logo.delete') }}">
+    @csrf @method('DELETE')
+</form>
 @endsection

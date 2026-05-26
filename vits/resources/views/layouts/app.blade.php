@@ -30,7 +30,12 @@
 <body>
     <div class="sidebar">
         <div class="sidebar-logo">
-            <div class="logo-badge">VIT-S</div>
+            @php $logoPath = file_exists(public_path('storage/logo/logo.png')) ? asset('storage/logo/logo.png') : null; @endphp
+            @if($logoPath)
+                <img src="{{ $logoPath }}" style="max-height:38px;max-width:140px;object-fit:contain">
+            @else
+                <div class="logo-badge">VIT-S</div>
+            @endif
             <div class="logo-sub">Application interne</div>
         </div>
 

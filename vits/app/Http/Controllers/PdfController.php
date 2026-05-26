@@ -47,7 +47,8 @@ class PdfController extends Controller
             ]);
         });
         $pdf = Pdf::loadView('pdf.rapport', compact('contrat', 'periodesAvecInterventions'))
-            ->setPaper('a4', 'portrait');
-        return $pdf->download('rapport-' . $contrat->client->nom_societe . '-' . now()->format('Y-m-d') . '.pdf');
+            ->setPaper('a4', 'portrait')
+            ->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => false, 'debugPng' => false]);
+        return $pdf->stream('rapport-' . $contrat->client->nom_societe . '-' . now()->format('Y-m-d') . '.pdf');
     }
 }

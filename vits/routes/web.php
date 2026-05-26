@@ -53,5 +53,6 @@ use App\Http\Controllers\ParametreController;
 Route::middleware(['auth'])->group(function () {
     Route::get('/parametres', [ParametreController::class, 'index'])->name('parametres.index');
     Route::post('/parametres', [ParametreController::class, 'update'])->name('parametres.update');
+    Route::delete('/parametres/logo', [ParametreController::class, 'deleteLogo'])->name('parametres.logo.delete');
     Route::post('/parametres/motifs', [ParametreController::class, 'updateMotifs'])->name('parametres.motifs');
 });
