@@ -20,10 +20,16 @@
                     <div style="font-size:11px;color:#dc2626;margin-top:4px">⚠ Volume important — la génération peut être lente</div>
                 @endif
             </div>
-            <a href="{{ route('contrats.pdf', $contrat) }}?periode=toutes"
-               style="padding:6px 14px;font-size:12px;background:{{ $tooLarge ? '#dc2626' : '#E8720C' }};color:#fff;border-radius:6px;text-decoration:none">
-                📄 Générer
-            </a>
+            <div style="display:flex;gap:6px">
+                <a href="{{ route('contrats.pdf', $contrat) }}?periode=toutes&action=stream" target="_blank"
+                   style="padding:6px 10px;font-size:12px;background:{{ $tooLarge ? '#dc2626' : '#E8720C' }};color:#fff;border-radius:6px;text-decoration:none">
+                    🖨 Imprimer
+                </a>
+                <a href="{{ route('contrats.pdf', $contrat) }}?periode=toutes&action=download" target="_blank"
+                   style="padding:6px 10px;font-size:12px;background:#f5f5f5;color:#444;border:1px solid #ddd;border-radius:6px;text-decoration:none">
+                    ⬇ Télécharger
+                </a>
+            </div>
         </div>
     </div>
 
@@ -47,10 +53,16 @@
                     @if($gros)<span style="color:#dc2626"> — ⚠ volume important</span>@endif
                 </div>
             </div>
-            <a href="{{ route('contrats.pdf', $contrat) }}?periode={{ $periode['numero'] }}"
-               style="padding:6px 14px;font-size:12px;background:#E8720C;color:#fff;border-radius:6px;text-decoration:none">
-                📄 Générer
-            </a>
+            <div style="display:flex;gap:6px">
+                <a href="{{ route('contrats.pdf', $contrat) }}?periode={{ $periode['numero'] }}&action=stream" target="_blank"
+                   style="padding:6px 10px;font-size:12px;background:#E8720C;color:#fff;border-radius:6px;text-decoration:none">
+                    🖨 Imprimer
+                </a>
+                <a href="{{ route('contrats.pdf', $contrat) }}?periode={{ $periode['numero'] }}&action=download" target="_blank"
+                   style="padding:6px 10px;font-size:12px;background:#f5f5f5;color:#444;border:1px solid #ddd;border-radius:6px;text-decoration:none">
+                    ⬇ Télécharger
+                </a>
+            </div>
         </div>
     </div>
     @endforeach

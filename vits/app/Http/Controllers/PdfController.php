@@ -79,6 +79,10 @@ class PdfController extends Controller
         $pdf = Pdf::loadView('pdf.rapport', compact('contrat', 'periodesAvecInterventions'))
             ->setPaper('a4', 'portrait')
             ->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => false, 'debugPng' => false]);
-        return $pdf->stream('rapport-' . $contrat->client->nom_societe . '-' . now()->format('Y-m-d') . '.pdf');
+        $filename = 'rapport-' . $contrat->client->nom_societe . '-' . now()->format('Y-m-d') . '.pdf';
+        if ($request->get('action') === 'download') {
+            return $pdf->download($filename);
+        }
+        return $pdf->stream($filename);
     }
 }
