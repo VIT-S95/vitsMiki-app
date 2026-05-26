@@ -5,7 +5,7 @@
 <h1 style="font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:1.5rem">Nouveau contrat</h1>
 
 <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1.5rem">
-    <form method="POST" action="{{ route('contrats.store') }}">
+    <form id="form-contrat" method="POST" action="{{ route('contrats.store') }}">
         @csrf
         <div style="margin-bottom:1.5rem">
             <div style="font-size:12px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:1rem;padding-bottom:6px;border-bottom:1px solid #f0f0f0">Client</div>
@@ -19,6 +19,15 @@
                 </select>
                 <div style="font-size:11px;color:#aaa;margin-top:3px">Seuls les clients sans contrat en cours sont listés</div>
                 @error('client_id')<div style="color:#dc2626;font-size:11px;margin-top:3px">{{ $message }}</div>@enderror
+            </div>
+        </div>
+
+        <div style="margin-bottom:1.5rem">
+            <div style="font-size:12px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:1rem;padding-bottom:6px;border-bottom:1px solid #f0f0f0">Identification</div>
+            <div>
+                <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">N° contrat VIT-S <span style="color:#E8720C">*</span></label>
+                <input type="text" name="numero_contrat_vits" value="{{ old('numero_contrat_vits') }}" required placeholder="ex: CLORELICE/RZA1234/2025" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+                @error('numero_contrat_vits')<div style="color:#dc2626;font-size:11px;margin-top:3px">{{ $message }}</div>@enderror
             </div>
         </div>
 
@@ -74,7 +83,7 @@
 
         <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:1.25rem;border-top:1px solid #f0f0f0">
             <a href="{{ route('contrats.index') }}" style="padding:8px 16px;font-size:13px;border:1px solid #ddd;border-radius:8px;color:#666;text-decoration:none">Annuler</a>
-            <button type="submit" style="padding:8px 20px;font-size:13px;font-weight:500;background:#E8720C;color:#fff;border:none;border-radius:8px;cursor:pointer">✓ Créer le contrat</button>
+            <button type="button" onclick="document.getElementById('form-contrat').submit()" style="padding:8px 20px;font-size:13px;font-weight:500;background:#E8720C;color:#fff;border:none;border-radius:8px;cursor:pointer">✓ Créer le contrat</button>
         </div>
     </form>
 </div>

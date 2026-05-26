@@ -52,10 +52,17 @@
             </div>
         </div>
 
-        <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:1.25rem;border-top:1px solid #f0f0f0">
-            <a href="{{ route('contrats.show', $contrat) }}" style="padding:8px 16px;font-size:13px;border:1px solid #ddd;border-radius:8px;color:#666;text-decoration:none">Annuler</a>
-            <button type="submit" style="padding:8px 20px;font-size:13px;font-weight:500;background:#E8720C;color:#fff;border:none;border-radius:8px;cursor:pointer">✓ Enregistrer</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-top:1.25rem;border-top:1px solid #f0f0f0">
+            <button type="button" onclick="if(confirm('Supprimer définitivement ce contrat et toutes ses interventions ?')) document.getElementById('form-delete-contrat').submit()" style="padding:8px 14px;font-size:12px;background:#fff;border:1px solid #fca5a5;color:#dc2626;border-radius:8px;cursor:pointer">🗑 Supprimer le contrat</button>
+            <div style="display:flex;gap:8px">
+                <a href="{{ route('contrats.show', $contrat) }}" style="padding:8px 16px;font-size:13px;border:1px solid #ddd;border-radius:8px;color:#666;text-decoration:none">Annuler</a>
+                <button type="submit" style="padding:8px 20px;font-size:13px;font-weight:500;background:#E8720C;color:#fff;border:none;border-radius:8px;cursor:pointer">✓ Enregistrer</button>
+            </div>
         </div>
+    </form>
+
+    <form id="form-delete-contrat" method="POST" action="{{ route('contrats.destroy', $contrat) }}">
+        @csrf @method('DELETE')
     </form>
 </div>
 @endsection
