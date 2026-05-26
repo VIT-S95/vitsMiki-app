@@ -15,7 +15,7 @@
 
 <form method="GET" style="display:flex;gap:8px;margin-bottom:1rem">
     <input type="text" name="search" value="{{ request('search') }}" placeholder="Rechercher un client…" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;width:250px">
-    <select name="statut" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+    <select name="statut" onchange="this.form.submit()" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
         <option value="tous" {{ request('statut')=='tous'?'selected':'' }}>Tous les statuts</option>
         <option value="en-cours" {{ (request('statut','en-cours')=='en-cours')?'selected':'' }}>En cours</option>
         <option value="expire" {{ request('statut')=='expire'?'selected':'' }}>Expirés</option>

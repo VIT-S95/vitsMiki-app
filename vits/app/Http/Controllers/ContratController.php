@@ -15,8 +15,13 @@ class ContratController extends Controller
         if ($request->search) {
             $query->where('clients.nom_societe', 'like', '%'.$request->search.'%');
         }
-        if ($request->statut) {
-            $query->where('contrats.statut', $request->statut);
+        // Par défaut : rediriger vers en-cours
+        if (!$request->has('statut')) {
+            return redirect()->route('contrats.index', ['statut' => 'en-cours']);
+        }
+        $statut = $request->get('statut');
+        if ($statut && $statut !== 'tous') {
+            $query->where('contrats.statut', $statut);
         }
 
         $sort = $request->get('sort', 'date_fin');

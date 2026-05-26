@@ -12,7 +12,9 @@ class ClientController extends Controller
         if ($request->search) {
             $query->where('nom_societe', 'like', '%'.$request->search.'%');
         }
-        if ($request->get('sans_contrat') !== '1') {
+        if ($request->get('sans_contrat') === '1') {
+            $query->whereDoesntHave('contrats');
+        } else {
             $query->whereHas('contrats');
         }
         $clients = $query->orderBy('nom_societe')->paginate((int)request('per_page', 20))->withQueryString();

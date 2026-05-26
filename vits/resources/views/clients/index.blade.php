@@ -24,7 +24,7 @@
     @if(request('search'))<a href="{{ route('clients.index') }}" style="font-size:13px;color:#888;padding:7px 0">Effacer</a>@endif
     <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#666;cursor:pointer;padding:7px 0">
         <input type="checkbox" name="sans_contrat" value="1" {{ request('sans_contrat')=='1'?'checked':'' }} onchange="this.form.submit()" style="accent-color:#E8720C">
-        Afficher sans contrat
+        Afficher clients sans contrat
     </label>
 </form>
 
