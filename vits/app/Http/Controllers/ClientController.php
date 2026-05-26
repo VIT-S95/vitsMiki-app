@@ -12,7 +12,10 @@ class ClientController extends Controller
         if ($request->search) {
             $query->where('nom_societe', 'like', '%'.$request->search.'%');
         }
-        $clients = $query->orderBy('nom_societe')->paginate(20)->withQueryString();
+        if ($request->get('sans_contrat') !== '1') {
+            $query->whereHas('contrats');
+        }
+        $clients = $query->orderBy('nom_societe')->paginate((int)request('per_page', 20))->withQueryString();
         return view('clients.index', compact('clients'));
     }
     public function create() { return view('clients.create'); }
@@ -29,7 +32,7 @@ class ClientController extends Controller
     }
     public function show(Client $client)
     {
-        $client->load('contrats');
+        $client->load(['contrats' => function($q) { $q->orderBy('date_debut','desc'); }, 'contrats.interventions']);
         return view('clients.show', compact('client'));
     }
     public function edit(Client $client) { return view('clients.edit', compact('client')); }

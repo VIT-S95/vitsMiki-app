@@ -16,12 +16,17 @@
 <form method="GET" style="display:flex;gap:8px;margin-bottom:1rem">
     <input type="text" name="search" value="{{ request('search') }}" placeholder="Rechercher un client…" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;width:250px">
     <select name="statut" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
-        <option value="">Tous les statuts</option>
-        <option value="en-cours" {{ request('statut')=='en-cours'?'selected':'' }}>En cours</option>
+        <option value="tous" {{ request('statut')=='tous'?'selected':'' }}>Tous les statuts</option>
+        <option value="en-cours" {{ (request('statut','en-cours')=='en-cours')?'selected':'' }}>En cours</option>
         <option value="expire" {{ request('statut')=='expire'?'selected':'' }}>Expirés</option>
         <option value="non-actif" {{ request('statut')=='non-actif'?'selected':'' }}>Non actifs</option>
     </select>
     <button type="submit" style="padding:7px 12px;background:#f5f5f5;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer">Filtrer</button>
+    <select name="per_page" onchange="this.form.submit()" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+        <option value="20" {{ request('per_page',20)==20?'selected':'' }}>20 / page</option>
+        <option value="50" {{ request('per_page',20)==50?'selected':'' }}>50 / page</option>
+        <option value="100" {{ request('per_page',20)==100?'selected':'' }}>100 / page</option>
+    </select>
     @if(request('search') || request('statut'))<a href="{{ route('contrats.index') }}" style="font-size:13px;color:#888;padding:7px 0">Effacer</a>@endif
 </form>
 

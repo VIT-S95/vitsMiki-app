@@ -16,7 +16,16 @@
 <form method="GET" style="display:flex;gap:8px;margin-bottom:1rem">
     <input type="text" name="search" value="{{ request('search') }}" placeholder="Rechercher un client…" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;width:300px">
     <button type="submit" style="padding:7px 12px;background:#f5f5f5;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer">Rechercher</button>
+    <select name="per_page" onchange="this.form.submit()" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+        <option value="20" {{ request('per_page',20)==20?'selected':'' }}>20 / page</option>
+        <option value="50" {{ request('per_page',20)==50?'selected':'' }}>50 / page</option>
+        <option value="100" {{ request('per_page',20)==100?'selected':'' }}>100 / page</option>
+    </select>
     @if(request('search'))<a href="{{ route('clients.index') }}" style="font-size:13px;color:#888;padding:7px 0">Effacer</a>@endif
+    <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#666;cursor:pointer;padding:7px 0">
+        <input type="checkbox" name="sans_contrat" value="1" {{ request('sans_contrat')=='1'?'checked':'' }} onchange="this.form.submit()" style="accent-color:#E8720C">
+        Afficher sans contrat
+    </label>
 </form>
 
 <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;overflow:hidden">

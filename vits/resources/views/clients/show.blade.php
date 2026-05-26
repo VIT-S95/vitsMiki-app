@@ -3,6 +3,12 @@
 @section('content')
 <a href="{{ route('clients.index') }}" style="display:flex;align-items:center;gap:6px;font-size:13px;color:#888;text-decoration:none;margin-bottom:1.25rem">← Retour aux clients</a>
 
+@php
+    $contratActif = $client->contrats->where('statut','en-cours')->sortByDesc('date_debut')->first();
+    $totalInterventions = $client->contrats->sum(fn($c) => $c->interventions->count());
+    $prochaineEcheance = $contratActif?->echeance_label ?? '—';
+@endphp
+
 <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1.25rem;margin-bottom:1rem">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:0.75rem">
         <div style="display:flex;align-items:center;gap:14px">
@@ -10,6 +16,7 @@
             <div>
                 <div style="font-size:16px;font-weight:500;color:#1a1a1a">{{ $client->nom_societe }}</div>
                 <div style="font-size:13px;color:#888;margin-top:2px">{{ $client->nom_signataire }}@if($client->email_signataire) · {{ $client->email_signataire }}@endif</div>
+                <div style="font-size:12px;color:#aaa;margin-top:2px;font-family:monospace">N° Kizeo : {{ $client->numero_client_kizeo ?? '—' }}</div>
             </div>
         </div>
         <div style="display:flex;gap:8px">
@@ -20,31 +27,26 @@
             </form>
         </div>
     </div>
-    @if($client->numero_contrat_vits)
-    <div style="padding-top:0.75rem;border-top:1px solid #f0f0f0;display:flex;align-items:center;gap:8px">
-        <span style="font-size:11px;color:#aaa;text-transform:uppercase">N° contrat VIT-S</span>
-        <span style="font-family:monospace;font-size:13px;font-weight:500;background:#f5f5f5;padding:3px 10px;border-radius:4px">{{ $client->numero_contrat_vits }}</span>
-        <span style="font-size:12px;color:#aaa">— N° Kizeo : {{ $client->numero_client_kizeo ?? '—' }}</span>
-    </div>
-    @endif
 </div>
 
+{{-- STATS --}}
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1rem">
     <div style="background:#f5f5f5;border-radius:8px;padding:0.75rem 1rem;text-align:center">
         <div style="font-size:20px;font-weight:500;color:#7F77DD">{{ $client->contrats->count() }}</div>
-        <div style="font-size:11px;color:#aaa;margin-top:3px">Renouvellements</div>
+        <div style="font-size:11px;color:#aaa;margin-top:3px">Contrats au total</div>
     </div>
     <div style="background:#f5f5f5;border-radius:8px;padding:0.75rem 1rem;text-align:center">
-        <div style="font-size:20px;font-weight:500;color:#1a1a1a">0</div>
+        <div style="font-size:20px;font-weight:500;color:#1a1a1a">{{ $totalInterventions }}</div>
         <div style="font-size:11px;color:#aaa;margin-top:3px">Interventions totales</div>
     </div>
     <div style="background:#f5f5f5;border-radius:8px;padding:0.75rem 1rem;text-align:center">
-        <div style="font-size:20px;font-weight:500;color:#E8720C">—</div>
-        <div style="font-size:11px;color:#aaa;margin-top:3px">Prochaine échéance</div>
+        <div style="font-size:20px;font-weight:500;color:#E8720C">{{ $prochaineEcheance }}</div>
+        <div style="font-size:11px;color:#aaa;margin-top:3px">Échéance contrat actif</div>
     </div>
 </div>
 
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+    {{-- INFOS --}}
     <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1.25rem">
         <div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:1rem">🏢 Informations</div>
         <div style="margin-bottom:0.75rem"><div style="font-size:11px;color:#aaa;text-transform:uppercase">Société</div><div style="font-size:13px">{{ $client->nom_societe }}</div></div>
@@ -52,16 +54,51 @@
         <div style="margin-bottom:0.75rem"><div style="font-size:11px;color:#aaa;text-transform:uppercase">Email</div><div style="font-size:13px;color:#E8720C">{{ $client->email_signataire ?? '—' }}</div></div>
         <div><div style="font-size:11px;color:#aaa;text-transform:uppercase">N° Kizeo</div><div style="font-size:13px;font-family:monospace">{{ $client->numero_client_kizeo ?? '—' }}</div></div>
     </div>
+
+    {{-- HISTORIQUE CONTRATS --}}
     <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1.25rem">
-        <div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:1rem">🔄 Historique des renouvellements</div>
-        @forelse($client->contrats as $contrat)
-            <div style="padding:10px 0;border-bottom:1px solid #f0f0f0">
-                <div style="font-size:13px;font-weight:500">{{ $contrat->titre }}</div>
-                <div style="font-size:12px;color:#888;margin-top:4px">{{ $contrat->duree_mois }} mois · {{ $contrat->heures_par_periode }}h / période</div>
+        <div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:1rem">🔄 Historique des contrats</div>
+        @forelse($client->contrats->sortByDesc('date_debut') as $contrat)
+        @php $actif = $contrat->statut === 'en-cours'; @endphp
+        <div style="padding:10px 12px;margin-bottom:6px;border-radius:8px;border:1px solid {{ $actif ? '#E8720C' : '#e0e0e0' }};background:{{ $actif ? '#FFF9F5' : '#fff' }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                <div>
+                    <div style="display:flex;align-items:center;gap:6px">
+                        <span style="font-size:12px;font-weight:500;color:{{ $actif ? '#E8720C' : '#1a1a1a' }}">{{ $contrat->numero_contrat_vits ?? 'Contrat' }}</span>
+                        @if($actif)
+                            <span style="background:#E8720C;color:#fff;font-size:10px;padding:1px 6px;border-radius:99px;font-weight:500">EN COURS</span>
+                        @elseif($contrat->statut === 'expire')
+                            <span style="background:#f5f5f5;color:#aaa;font-size:10px;padding:1px 6px;border-radius:99px">Expiré</span>
+                        @else
+                            <span style="background:#f5f5f5;color:#aaa;font-size:10px;padding:1px 6px;border-radius:99px">Non actif</span>
+                        @endif
+                    </div>
+                    <div style="font-size:11px;color:#888;margin-top:3px">
+                        {{ $contrat->date_debut?->format('d/m/Y') ?? '—' }} → {{ $contrat->date_fin?->format('d/m/Y') ?? '—' }}
+                        · {{ $contrat->duree_mois == 12 ? '1 an' : ($contrat->duree_mois == 24 ? '2 ans' : '3 ans') }}
+                        · {{ $contrat->heures_par_periode }}h / période
+                    </div>
+                </div>
+                @if($actif)
+                <a href="{{ route('contrats.show', $contrat) }}" style="padding:5px 10px;font-size:11px;background:#E8720C;color:#fff;border-radius:6px;text-decoration:none;white-space:nowrap">Voir →</a>
+                @else
+                <a href="{{ route('contrats.show', $contrat) }}" style="padding:5px 10px;font-size:11px;border:1px solid #ddd;color:#888;border-radius:6px;text-decoration:none;white-space:nowrap">Voir</a>
+                @endif
             </div>
+        </div>
         @empty
-            <div style="text-align:center;color:#aaa;font-size:13px;padding:1rem">Aucun contrat pour ce client</div>
+        <div style="text-align:center;color:#aaa;font-size:13px;padding:1rem">Aucun contrat pour ce client</div>
         @endforelse
+
+        @if($contratActif)
+        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #f0f0f0">
+            <a href="{{ route('contrats.create', ['client_id' => $client->id]) }}" style="font-size:12px;color:#888;text-decoration:none">+ Nouveau contrat</a>
+        </div>
+        @else
+        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #f0f0f0">
+            <a href="{{ route('contrats.create', ['client_id' => $client->id]) }}" style="padding:6px 12px;font-size:12px;background:#E8720C;color:#fff;border-radius:8px;text-decoration:none">+ Créer un contrat</a>
+        </div>
+        @endif
     </div>
 </div>
 @endsection

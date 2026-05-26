@@ -32,7 +32,7 @@ class ContratController extends Controller
             $query->orderBy('contrats.'.$sort, $dir);
         }
 
-        $contrats = $query->paginate(20)->withQueryString();
+        $contrats = $query->paginate((int)request('per_page', 20))->withQueryString();
         return view('contrats.index', compact('contrats', 'sort', 'dir'));
     }
 

@@ -78,3 +78,66 @@
     </div>
 </body>
 </html>
+<script>
+// Colonnes redimensionnables + réordonnables sur tous les tableaux
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('table').forEach(function(table) {
+        makeResizable(table);
+        makeSortable(table);
+    });
+});
+
+function makeResizable(table) {
+    const ths = table.querySelectorAll('th');
+    ths.forEach(function(th) {
+        th.style.position = 'relative';
+        const resizer = document.createElement('div');
+        resizer.style.cssText = 'position:absolute;right:0;top:20%;bottom:20%;width:4px;cursor:col-resize;user-select:none;z-index:1;background:#ddd;border-radius:2px;opacity:0.6';
+        resizer.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            const startX = e.pageX;
+            const startW = th.offsetWidth;
+            function onMove(e) { th.style.width = Math.max(50, startW + e.pageX - startX) + 'px'; }
+            function onUp() { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); }
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+        });
+        th.appendChild(resizer);
+    });
+}
+
+function makeSortable(table) {
+    const thead = table.querySelector('thead tr');
+    if (!thead) return;
+    const ths = Array.from(thead.querySelectorAll('th'));
+    let dragSrc = null;
+
+    ths.forEach(function(th, idx) {
+        if (!th.textContent.trim()) return;
+        th.draggable = true;
+        th.style.cursor = 'grab';
+        th.addEventListener('dragstart', function(e) {
+            dragSrc = idx;
+            th.style.opacity = '0.5';
+        });
+        th.addEventListener('dragend', function() { th.style.opacity = '1'; });
+        th.addEventListener('dragover', function(e) { e.preventDefault(); th.style.background = '#fff0e0'; });
+        th.addEventListener('dragleave', function() { th.style.background = ''; });
+        th.addEventListener('drop', function(e) {
+            e.preventDefault();
+            th.style.background = '';
+            if (dragSrc === null || dragSrc === idx) return;
+            // Réordonner colonnes dans toutes les lignes
+            table.querySelectorAll('tr').forEach(function(row) {
+                const cells = Array.from(row.children);
+                if (cells.length <= Math.max(dragSrc, idx)) return;
+                const dragCell = cells[dragSrc];
+                const targetCell = cells[idx];
+                if (dragSrc < idx) row.insertBefore(dragCell, targetCell.nextSibling);
+                else row.insertBefore(dragCell, targetCell);
+            });
+            dragSrc = null;
+        });
+    });
+}
+</script>
