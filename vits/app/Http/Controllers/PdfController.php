@@ -21,7 +21,7 @@ class PdfController extends Controller
             return array_merge($periode, ['nb_interventions' => $count]);
         });
 
-        $totalInterventions = $contrat->interventions->where('deductible', true)->count();
+        $totalInterventions = $contrat->interventions->where('deductible', true)->filter(function($i) use ($contrat) { return $i->date_intervention >= $contrat->date_debut; })->count();
         return view('pdf.choix', compact('contrat', 'periodes', 'totalInterventions'));
     }
 

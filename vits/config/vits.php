@@ -8,7 +8,7 @@ return [
   4 => 'Prestation complémentaire',
 ),
     'seuil_echeance_mois' => 3,
-    'seuil_heures_pct'    => 80,
+    'seuil_heures_pct'    => 90,
     'kizeo_frequence_min' => 60,
     'session_heures'      => 8,
     'kizeo_api_key'       => env('KIZEO_API_KEY', ''),

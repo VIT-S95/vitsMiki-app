@@ -31,8 +31,13 @@ class Intervention extends Model
     }
     public static function recalculerFlash($contrat_id, $date_insertion)
     {
+        $contrat = \App\Models\Contrat::find($contrat_id);
+        $dateDebut = $contrat?->date_debut;
         $interventions = self::where('contrat_id', $contrat_id)
             ->where('type', 'flash')
+            ->when($dateDebut, function($q) use ($dateDebut) {
+                $q->where('date_intervention', '>=', $dateDebut);
+            })
             ->orderBy('date_intervention')
             ->orderBy('id')
             ->get();

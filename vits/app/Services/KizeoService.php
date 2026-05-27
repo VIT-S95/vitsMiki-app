@@ -13,7 +13,6 @@ class KizeoService
     protected $apiKey;
     protected $baseUrl = 'https://www.kizeoforms.com/rest/v3';
 
-    // IDs des formulaires Kizeo
     const FORM_SITE     = '45252';
     const FORM_DISTANCE = '108738';
 
@@ -22,9 +21,6 @@ class KizeoService
         $this->apiKey = config('vits.kizeo_api_key');
     }
 
-    /**
-     * Import automatique (cron) — récupère les nouvelles interventions depuis la dernière synchro
-     */
     public function importerInterventions(): array
     {
         if (!$this->apiKey) {
@@ -49,9 +45,6 @@ class KizeoService
         ];
     }
 
-    /**
-     * Import en masse sur une plage de dates (utilisé pour l'import initial)
-     */
     public function importerParPeriode(string $dateDebut, string $dateFin): array
     {
         if (!$this->apiKey) {
@@ -107,9 +100,6 @@ class KizeoService
         ];
     }
 
-    /**
-     * Import d'un formulaire — récupère les données non lues
-     */
     protected function importerFormulaire(string $formId): array
     {
         $imported = 0;
@@ -140,7 +130,6 @@ class KizeoService
                 }
             }
 
-            // Marquer comme lues
             if (!empty($data)) {
                 $ids = array_column($data, '_id');
                 Http::withHeaders([
@@ -158,15 +147,11 @@ class KizeoService
         return compact('imported', 'errors');
     }
 
-    /**
-     * Traite un enregistrement Kizeo et l'insère en base
-     */
     protected function traiterEnregistrement(array $record, string $formId): bool
     {
         $bonNumero = (string)($record['_id'] ?? '');
         if (!$bonNumero) return false;
 
-        // Déjà importé ?
         if (Intervention::where('numero_bon_kizeo', $bonNumero)->exists()) return true;
 
         $nomClient = trim($record['client'] ?? '');
@@ -174,8 +159,24 @@ class KizeoService
 
         if (!$nomClient || !$date) return false;
 
-        // Nettoyer le nom client (parfois entre parenthèses ex: "(COEXPAU)")
+        // Nettoyer le nom client (parenthèses ex: "(COEXPAU)")
         $nomClient = trim($nomClient, '() ');
+
+        // Normaliser les apostrophes
+        $nomClient = str_replace("\u{2019}", "'", $nomClient);
+        $nomClient = str_replace("\u{2018}", "'", $nomClient);
+
+        // Aliases : anciens noms -> noms actuels
+        $aliases = [
+            'ACTA PREVENTION' => 'VANBERG Prévention',
+            'ACTA PRÉVENTION' => 'VANBERG Prévention',
+            'ADV FORMATION'   => 'NOUBIZ',
+            'ULTRASERVICE'    => 'FLOLISVA',
+            "L'AVENTURE"      => 'AWEN Propreté',
+        ];
+        if (isset($aliases[$nomClient])) {
+            $nomClient = $aliases[$nomClient];
+        }
 
         // Trouver le client
         $client = Client::where('nom_societe', $nomClient)->first()
@@ -186,13 +187,12 @@ class KizeoService
             return false;
         }
 
-        // Trouver le contrat en cours
+        // Trouver le contrat actif à la date de l'intervention
         $contrat = Contrat::where('client_id', $client->id)
             ->where('statut', 'en-cours')
             ->first();
 
         if (!$contrat) {
-            // Prendre le dernier contrat si pas en cours
             $contrat = Contrat::where('client_id', $client->id)
                 ->orderBy('date_fin', 'desc')
                 ->first();
@@ -203,19 +203,18 @@ class KizeoService
             return false;
         }
 
-        // Indicateur déductible
+        // Déductible
         $contratIndicateur = strtolower(trim($record['contrat'] ?? ''));
         $forfaitIndicateur = strtolower(trim($record['forfait'] ?? ''));
         $flashIndicateur   = strtolower(trim($record['flash']   ?? ''));
-        // forfait=Oui = hors contrat (devis/forfait facturé), NON déductible
-        // contrat=Oui ET forfait!=Oui = déductible
-        // flash=Oui = déductible
-        $deductible = (bool)(($flashIndicateur === 'oui')
-            || ($contratIndicateur === 'oui' && $forfaitIndicateur !== 'oui'));
+        $deductible = (bool)(
+            ($flashIndicateur === 'oui')
+            || ($contratIndicateur === 'oui' && $forfaitIndicateur !== 'oui')
+        );
 
-        // Type d'intervention
-        $estFlash    = false;
-        $type        = 'site';
+        // Type
+        $estFlash = false;
+        $type     = 'site';
 
         if ($formId === self::FORM_DISTANCE) {
             $type     = 'distance';
@@ -224,21 +223,18 @@ class KizeoService
 
         if ($estFlash) $type = 'flash';
 
-        // Durée en minutes
+        // Durée
         $dureeMinutes = 0;
         if ($formId === self::FORM_DISTANCE) {
-            // Format "40min" ou "1h20" ou "2h"
             $dureeMinutes = $this->parserDuree($record['forfait_temps'] ?? '');
             if ($dureeMinutes === 0) {
                 $dureeMinutes = $this->parserDuree($record['temps'] ?? '');
             }
         } else {
-            // Formulaire site : temps en heures entières ex: "3"
             $heures = (float)($record['temps'] ?? 0);
             $dureeMinutes = (int)($heures * 60);
         }
 
-        // Statut
         $statut = strtolower($record['intervention'] ?? '') === 'clôturée' ? 'traitee' : 'non-traitee';
 
         Intervention::create([
@@ -246,14 +242,13 @@ class KizeoService
             'date_intervention' => $date,
             'numero_bon_kizeo'  => $bonNumero,
             'type'              => $type,
-            'duree_minutes'     => $estFlash ? 0 : $dureeMinutes, // flash 1/3 et 2/3 = 0
+            'duree_minutes'     => $estFlash ? 0 : $dureeMinutes,
             'statut'            => $statut,
             'type_tri'          => $deductible ? 'standard' : 'hors-contrat',
             'source_kizeo'      => true,
             'deductible'        => $deductible,
         ]);
 
-        // Recalculer les flash si nécessaire
         if ($estFlash) {
             Intervention::recalculerFlash($contrat->id, $date);
         }
@@ -261,10 +256,6 @@ class KizeoService
         return true;
     }
 
-    /**
-     * Parse une durée texte Kizeo en minutes
-     * Exemples: "40min", "1h20", "2h", "1h20min", "90"
-     */
     public function parserDuree(string $duree): int
     {
         $duree = trim(strtolower($duree));
@@ -272,19 +263,16 @@ class KizeoService
 
         $minutes = 0;
 
-        // Format "1h20" ou "1h20min" ou "2h"
         if (preg_match('/(\d+)h(\d*)/i', $duree, $m)) {
             $minutes += (int)$m[1] * 60;
             if (!empty($m[2])) $minutes += (int)$m[2];
             return $minutes;
         }
 
-        // Format "40min"
         if (preg_match('/(\d+)\s*min/i', $duree, $m)) {
             return (int)$m[1];
         }
 
-        // Format numérique pur (en minutes)
         if (is_numeric($duree)) {
             return (int)$duree;
         }
@@ -292,9 +280,6 @@ class KizeoService
         return 0;
     }
 
-    /**
-     * Récupère le nombre total d'interventions non lues
-     */
     public function getNombreNonLus(): array
     {
         $result = ['site' => 0, 'distance' => 0];

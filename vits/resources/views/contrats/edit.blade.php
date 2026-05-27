@@ -12,6 +12,10 @@
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem">
                 <div>
                     <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Date de début <span style="color:#E8720C">*</span></label>
+                <div style="margin-bottom:1rem">
+                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">N° contrat VIT-S <span style="color:#E8720C">*</span></label>
+                    <input type="text" name="numero_contrat_vits" value="{{ old('numero_contrat_vits', $contrat->numero_contrat_vits) }}" required style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+                </div>
                     <input type="date" name="date_debut" value="{{ old('date_debut', $contrat->date_debut?->format('Y-m-d')) }}" required style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
                 </div>
                 <div>
