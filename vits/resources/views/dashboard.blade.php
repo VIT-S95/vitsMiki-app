@@ -108,7 +108,7 @@
                 <span>{{ $icone }}</span>
                 <div>
                     <div style="font-weight:500;color:#555">Résultat</div>
-                    <div style="color:#aaa">{{ $kizeoLog['imported'] }} importée(s)@if($kizeoLog['errors'] > 0), {{ $kizeoLog['errors'] }} erreur(s)@endif</div>
+                    <div style="color:#aaa">{{ $kizeoLog['imported'] }} importée(s)@if(($kizeoLog['skipped'] ?? 0) > 0), {{ $kizeoLog['skipped'] }} doublon(s)@endif@if($kizeoLog['errors'] > 0), {{ $kizeoLog['errors'] }} erreur(s)@endif</div>
                 </div>
             </div>
         </div>

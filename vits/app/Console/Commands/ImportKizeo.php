@@ -14,6 +14,9 @@ class ImportKizeo extends Command
         $result = $kizeo->importDepuisDerniereIntervention();
         if ($result['success']) {
             $this->info('✅ ' . $result['message']);
+            if (($result['skipped'] ?? 0) > 0) {
+                $this->line("   ↩ {$result['skipped']} doublon(s) ignoré(s)");
+            }
             if ($result['errors'] > 0) {
                 $this->warn("⚠ {$result['errors']} erreur(s)");
             }

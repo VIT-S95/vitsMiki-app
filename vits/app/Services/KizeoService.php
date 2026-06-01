@@ -29,9 +29,21 @@ class KizeoService
 
     public function importDepuisDerniereIntervention(): array
     {
-        $derniere = Intervention::max('date_intervention');
-        $dateDebut = $derniere
-            ? Carbon::parse($derniere)->format('Y-m-d')
+        $debut = now();
+
+        if (!$this->apiKey) {
+            $log = ['debut' => $debut->format('H:i:s'), 'fin' => now()->format('H:i:s'),
+                    'statut' => 'erreur', 'api_ok' => false, 'imported' => 0,
+                    'skipped' => 0, 'errors' => 1, 'message' => 'Clé API non configurée', 'details' => []];
+            Cache::put('kizeo_import_log', $log, now()->addDays(7));
+            return ['success' => false, 'message' => 'Clé API non configurée'];
+        }
+
+        // Date de départ : MAX(date_intervention), sinon MAX(created_at), sinon -30 jours
+        $derniereDate = Intervention::max('date_intervention')
+            ?? Intervention::max('created_at');
+        $dateDebut = $derniereDate
+            ? Carbon::parse($derniereDate)->format('Y-m-d')
             : Carbon::now()->subDays(30)->format('Y-m-d');
         $dateFin = Carbon::now()->format('Y-m-d');
 
@@ -42,11 +54,12 @@ class KizeoService
             Cache::forget('kizeo_non_lus');
 
             $log = [
-                'debut'    => now()->format('H:i:s'),
+                'debut'    => $debut->format('H:i:s'),
                 'fin'      => now()->format('H:i:s'),
                 'statut'   => $result['errors'] === 0 ? 'ok' : 'partiel',
                 'api_ok'   => true,
                 'imported' => $result['imported'],
+                'skipped'  => $result['skipped'],
                 'errors'   => $result['errors'],
                 'message'  => $result['message'],
                 'details'  => [],
@@ -115,6 +128,7 @@ class KizeoService
         }
 
         $imported = 0;
+        $skipped  = 0;
         $errors   = 0;
 
         foreach ([self::FORM_SITE, self::FORM_DISTANCE] as $formId) {
@@ -143,7 +157,9 @@ class KizeoService
 
                 foreach ($data as $record) {
                     try {
-                        if ($this->traiterEnregistrement($record, $formId)) $imported++;
+                        $statut = $this->traiterEnregistrement($record, $formId);
+                        if ($statut === 'imported') $imported++;
+                        elseif ($statut === 'skipped') $skipped++;
                         else $errors++;
                     } catch (\Exception $e) {
                         Log::error("Kizeo traitement erreur: " . $e->getMessage());
@@ -158,14 +174,16 @@ class KizeoService
         return [
             'success'  => true,
             'imported' => $imported,
+            'skipped'  => $skipped,
             'errors'   => $errors,
-            'message'  => "{$imported} intervention(s) importée(s) entre {$dateDebut} et {$dateFin}",
+            'message'  => "{$imported} importée(s), {$skipped} doublon(s) ignoré(s)" . ($errors > 0 ? ", {$errors} erreur(s)" : '') . " [{$dateDebut} → {$dateFin}]",
         ];
     }
 
     protected function importerFormulaire(string $formId): array
     {
         $imported = 0;
+        $skipped  = 0;
         $errors   = 0;
 
         try {
@@ -175,18 +193,17 @@ class KizeoService
             ])->get("{$this->baseUrl}/forms/{$formId}/data/unread/vitsmiki/100");
 
             if (!$response->successful()) {
-                return ['imported' => 0, 'errors' => 1];
+                return ['imported' => 0, 'skipped' => 0, 'errors' => 1];
             }
 
             $data = $response->json('data', []);
 
             foreach ($data as $record) {
                 try {
-                    if ($this->traiterEnregistrement($record, $formId)) {
-                        $imported++;
-                    } else {
-                        $errors++;
-                    }
+                    $statut = $this->traiterEnregistrement($record, $formId);
+                    if ($statut === 'imported') $imported++;
+                    elseif ($statut === 'skipped') $skipped++;
+                    else $errors++;
                 } catch (\Exception $e) {
                     Log::error("Kizeo traitement erreur: " . $e->getMessage());
                     $errors++;
@@ -207,20 +224,21 @@ class KizeoService
             $errors++;
         }
 
-        return compact('imported', 'errors');
+        return compact('imported', 'skipped', 'errors');
     }
 
-    protected function traiterEnregistrement(array $record, string $formId): bool
+    protected function traiterEnregistrement(array $record, string $formId): string
     {
         $bonNumero = (string)($record['_id'] ?? '');
-        if (!$bonNumero) return false;
+        if (!$bonNumero) return 'error';
 
-        if (Intervention::where('numero_bon_kizeo', $bonNumero)->exists()) return true;
+        // Doublon : intervention déjà en base avec ce numéro de bon
+        if (Intervention::where('numero_bon_kizeo', $bonNumero)->exists()) return 'skipped';
 
         $nomClient = trim($record['client'] ?? '');
         $date      = $record['date'] ?? null;
 
-        if (!$nomClient || !$date) return false;
+        if (!$nomClient || !$date) return 'error';
 
         // Nettoyer le nom client (parenthèses ex: "(COEXPAU)")
         $nomClient = trim($nomClient, '() ');
@@ -247,7 +265,7 @@ class KizeoService
 
         if (!$client) {
             Log::info("Kizeo : client non trouvé '{$nomClient}' - bon {$bonNumero}");
-            return false;
+            return 'error';
         }
 
         // Trouver le contrat actif à la date de l'intervention
@@ -263,7 +281,7 @@ class KizeoService
 
         if (!$contrat) {
             Log::info("Kizeo : pas de contrat pour '{$nomClient}' - bon {$bonNumero}");
-            return false;
+            return 'error';
         }
 
         // Déductible
@@ -316,7 +334,7 @@ class KizeoService
             Intervention::recalculerFlash($contrat->id, $date);
         }
 
-        return true;
+        return 'imported';
     }
 
     public function parserDuree(string $duree): int
