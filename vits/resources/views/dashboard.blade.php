@@ -31,9 +31,20 @@
 {{-- KIZEO --}}
 <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:10px 16px;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between">
     <div style="display:flex;align-items:center;gap:10px">
-        <div style="width:32px;height:32px;border-radius:8px;background:#FFF3E6;display:flex;align-items:center;justify-content:center;font-size:18px">☁</div>
+        {{-- Bouton sync manuel --}}
+        <form method="POST" action="{{ route('kizeo.forcer') }}" id="form-kizeo">
+            @csrf
+            <button type="submit" id="btn-kizeo" title="Synchroniser maintenant"
+                style="width:32px;height:32px;border-radius:8px;background:#FFF3E6;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;padding:0;transition:background 0.2s"
+                onmouseover="this.style.background='#FFE0C2'" onmouseout="this.style.background='#FFF3E6'"
+                onclick="this.innerHTML='⏳';this.disabled=true">
+                ☁
+            </button>
+        </form>
         <div>
-            <div style="font-size:13px;font-weight:500">Synchronisation Kizeo</div>
+            <div style="font-size:13px;font-weight:500">Synchronisation Kizeo
+                <span style="font-size:11px;font-weight:400;color:#aaa;margin-left:6px">— prochaine dans <span id="kizeo-countdown" style="color:#E8720C;font-weight:600">…</span></span>
+            </div>
             <div style="font-size:12px;color:#888;margin-top:1px">
                 <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:{{ $derniereImport ? '#166534' : '#aaa' }};margin-right:4px;vertical-align:middle"></span>
                 Dernière import :
@@ -50,6 +61,32 @@
         <div style="text-align:center"><div style="font-size:16px;font-weight:500">{{ $nonLus['distance'] }}</div><div style="font-size:11px;color:#aaa">à distance</div></div>
     </div>
 </div>
+
+<script>
+(function() {
+    const freqMs      = {{ config('vits.kizeo_frequence_min', 60) }} * 60 * 1000;
+    const lastImportTs = {{ $derniereImport ? $derniereImport->timestamp * 1000 : 'null' }};
+    const el           = document.getElementById('kizeo-countdown');
+    if (!el) return;
+
+    function tick() {
+        const now      = Date.now();
+        const nextSync = lastImportTs ? lastImportTs + freqMs : null;
+        const reste    = nextSync ? Math.max(0, nextSync - now) : 0;
+
+        if (!lastImportTs || reste === 0) {
+            el.textContent = 'imminent';
+            return;
+        }
+        const m = Math.floor(reste / 60000);
+        const s = Math.floor((reste % 60000) / 1000);
+        el.textContent = m + 'min ' + String(s).padStart(2, '0') + 's';
+    }
+
+    tick();
+    setInterval(tick, 1000);
+})();
+</script>
 
 {{-- GRILLE ALERTES --}}
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
