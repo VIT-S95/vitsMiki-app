@@ -24,7 +24,37 @@ class KizeoService
 
     public function importUnread(): array
     {
-        return $this->importerInterventions();
+        return $this->importDepuisDerniereIntervention();
+    }
+
+    public function importDepuisDerniereIntervention(): array
+    {
+        $derniere = Intervention::max('date_intervention');
+        $dateDebut = $derniere
+            ? Carbon::parse($derniere)->format('Y-m-d')
+            : Carbon::now()->subDays(30)->format('Y-m-d');
+        $dateFin = Carbon::now()->format('Y-m-d');
+
+        $result = $this->importerParPeriode($dateDebut, $dateFin);
+
+        if ($result['success']) {
+            Cache::put('kizeo_derniere_import', now()->format('Y-m-d H:i:s'), now()->addDays(30));
+            Cache::forget('kizeo_non_lus');
+
+            $log = [
+                'debut'    => now()->format('H:i:s'),
+                'fin'      => now()->format('H:i:s'),
+                'statut'   => $result['errors'] === 0 ? 'ok' : 'partiel',
+                'api_ok'   => true,
+                'imported' => $result['imported'],
+                'errors'   => $result['errors'],
+                'message'  => $result['message'],
+                'details'  => [],
+            ];
+            Cache::put('kizeo_import_log', $log, now()->addDays(7));
+        }
+
+        return $result;
     }
 
     public function importerInterventions(): array

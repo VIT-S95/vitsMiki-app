@@ -10,10 +10,13 @@ class ImportKizeo extends Command
 
     public function handle(KizeoService $kizeo)
     {
-        $this->info('Démarrage import Kizeo...');
-        $result = $kizeo->importerInterventions();
+        $this->info('Démarrage import Kizeo (depuis dernière intervention en base)...');
+        $result = $kizeo->importDepuisDerniereIntervention();
         if ($result['success']) {
             $this->info('✅ ' . $result['message']);
+            if ($result['errors'] > 0) {
+                $this->warn("⚠ {$result['errors']} erreur(s)");
+            }
         } else {
             $this->error('❌ ' . $result['message']);
         }
