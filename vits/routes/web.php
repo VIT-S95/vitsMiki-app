@@ -50,6 +50,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/contrats/{contrat}/pdf', [PdfController::class, 'rapport'])->name('contrats.pdf');
 });
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/bitdefender', function () {
+        return view('bitdefender.index');
+    })->name('bitdefender.index');
+});
+
 use App\Http\Controllers\ParametreController;
 Route::middleware(['auth'])->group(function () {
     Route::get('/parametres', [ParametreController::class, 'index'])->name('parametres.index');

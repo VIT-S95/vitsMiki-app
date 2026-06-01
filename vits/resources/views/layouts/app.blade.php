@@ -54,7 +54,7 @@
             <i class="ti ti-tool"></i> Interventions
         </a>
 
-        <a href="#" class="nav-item">
+        <a href="{{ route('bitdefender.index') }}" class="nav-item {{ request()->routeIs('bitdefender.*') ? 'active' : '' }}">
             <i class="ti ti-shield"></i> Calcul Bitdefender
         </a>
 
