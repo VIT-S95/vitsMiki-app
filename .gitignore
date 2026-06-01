@@ -144,3 +144,6 @@ python_env/
 models/*
 .vscode
 files/*
+
+# Repo git imbriqué (Laravel app dans le dossier vits/)
+vits/vits/
