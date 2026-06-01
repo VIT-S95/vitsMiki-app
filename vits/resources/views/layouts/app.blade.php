@@ -87,6 +87,77 @@
         </div>
     </div>
     @livewireScripts
+
+    {{-- Modal avertissement déconnexion --}}
+    <div id="modal-inactivite" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;align-items:center;justify-content:center">
+        <div style="background:#fff;border-radius:12px;padding:2rem;max-width:380px;width:90%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.18)">
+            <div style="font-size:2rem;margin-bottom:0.75rem">⏱️</div>
+            <div style="font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:0.5rem">Session sur le point d'expirer</div>
+            <div style="font-size:13px;color:#888;margin-bottom:1.25rem">
+                Vous serez déconnecté dans <span id="compte-a-rebours" style="font-weight:700;color:#E8720C">2:00</span> en raison d'inactivité.
+            </div>
+            <button onclick="resetInactivite()" style="padding:9px 24px;background:#E8720C;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer">
+                Je suis là
+            </button>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        const TIMEOUT_MS  = {{ config('vits.session_heures', 8) }} * 60 * 60 * 1000;
+        const WARNING_MS  = 2 * 60 * 1000; // avertissement 2 min avant
+        let lastActivity  = Date.now();
+        let warningTimer  = null;
+        let logoutTimer   = null;
+        let countdownInterval = null;
+
+        function resetInactivite() {
+            lastActivity = Date.now();
+            document.getElementById('modal-inactivite').style.display = 'none';
+            clearTimeout(warningTimer);
+            clearTimeout(logoutTimer);
+            clearInterval(countdownInterval);
+            planifierTimers();
+        }
+        window.resetInactivite = resetInactivite;
+
+        function planifierTimers() {
+            warningTimer = setTimeout(afficherAvertissement, TIMEOUT_MS - WARNING_MS);
+            logoutTimer  = setTimeout(deconnecter, TIMEOUT_MS);
+        }
+
+        function afficherAvertissement() {
+            document.getElementById('modal-inactivite').style.display = 'flex';
+            let secondes = Math.floor(WARNING_MS / 1000);
+            document.getElementById('compte-a-rebours').textContent = formatCountdown(secondes);
+            countdownInterval = setInterval(function() {
+                secondes--;
+                if (secondes <= 0) {
+                    clearInterval(countdownInterval);
+                } else {
+                    document.getElementById('compte-a-rebours').textContent = formatCountdown(secondes);
+                }
+            }, 1000);
+        }
+
+        function formatCountdown(s) {
+            const m = Math.floor(s / 60);
+            const sec = s % 60;
+            return m + ':' + String(sec).padStart(2, '0');
+        }
+
+        function deconnecter() {
+            document.getElementById('logout-form').submit();
+        }
+
+        ['mousemove','keydown','click','scroll','touchstart'].forEach(function(e) {
+            document.addEventListener(e, resetInactivite, { passive: true });
+        });
+
+        planifierTimers();
+    })();
+    </script>
+
     <script>
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('table').forEach(function(table) {
