@@ -13,7 +13,7 @@ jobs:
         run: |
           curl -s --fail -k \
             -H "Authorization: cpanel ${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_TOKEN }}" \
-            "https://rast3245.odns.fr:2083/execute/VersionControl/update?repository=/home/rast3245/public_html/vits/vits-git" \
+            "https://rast3245.odns.fr:2083/execute/VersionControl/update?repository_root=/home/rast3245/public_html/vits/vits-git" \
             | tee /tmp/update_result.json
           cat /tmp/update_result.json | python3 -c "import sys,json; d=json.load(sys.stdin); sys.exit(0 if d.get('status')==1 else 1)"
 
@@ -21,6 +21,6 @@ jobs:
         run: |
           curl -s --fail -k \
             -H "Authorization: cpanel ${{ secrets.CPANEL_USER }}:${{ secrets.CPANEL_TOKEN }}" \
-            "https://rast3245.odns.fr:2083/execute/VersionControl/deploy?repository=/home/rast3245/public_html/vits/vits-git" \
+            "https://rast3245.odns.fr:2083/execute/VersionControl/deploy?repository_root=/home/rast3245/public_html/vits/vits-git" \
             | tee /tmp/deploy_result.json
           cat /tmp/deploy_result.json | python3 -c "import sys,json; d=json.load(sys.stdin); sys.exit(0 if d.get('status')==1 else 1)"
