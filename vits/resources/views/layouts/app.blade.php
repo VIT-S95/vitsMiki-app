@@ -83,9 +83,7 @@
         </div>
     </div>
     @livewireScripts
-</body>
-</html>
-<script>
+    <script>
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('table').forEach(function(table) {
         if (table.closest('form')) return;
@@ -173,4 +171,6 @@ function makeSortable(table) {
         });
     });
 }
-</script>
+    </script>
+</body>
+</html>
