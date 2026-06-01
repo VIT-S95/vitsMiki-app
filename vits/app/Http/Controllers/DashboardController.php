@@ -11,8 +11,8 @@ class DashboardController extends Controller
 {
     public function index(KizeoService $kizeo)
     {
-        $seuilEcheanceMois = config('vits.seuil_echeance_mois', 3);
-        $seuilHeuresPct    = config('vits.seuil_heures_pct', 80);
+        $seuilEcheanceMois = (int) config('vits.seuil_echeance_mois', 3);
+        $seuilHeuresPct    = (int) config('vits.seuil_heures_pct', 80);
         $totalClients      = Client::where('statut', 'actif')->count();
         $totalContrats     = Contrat::where('statut', 'en-cours')->count();
         $interventionsMois = Intervention::whereMonth('date_intervention', now()->month)
