@@ -80,11 +80,20 @@ Blade views under `resources/views/` follow the standard resource layout: `clien
 - Flash : compteur 1/3→2/3→3/3, 20min débitées au 3/3 seulement, repart à 1/3 après chaque 3/3
 - Tranches : site=1h, distance=20min, administrateur=durée libre (peut être négatif = crédit)
 
-## Déploiement Gandi
-- Branche production → Gandi, main → GitHub
-- git push gandi production:master puis ssh git.sd3.gpaas.net 'deploy vitsmanage.com.git'
-- ⚠️ Après chaque déploiement : remettre htdocs/index.php via SFTP (écrasé par Git)
-- htdocs/index.php utilise des chemins absolus vers /srv/data/web/vhosts/vitsmanage.com/vits/
+## Déploiement o2switch
+
+- **Hébergeur** : o2switch — cPanel user `rast3245`, IP `109.234.164.142`
+- **App path** : `~/public_html/vits/vits`
+- **DB** : MySQL `rast3245_vits`
+- **SSL** : Let's Encrypt actif sur `vitsmanage.com`
+- **SSH depuis Codespaces bloqué** (port 22 firewallé) — utiliser le Terminal cPanel
+
+**Workflow de déploiement :**
+1. `./deploy.sh "message"` (à la racine du repo) — commit + push GitHub
+2. Dans le Terminal cPanel o2switch :
+   ```
+   cd ~/public_html/vits/vits && git pull origin production && php artisan config:clear && php artisan cache:clear && php artisan view:clear
+   ```
 
 ## TODO prioritaires
 - Éplucher interventions client='-' 2023-2026 (erreurs saisie Kizeo)
