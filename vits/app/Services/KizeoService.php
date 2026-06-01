@@ -67,7 +67,7 @@ class KizeoService
             'details'  => [],
         ];
         Cache::put('kizeo_import_log', $log, now()->addDays(7));
-        Cache::put('kizeo_derniere_import', now(), now()->addDays(30));
+        Cache::put('kizeo_derniere_import', now()->format('Y-m-d H:i:s'), now()->addDays(30));
         Cache::forget('kizeo_non_lus');
 
         return [

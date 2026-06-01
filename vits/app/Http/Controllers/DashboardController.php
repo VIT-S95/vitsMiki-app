@@ -87,7 +87,8 @@ class DashboardController extends Controller
             + $clientsSansInfos + $clientsSansContrat + $contratsDepassement->count()
             + $periodesARegler->count();
 
-        $derniereImport = Cache::get('kizeo_derniere_import');
+        $derniereImportRaw = Cache::get('kizeo_derniere_import');
+        $derniereImport    = $derniereImportRaw ? \Carbon\Carbon::parse($derniereImportRaw) : null;
         $kizeoLog       = Cache::get('kizeo_import_log');
         $nonLus         = Cache::remember('kizeo_non_lus', 300, fn() => $kizeo->getNombreNonLus());
 
