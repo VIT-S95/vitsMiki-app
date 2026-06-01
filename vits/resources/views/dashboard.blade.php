@@ -35,15 +35,19 @@
         <div>
             <div style="font-size:13px;font-weight:500">Synchronisation Kizeo</div>
             <div style="font-size:12px;color:#888;margin-top:1px">
-                <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#166534;margin-right:4px;vertical-align:middle"></span>
-                Dernière import : <strong>jamais</strong>
+                <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:{{ $derniereImport ? '#166534' : '#aaa' }};margin-right:4px;vertical-align:middle"></span>
+                Dernière import :
+                <strong>{{ $derniereImport ? $derniereImport->locale('fr')->diffForHumans() : 'jamais' }}</strong>
+                @if($derniereImport)
+                    <span style="color:#bbb">({{ $derniereImport->format('d/m/Y H:i') }})</span>
+                @endif
             </div>
         </div>
     </div>
     <div style="display:flex;align-items:center;gap:16px">
-        <div style="text-align:center"><div style="font-size:16px;font-weight:500">0</div><div style="font-size:11px;color:#aaa">sur site</div></div>
+        <div style="text-align:center"><div style="font-size:16px;font-weight:500">{{ $nonLus['site'] }}</div><div style="font-size:11px;color:#aaa">sur site</div></div>
         <div style="width:1px;height:32px;background:#e0e0e0"></div>
-        <div style="text-align:center"><div style="font-size:16px;font-weight:500">0</div><div style="font-size:11px;color:#aaa">à distance</div></div>
+        <div style="text-align:center"><div style="font-size:16px;font-weight:500">{{ $nonLus['distance'] }}</div><div style="font-size:11px;color:#aaa">à distance</div></div>
     </div>
 </div>
 

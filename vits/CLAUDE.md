@@ -95,6 +95,13 @@ Blade views under `resources/views/` follow the standard resource layout: `clien
    cd ~/public_html/vits/vits && git pull origin production && php artisan config:clear && php artisan cache:clear && php artisan view:clear
    ```
 
+**Cron job Laravel (obligatoire sur o2switch) :**
+Dans cPanel → Cron Jobs, ajouter cette tâche toutes les minutes :
+```
+* * * * * /usr/local/bin/php /home/rast3245/public_html/vits/vits/artisan schedule:run >> /dev/null 2>&1
+```
+Sans ce cron, `kizeo:import` ne tourne jamais automatiquement même si la fréquence est configurée.
+
 ## TODO prioritaires
 - Éplucher interventions client='-' 2023-2026 (erreurs saisie Kizeo)
 - Script deploy.sh automatique

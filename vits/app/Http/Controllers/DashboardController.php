@@ -4,10 +4,12 @@ use App\Models\Client;
 use App\Models\Contrat;
 use App\Models\Intervention;
 use App\Models\PeriodeAjustement;
+use App\Services\KizeoService;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(KizeoService $kizeo)
     {
         $seuilEcheanceMois = config('vits.seuil_echeance_mois', 3);
         $seuilHeuresPct    = config('vits.seuil_heures_pct', 80);
@@ -85,11 +87,15 @@ class DashboardController extends Controller
             + $clientsSansInfos + $clientsSansContrat + $contratsDepassement->count()
             + $periodesARegler->count();
 
+        $derniereImport = Cache::get('kizeo_derniere_import');
+        $nonLus = Cache::remember('kizeo_non_lus', 300, fn() => $kizeo->getNombreNonLus());
+
         return view('dashboard', compact(
             'totalClients', 'totalContrats', 'interventionsMois', 'totalAlertes',
             'contratsExpires', 'contratsEcheance', 'interventionsNonTraitees',
             'contratsBrouillon', 'clientsSansInfos', 'clientsSansContrat',
-            'contratsDepassement', 'periodesARegler'
+            'contratsDepassement', 'periodesARegler',
+            'derniereImport', 'nonLus'
         ));
     }
 }

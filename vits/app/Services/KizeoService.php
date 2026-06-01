@@ -6,6 +6,7 @@ use App\Models\Contrat;
 use App\Models\Intervention;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 class KizeoService
@@ -36,6 +37,9 @@ class KizeoService
             $imported += $result['imported'];
             $errors   += $result['errors'];
         }
+
+        Cache::put('kizeo_derniere_import', now(), now()->addDays(30));
+        Cache::forget('kizeo_non_lus');
 
         return [
             'success'  => true,
