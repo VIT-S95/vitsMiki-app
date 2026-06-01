@@ -7,7 +7,7 @@ class KizeoController extends Controller
 {
     public function forcer(KizeoService $kizeo)
     {
-        $result = $kizeo->importerInterventions();
+        $result = $kizeo->importUnread();
         return redirect()->route('dashboard')
             ->with($result['success'] ? 'success' : 'error', $result['message']);
     }

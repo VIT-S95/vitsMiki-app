@@ -45,7 +45,7 @@
                 <button type="submit" id="btn-kizeo" title="Synchroniser maintenant"
                     style="width:32px;height:32px;border-radius:8px;background:#FFF3E6;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;padding:0;transition:background 0.2s"
                     onmouseover="this.style.background='#FFE0C2'" onmouseout="this.style.background='#FFF3E6'"
-                    onclick="this.innerHTML='⏳';this.disabled=true;localStorage.setItem('kizeo_syncing','1')">
+                    onclick="var f=this.closest('form');this.innerHTML='⏳';this.disabled=true;f.submit();">
                     ☁
                 </button>
             </form>

@@ -22,6 +22,11 @@ class KizeoService
         $this->apiKey = config('vits.kizeo_api_key');
     }
 
+    public function importUnread(): array
+    {
+        return $this->importerInterventions();
+    }
+
     public function importerInterventions(): array
     {
         $debut = now();
