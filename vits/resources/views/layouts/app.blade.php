@@ -54,10 +54,6 @@
             <i class="ti ti-tool"></i> Interventions
         </a>
 
-        <a href="#" class="nav-item">
-            <i class="ti ti-calculator"></i> Calcul prorata
-        </a>
-
         <div class="nav-section">Système</div>
         <a href="{{ route('parametres.index') }}" class="nav-item {{ request()->routeIs('parametres.*') ? 'active' : '' }}">
             <i class="ti ti-settings"></i> Paramètres
