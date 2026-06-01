@@ -8,6 +8,13 @@
     </div>
 </div>
 
+@if(session('success'))
+<div style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;border-radius:8px;padding:8px 14px;font-size:13px;margin-bottom:1rem">✓ {{ session('success') }}</div>
+@endif
+@if(session('error'))
+<div style="background:#fef2f2;border:1px solid #fecaca;color:#dc2626;border-radius:8px;padding:8px 14px;font-size:13px;margin-bottom:1rem">✗ {{ session('error') }}</div>
+@endif
+
 {{-- MÉTRIQUES --}}
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1rem">
     <div style="background:#f5f5f5;border-radius:8px;padding:0.875rem 1rem">
@@ -64,23 +71,28 @@
 
 <script>
 (function() {
-    const freqMs      = {{ config('vits.kizeo_frequence_min', 60) }} * 60 * 1000;
+    const freqMs       = {{ config('vits.kizeo_frequence_min', 60) }} * 60 * 1000;
     const lastImportTs = {{ $derniereImport ? $derniereImport->timestamp * 1000 : 'null' }};
+    const pageLoadTs   = Date.now();
     const el           = document.getElementById('kizeo-countdown');
     if (!el) return;
 
-    function tick() {
-        const now      = Date.now();
-        const nextSync = lastImportTs ? lastImportTs + freqMs : null;
-        const reste    = nextSync ? Math.max(0, nextSync - now) : 0;
+    // Référence : dernière import connue, ou heure de chargement de la page si jamais importé
+    const refTs  = lastImportTs || pageLoadTs;
+    const nextTs = refTs + freqMs;
 
-        if (!lastImportTs || reste === 0) {
-            el.textContent = 'imminent';
-            return;
-        }
+    function tick() {
+        const reste = Math.max(0, nextTs - Date.now());
         const m = Math.floor(reste / 60000);
         const s = Math.floor((reste % 60000) / 1000);
         el.textContent = m + 'min ' + String(s).padStart(2, '0') + 's';
+
+        // Quand le compteur tombe à 0, on repart du début (le cron est censé avoir tourné)
+        if (reste === 0) {
+            setTimeout(function() {
+                window.location.reload();
+            }, 3000);
+        }
     }
 
     tick();
