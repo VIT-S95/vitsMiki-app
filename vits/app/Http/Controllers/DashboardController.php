@@ -88,14 +88,15 @@ class DashboardController extends Controller
             + $periodesARegler->count();
 
         $derniereImport = Cache::get('kizeo_derniere_import');
-        $nonLus = Cache::remember('kizeo_non_lus', 300, fn() => $kizeo->getNombreNonLus());
+        $kizeoLog       = Cache::get('kizeo_import_log');
+        $nonLus         = Cache::remember('kizeo_non_lus', 300, fn() => $kizeo->getNombreNonLus());
 
         return view('dashboard', compact(
             'totalClients', 'totalContrats', 'interventionsMois', 'totalAlertes',
             'contratsExpires', 'contratsEcheance', 'interventionsNonTraitees',
             'contratsBrouillon', 'clientsSansInfos', 'clientsSansContrat',
             'contratsDepassement', 'periodesARegler',
-            'derniereImport', 'nonLus'
+            'derniereImport', 'kizeoLog', 'nonLus'
         ));
     }
 }

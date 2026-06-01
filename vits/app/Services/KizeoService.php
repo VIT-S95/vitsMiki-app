@@ -24,7 +24,20 @@ class KizeoService
 
     public function importerInterventions(): array
     {
+        $debut = now();
+
         if (!$this->apiKey) {
+            $log = [
+                'debut'    => $debut->format('H:i:s'),
+                'fin'      => now()->format('H:i:s'),
+                'statut'   => 'erreur',
+                'api_ok'   => false,
+                'imported' => 0,
+                'errors'   => 1,
+                'message'  => 'Clé API non configurée',
+                'details'  => [],
+            ];
+            Cache::put('kizeo_import_log', $log, now()->addDays(7));
             Log::warning('Kizeo : clé API non configurée');
             return ['success' => false, 'message' => 'Clé API non configurée'];
         }
@@ -38,6 +51,17 @@ class KizeoService
             $errors   += $result['errors'];
         }
 
+        $log = [
+            'debut'    => $debut->format('H:i:s'),
+            'fin'      => now()->format('H:i:s'),
+            'statut'   => $errors === 0 ? 'ok' : 'partiel',
+            'api_ok'   => true,
+            'imported' => $imported,
+            'errors'   => $errors,
+            'message'  => "{$imported} intervention(s) importée(s)" . ($errors > 0 ? ", {$errors} erreur(s)" : ''),
+            'details'  => [],
+        ];
+        Cache::put('kizeo_import_log', $log, now()->addDays(7));
         Cache::put('kizeo_derniere_import', now(), now()->addDays(30));
         Cache::forget('kizeo_non_lus');
 
@@ -45,7 +69,7 @@ class KizeoService
             'success'  => true,
             'imported' => $imported,
             'errors'   => $errors,
-            'message'  => "{$imported} intervention(s) importée(s)",
+            'message'  => $log['message'],
         ];
     }
 

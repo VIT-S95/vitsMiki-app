@@ -36,67 +36,130 @@
 </div>
 
 {{-- KIZEO --}}
-<div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:10px 16px;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between">
-    <div style="display:flex;align-items:center;gap:10px">
-        {{-- Bouton sync manuel --}}
-        <form method="POST" action="{{ route('kizeo.forcer') }}" id="form-kizeo">
-            @csrf
-            <button type="submit" id="btn-kizeo" title="Synchroniser maintenant"
-                style="width:32px;height:32px;border-radius:8px;background:#FFF3E6;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;padding:0;transition:background 0.2s"
-                onmouseover="this.style.background='#FFE0C2'" onmouseout="this.style.background='#FFF3E6'"
-                onclick="this.innerHTML='⏳';this.disabled=true">
-                ☁
-            </button>
-        </form>
-        <div>
-            <div style="font-size:13px;font-weight:500">Synchronisation Kizeo
-                <span style="font-size:11px;font-weight:400;color:#aaa;margin-left:6px">— prochaine dans <span id="kizeo-countdown" style="color:#E8720C;font-weight:600">…</span></span>
-            </div>
-            <div style="font-size:12px;color:#888;margin-top:1px">
-                <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:{{ $derniereImport ? '#166534' : '#aaa' }};margin-right:4px;vertical-align:middle"></span>
-                Dernière import :
-                <strong>{{ $derniereImport ? $derniereImport->locale('fr')->diffForHumans() : 'jamais' }}</strong>
-                @if($derniereImport)
-                    <span style="color:#bbb">({{ $derniereImport->format('d/m/Y H:i') }})</span>
-                @endif
+<div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;margin-bottom:1rem;overflow:hidden">
+    {{-- Barre principale --}}
+    <div style="padding:10px 16px;display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:10px">
+            <form method="POST" action="{{ route('kizeo.forcer') }}" id="form-kizeo">
+                @csrf
+                <button type="submit" id="btn-kizeo" title="Synchroniser maintenant"
+                    style="width:32px;height:32px;border-radius:8px;background:#FFF3E6;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;padding:0;transition:background 0.2s"
+                    onmouseover="this.style.background='#FFE0C2'" onmouseout="this.style.background='#FFF3E6'"
+                    onclick="this.innerHTML='⏳';this.disabled=true;localStorage.setItem('kizeo_syncing','1')">
+                    ☁
+                </button>
+            </form>
+            <div>
+                <div style="font-size:13px;font-weight:500">Synchronisation Kizeo
+                    <span style="font-size:11px;font-weight:400;color:#aaa;margin-left:6px">— prochaine dans <span id="kizeo-countdown" style="color:#E8720C;font-weight:600">…</span></span>
+                </div>
+                <div style="font-size:12px;color:#888;margin-top:1px">
+                    <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:{{ $derniereImport ? '#166534' : '#aaa' }};margin-right:4px;vertical-align:middle"></span>
+                    Dernière import :
+                    <strong>{{ $derniereImport ? $derniereImport->locale('fr')->diffForHumans() : 'jamais' }}</strong>
+                    @if($derniereImport)
+                        <span style="color:#bbb">({{ $derniereImport->format('d/m/Y H:i') }})</span>
+                    @endif
+                </div>
             </div>
         </div>
+        <div style="display:flex;align-items:center;gap:16px">
+            <div style="text-align:center"><div style="font-size:16px;font-weight:500">{{ $nonLus['site'] }}</div><div style="font-size:11px;color:#aaa">sur site</div></div>
+            <div style="width:1px;height:32px;background:#e0e0e0"></div>
+            <div style="text-align:center"><div style="font-size:16px;font-weight:500">{{ $nonLus['distance'] }}</div><div style="font-size:11px;color:#aaa">à distance</div></div>
+            <div style="width:1px;height:32px;background:#e0e0e0"></div>
+            <button onclick="document.getElementById('kizeo-log').style.display=document.getElementById('kizeo-log').style.display==='none'?'block':'none'"
+                style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:4px 8px;border-radius:6px;border:1px solid #eee">
+                Détails ▾
+            </button>
+        </div>
     </div>
-    <div style="display:flex;align-items:center;gap:16px">
-        <div style="text-align:center"><div style="font-size:16px;font-weight:500">{{ $nonLus['site'] }}</div><div style="font-size:11px;color:#aaa">sur site</div></div>
-        <div style="width:1px;height:32px;background:#e0e0e0"></div>
-        <div style="text-align:center"><div style="font-size:16px;font-weight:500">{{ $nonLus['distance'] }}</div><div style="font-size:11px;color:#aaa">à distance</div></div>
+
+    {{-- Panneau de contrôle --}}
+    <div id="kizeo-log" style="display:none;border-top:1px solid #f0f0f0;padding:12px 16px;background:#fafafa">
+        @if($kizeoLog)
+        @php
+            $icones = ['ok' => '✅', 'partiel' => '⚠️', 'erreur' => '❌'];
+            $icone  = $icones[$kizeoLog['statut']] ?? '❓';
+        @endphp
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;font-size:12px">
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid #eee">
+                <span>{{ $kizeoLog['api_ok'] ? '✅' : '❌' }}</span>
+                <div>
+                    <div style="font-weight:500;color:#555">Clé API</div>
+                    <div style="color:#aaa">{{ $kizeoLog['api_ok'] ? 'Configurée' : 'Non configurée' }}</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid #eee">
+                <span>🕐</span>
+                <div>
+                    <div style="font-weight:500;color:#555">Début import</div>
+                    <div style="color:#aaa">{{ $kizeoLog['debut'] }}</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid #eee">
+                <span>🕐</span>
+                <div>
+                    <div style="font-weight:500;color:#555">Fin import</div>
+                    <div style="color:#aaa">{{ $kizeoLog['fin'] }}</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid #eee">
+                <span>{{ $icone }}</span>
+                <div>
+                    <div style="font-weight:500;color:#555">Résultat</div>
+                    <div style="color:#aaa">{{ $kizeoLog['imported'] }} importée(s)@if($kizeoLog['errors'] > 0), {{ $kizeoLog['errors'] }} erreur(s)@endif</div>
+                </div>
+            </div>
+        </div>
+        @if(!empty($kizeoLog['details']))
+        <div style="margin-top:8px;font-size:11px;color:#aaa">
+            @foreach($kizeoLog['details'] as $detail)
+            <div>⚠ {{ $detail }}</div>
+            @endforeach
+        </div>
+        @endif
+        @else
+        <div style="font-size:12px;color:#bbb;text-align:center;padding:8px">Aucun import effectué depuis le démarrage du serveur.</div>
+        @endif
     </div>
 </div>
 
 <script>
 (function() {
+    const STORAGE_KEY  = 'kizeo_last_import_ts';
     const freqMs       = {{ config('vits.kizeo_frequence_min', 60) }} * 60 * 1000;
-    const lastImportTs = {{ $derniereImport ? $derniereImport->timestamp * 1000 : 'null' }};
-    const pageLoadTs   = Date.now();
+    const serverTs     = {{ $derniereImport ? $derniereImport->timestamp * 1000 : 'null' }};
     const el           = document.getElementById('kizeo-countdown');
     if (!el) return;
 
-    // Référence : dernière import connue, ou heure de chargement de la page si jamais importé
-    const refTs  = lastImportTs || pageLoadTs;
-    const nextTs = refTs + freqMs;
+    // Synchroniser localStorage avec la valeur serveur (la plus récente gagne)
+    const storedTs = parseInt(localStorage.getItem(STORAGE_KEY) || '0');
+    let lastTs = Math.max(storedTs, serverTs || 0);
+    if (serverTs) localStorage.setItem(STORAGE_KEY, serverTs);
+
+    // Si jamais importé, on ne peut pas faire de countdown fiable
+    if (!lastTs) {
+        el.textContent = '—';
+        return;
+    }
+
+    const nextTs = lastTs + freqMs;
 
     function tick() {
         const reste = Math.max(0, nextTs - Date.now());
         const m = Math.floor(reste / 60000);
         const s = Math.floor((reste % 60000) / 1000);
         el.textContent = m + 'min ' + String(s).padStart(2, '0') + 's';
-
-        // Quand le compteur tombe à 0, on repart du début (le cron est censé avoir tourné)
         if (reste === 0) {
-            setTimeout(function() {
-                window.location.reload();
-            }, 3000);
+            el.textContent = '⟳ en cours…';
+            clearInterval(timer);
+            setTimeout(() => window.location.reload(), 5000);
         }
     }
 
+    const timer = setInterval(tick, 1000);
     tick();
-    setInterval(tick, 1000);
 })();
 </script>
 
