@@ -54,13 +54,13 @@ class Contrat extends Model
         $dateFin  = $this->date_fin ?? now();
         $numero   = 1;
         while ($debut->lt($dateFin)) {
-            $fin = $debut->copy()->addMonths($this->duree_periode_mois)->subDay();
+            $fin = $debut->copy()->addMonths((int)$this->duree_periode_mois)->subDay();
             $periodes->push([
                 'numero' => $numero,
                 'debut'  => $debut->copy(),
                 'fin'    => $fin->copy(),
             ]);
-            $debut->addMonths($this->duree_periode_mois);
+            $debut->addMonths((int)$this->duree_periode_mois);
             $numero++;
             if ($numero > 100) break; // sécurité boucle infinie
         }
