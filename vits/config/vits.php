@@ -10,6 +10,6 @@ return [
     'seuil_echeance_mois' => 3,
     'seuil_heures_pct'    => 90,
     'kizeo_frequence_min' => 60,
-    'session_heures'      => 8,
+    'session_minutes'      => 30,
     'kizeo_api_key'       => env('KIZEO_API_KEY', ''),
 ];

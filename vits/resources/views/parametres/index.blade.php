@@ -40,11 +40,11 @@
     <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px">
         <div>
             <div style="font-size:13px;color:#1a1a1a">Expiration de session</div>
-            <div style="font-size:12px;color:#aaa;margin-top:2px">Duree d inactivite avant deconnexion automatique</div>
+            <div style="font-size:12px;color:#aaa;margin-top:2px">Durée d'inactivité avant déconnexion automatique (fermeture de l'app incluse)</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
-            <input type="number" name="session_heures" value="{{ $parametres['session_heures'] }}" min="1" max="24" style="width:60px;padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;text-align:center">
-            <span style="font-size:12px;color:#888">heures</span>
+            <input type="number" name="session_minutes" value="{{ $parametres['session_minutes'] }}" min="5" max="480" style="width:60px;padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;text-align:center">
+            <span style="font-size:12px;color:#888">min</span>
         </div>
     </div>
 </div>

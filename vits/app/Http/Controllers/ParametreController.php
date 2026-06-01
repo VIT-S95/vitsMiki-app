@@ -13,7 +13,7 @@ class ParametreController extends Controller
             'seuil_heures_pct'    => config('vits.seuil_heures_pct', 80),
             'kizeo_frequence_min' => config('vits.kizeo_frequence_min', 15),
             'kizeo_api_key'       => env('KIZEO_API_KEY', ''),
-            'session_heures'      => config('vits.session_heures', 8),
+            'session_minutes'      => config('vits.session_minutes', 8),
         ];
         $logoPath = file_exists(public_path('storage/logo/logo.png')) ? asset('storage/logo/logo.png') : null;
         return view('parametres.index', compact('motifs', 'parametres', 'logoPath'));
@@ -25,7 +25,7 @@ class ParametreController extends Controller
             'seuil_echeance_mois' => 'required|integer|min:1|max:12',
             'seuil_heures_pct'    => 'required|integer|min:50|max:100',
             'kizeo_frequence_min' => 'required|integer|min:5|max:120',
-            'session_heures'      => 'required|integer|min:1|max:24',
+            'session_minutes'      => 'required|integer|min:5|max:480',
             'logo'                => 'nullable|image|mimes:png,jpg,jpeg,svg|max:2048',
         ]);
 
@@ -61,7 +61,7 @@ class ParametreController extends Controller
         $config .= "    'seuil_echeance_mois' => " . (int)($request?->seuil_echeance_mois ?? config('vits.seuil_echeance_mois', 3)) . ",\n";
         $config .= "    'seuil_heures_pct'    => " . (int)($request?->seuil_heures_pct ?? config('vits.seuil_heures_pct', 80)) . ",\n";
         $config .= "    'kizeo_frequence_min' => " . (int)($request?->kizeo_frequence_min ?? config('vits.kizeo_frequence_min', 15)) . ",\n";
-        $config .= "    'session_heures'      => " . (int)($request?->session_heures ?? config('vits.session_heures', 8)) . ",\n";
+        $config .= "    'session_minutes'      => " . (int)($request?->session_minutes ?? config('vits.session_minutes', 8)) . ",\n";
         $config .= "    'kizeo_api_key'       => env('KIZEO_API_KEY', ''),\n";
         $config .= "];\n";
         file_put_contents(config_path('vits.php'), $config);

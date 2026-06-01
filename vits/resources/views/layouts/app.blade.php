@@ -104,15 +104,22 @@
 
     <script>
     (function() {
-        const TIMEOUT_MS  = {{ config('vits.session_heures', 8) }} * 60 * 60 * 1000;
-        const WARNING_MS  = 2 * 60 * 1000; // avertissement 2 min avant
-        let lastActivity  = Date.now();
+        const TIMEOUT_MS  = {{ config('vits.session_minutes', 30) }} * 60 * 1000;
+        const WARNING_MS  = Math.min(2 * 60 * 1000, TIMEOUT_MS * 0.2); // 2 min ou 20% si timeout court
+        const STORAGE_KEY = 'vits_last_activity';
         let warningTimer  = null;
         let logoutTimer   = null;
         let countdownInterval = null;
 
+        // Vérification au chargement : si l'app a été quittée et le timeout est dépassé
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored && (Date.now() - parseInt(stored)) >= TIMEOUT_MS) {
+            localStorage.removeItem(STORAGE_KEY);
+            document.getElementById('logout-form').submit();
+        }
+
         function resetInactivite() {
-            lastActivity = Date.now();
+            localStorage.setItem(STORAGE_KEY, Date.now());
             document.getElementById('modal-inactivite').style.display = 'none';
             clearTimeout(warningTimer);
             clearTimeout(logoutTimer);
@@ -132,11 +139,8 @@
             document.getElementById('compte-a-rebours').textContent = formatCountdown(secondes);
             countdownInterval = setInterval(function() {
                 secondes--;
-                if (secondes <= 0) {
-                    clearInterval(countdownInterval);
-                } else {
-                    document.getElementById('compte-a-rebours').textContent = formatCountdown(secondes);
-                }
+                if (secondes <= 0) clearInterval(countdownInterval);
+                else document.getElementById('compte-a-rebours').textContent = formatCountdown(secondes);
             }, 1000);
         }
 
@@ -147,14 +151,30 @@
         }
 
         function deconnecter() {
+            localStorage.removeItem(STORAGE_KEY);
             document.getElementById('logout-form').submit();
         }
+
+        // Enregistrer l'heure de départ quand on quitte / cache l'onglet
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                localStorage.setItem(STORAGE_KEY, Date.now());
+            } else {
+                // Retour sur l'app : vérifier si le timeout est dépassé
+                const ts = localStorage.getItem(STORAGE_KEY);
+                if (ts && (Date.now() - parseInt(ts)) >= TIMEOUT_MS) {
+                    deconnecter();
+                } else {
+                    resetInactivite();
+                }
+            }
+        });
 
         ['mousemove','keydown','click','scroll','touchstart'].forEach(function(e) {
             document.addEventListener(e, resetInactivite, { passive: true });
         });
 
-        planifierTimers();
+        resetInactivite();
     })();
     </script>
 
