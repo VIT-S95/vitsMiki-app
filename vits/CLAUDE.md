@@ -89,11 +89,15 @@ Blade views under `resources/views/` follow the standard resource layout: `clien
 - **SSH depuis Codespaces bloqué** (port 22 firewallé) — utiliser le Terminal cPanel
 
 **Workflow de déploiement :**
-1. `./deploy.sh "message"` (à la racine du repo) — commit + push GitHub
+1. Commit + push depuis Codespaces :
+   ```bash
+   git add <fichiers> && git commit -m "message" && git push origin production
+   ```
 2. Dans le Terminal cPanel o2switch :
+   ```bash
+   bash ~/public_html/vits/pull.sh
    ```
-   cd ~/public_html/vits/vits && git pull origin production && php artisan config:clear && php artisan cache:clear && php artisan view:clear
-   ```
+   Le script `pull.sh` (à la racine du repo, `~/public_html/vits/pull.sh`) fait : `git fetch` + `reset --hard` + `migrate --force` + clear caches.
 
 **Cron job Laravel (obligatoire sur o2switch) :**
 Dans cPanel → Cron Jobs, ajouter cette tâche toutes les minutes :
