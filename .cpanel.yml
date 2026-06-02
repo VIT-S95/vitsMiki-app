@@ -4,4 +4,5 @@ deployment:
     - export DEPLOYPATH=/home/rast3245/public_html/vits/vits/
     - /usr/bin/git -C /home/rast3245/public_html/vits/vits-git pull origin production
     - /bin/cp -R vits/. $DEPLOYPATH
+    - cd $DEPLOYPATH && composer install --no-dev --ignore-platform-req=ext-gd
     - cd $DEPLOYPATH && php artisan config:clear && php artisan cache:clear && php artisan view:clear
