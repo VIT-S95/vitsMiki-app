@@ -342,10 +342,13 @@ class KizeoService
 
         $statut = strtolower($record['intervention'] ?? '') === 'clôturée' ? 'traitee' : 'non-traitee';
 
+        $heureArrivee = trim($record['arrive'] ?? '');
+
         Intervention::create([
-            'contrat_id'        => $contrat->id,
-            'date_intervention' => $date,
-            'numero_bon_kizeo'  => $bonNumero,
+            'contrat_id'         => $contrat->id,
+            'date_intervention'  => $date,
+            'heure_intervention' => $heureArrivee ?: null,
+            'numero_bon_kizeo'   => $bonNumero,
             'type'              => $type,
             'duree_minutes'     => $estFlash ? 0 : $dureeMinutes,
             'statut'            => $statut,

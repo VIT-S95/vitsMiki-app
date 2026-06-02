@@ -9,7 +9,8 @@ class InterventionController extends Controller
     public function index(Request $request)
     {
         $query = Intervention::with(['contrat.client'])
-            ->orderBy('date_intervention', 'desc');
+            ->orderBy('date_intervention', 'desc')
+            ->orderBy('heure_intervention', 'desc');
 
         if ($request->search) {
             $query->whereHas('contrat.client', function($q) use ($request) {
