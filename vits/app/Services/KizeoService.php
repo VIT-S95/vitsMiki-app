@@ -134,7 +134,7 @@ class KizeoService
         foreach ([self::FORM_SITE, self::FORM_DISTANCE] as $formId) {
             $page = 0;
             do {
-                $response = Http::withHeaders([
+                $response = Http::timeout(60)->retry(2, 3000)->withHeaders([
                     'Authorization' => $this->apiKey,
                     'Content-Type'  => 'application/json',
                 ])->post("{$this->baseUrl}/forms/{$formId}/data/advanced", [
@@ -187,7 +187,7 @@ class KizeoService
         $errors   = 0;
 
         try {
-            $response = Http::withHeaders([
+            $response = Http::timeout(60)->retry(2, 3000)->withHeaders([
                 'Authorization' => $this->apiKey,
                 'Content-Type'  => 'application/json',
             ])->get("{$this->baseUrl}/forms/{$formId}/data/unread/vitsmiki/100");
@@ -212,7 +212,7 @@ class KizeoService
 
             if (!empty($data)) {
                 $ids = array_column($data, '_id');
-                Http::withHeaders([
+                Http::timeout(60)->retry(2, 3000)->withHeaders([
                     'Authorization' => $this->apiKey,
                     'Content-Type'  => 'application/json',
                 ])->post("{$this->baseUrl}/forms/{$formId}/markasreadbyaction/vitsmiki", [
@@ -367,7 +367,7 @@ class KizeoService
 
         foreach ([self::FORM_SITE => 'site', self::FORM_DISTANCE => 'distance'] as $formId => $type) {
             try {
-                $response = Http::withHeaders([
+                $response = Http::timeout(60)->retry(2, 3000)->withHeaders([
                     'Authorization' => $this->apiKey,
                 ])->get("{$this->baseUrl}/forms/{$formId}/data/unread/vitsmiki/1");
 
