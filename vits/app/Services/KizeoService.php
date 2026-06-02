@@ -344,11 +344,7 @@ class KizeoService
 
         $heureArrivee = isset($record['_answer_time']) ? substr($record['_answer_time'], 11, 5) : null;
 
-        $technicien = null;
-        $userName = $record['_user_name'] ?? '';
-        if (preg_match('/\(([^)]+)\)/', $userName, $m)) {
-            $technicien = trim($m[1]);
-        }
+        $technicien = trim($record['_first_name'] ?? '') ?: null;
 
         Intervention::create([
             'contrat_id'         => $contrat->id,

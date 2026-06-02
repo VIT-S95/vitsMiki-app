@@ -106,12 +106,7 @@ function setPeriode(val) {
             <tr onclick="window.location='{{ route('contrats.show', $intervention->contrat) }}'"
                 style="cursor:pointer;border-bottom:1px solid #f0f0f0;{{ $nonDed ? 'opacity:0.5' : '' }}"
                 onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='#fff'">
-                <td style="padding:10px 14px;color:#888">
-                    {{ $intervention->date_intervention->format('d/m/Y') }}
-                    @if($intervention->heure_intervention)
-                        <span style="font-size:11px;color:#bbb;display:block">{{ $intervention->heure_intervention }}</span>
-                    @endif
-                </td>
+                <td style="padding:10px 14px;color:#888">{{ $intervention->date_intervention->format('d/m/Y') }}{{ $intervention->heure_intervention ? ' '.$intervention->heure_intervention : '' }}</td>
                 <td style="padding:10px 14px;font-weight:500">{{ $intervention->contrat->client->nom_societe ?? '—' }}</td>
                 <td style="padding:10px 14px;color:#555;font-size:12px">{{ $intervention->technicien ?? '—' }}</td>
                 <td style="padding:10px 14px;font-family:monospace;font-size:11px;color:#888">{{ $intervention->numero_bon_kizeo ?? '—' }}</td>
