@@ -344,10 +344,17 @@ class KizeoService
 
         $heureArrivee = trim($record['arrive'] ?? '');
 
+        $technicien = null;
+        $userName = $record['_user_name'] ?? '';
+        if (preg_match('/\(([^)]+)\)/', $userName, $m)) {
+            $technicien = trim($m[1]);
+        }
+
         Intervention::create([
             'contrat_id'         => $contrat->id,
             'date_intervention'  => $date,
             'heure_intervention' => $heureArrivee ?: null,
+            'technicien'         => $technicien,
             'numero_bon_kizeo'   => $bonNumero,
             'type'              => $type,
             'duree_minutes'     => $estFlash ? 0 : $dureeMinutes,

@@ -39,6 +39,7 @@
             <tr>
                 <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">Date</th>
                 <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">Client</th>
+                <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">Technicien</th>
                 <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">N° Bon</th>
                 <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">Type</th>
                 <th style="padding:9px 14px;text-align:right;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">Durée</th>
@@ -58,6 +59,7 @@
                     @endif
                 </td>
                 <td style="padding:10px 14px;font-weight:500">{{ $intervention->contrat->client->nom_societe ?? '—' }}</td>
+                <td style="padding:10px 14px;color:#555;font-size:12px">{{ $intervention->technicien ?? '—' }}</td>
                 <td style="padding:10px 14px;font-family:monospace;font-size:11px;color:#888">{{ $intervention->numero_bon_kizeo ?? '—' }}</td>
                 <td style="padding:10px 14px">
                     @if($intervention->type === 'site')
@@ -82,7 +84,7 @@
                 </td>
             </tr>
             @empty
-            <tr><td colspan="6" style="padding:2rem;text-align:center;color:#aaa;font-size:13px">Aucune intervention trouvée</td></tr>
+            <tr><td colspan="7" style="padding:2rem;text-align:center;color:#aaa;font-size:13px">Aucune intervention trouvée</td></tr>
             @endforelse
         </tbody>
     </table>

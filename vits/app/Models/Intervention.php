@@ -6,7 +6,7 @@ class Intervention extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'contrat_id','date_intervention','heure_intervention','numero_bon_kizeo',
+        'contrat_id','date_intervention','heure_intervention','technicien','numero_bon_kizeo',
         'type','flash_numero','flash_consomme','duree_minutes',
         'motif','notes','statut','type_tri','source_kizeo','deductible'
     ];
