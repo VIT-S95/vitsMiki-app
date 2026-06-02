@@ -1,8 +1,12 @@
 <?php
-use Illuminate\Support\Facades\Cache;
+use App\Models\Setting;
 use Illuminate\Support\Facades\Schedule;
 
-$freqMin = (int) Cache::get('vits.kizeo_frequence_min', config('vits.kizeo_frequence_min', 60));
+try {
+    $freqMin = (int) Setting::get('kizeo_frequence_min', config('vits.kizeo_frequence_min', 60));
+} catch (\Throwable) {
+    $freqMin = (int) config('vits.kizeo_frequence_min', 60);
+}
 Schedule::command('kizeo:import')
     ->cron("*/{$freqMin} * * * *")
     ->withoutOverlapping($freqMin);
