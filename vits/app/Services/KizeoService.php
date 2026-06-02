@@ -4,6 +4,7 @@ namespace App\Services;
 use App\Models\Client;
 use App\Models\Contrat;
 use App\Models\Intervention;
+use App\Models\KizeoIgnore;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
@@ -299,8 +300,11 @@ class KizeoService
         }
 
         if (!$contrat) {
+            if (KizeoIgnore::where('kizeo_id', $bonNumero)->where('form_id', $formId)->exists()) {
+                return 'skipped';
+            }
             Log::warning("Kizeo : pas de contrat pour '{$nomClient}' - bon {$bonNumero}");
-            $this->marquerLu($formId, $bonNumero);
+            KizeoIgnore::create(['kizeo_id' => $bonNumero, 'form_id' => $formId, 'raison' => 'sans_contrat']);
             return 'sans_contrat';
         }
 
@@ -355,21 +359,6 @@ class KizeoService
         }
 
         return 'imported';
-    }
-
-    protected function marquerLu(string $formId, string $kizeoId): void
-    {
-        try {
-            $response = Http::timeout(60)->retry(2, 3000)->withHeaders([
-                'Authorization' => $this->apiKey,
-                'Content-Type'  => 'application/json',
-            ])->post("{$this->baseUrl}/forms/{$formId}/markasreadbyaction/vitsmiki", [
-                'data_ids' => [$kizeoId],
-            ]);
-            Log::info("Kizeo marquerLu: formId={$formId} id={$kizeoId} status={$response->status()} body={$response->body()}");
-        } catch (\Exception $e) {
-            Log::error("Kizeo marquerLu erreur (id {$kizeoId}): " . $e->getMessage());
-        }
     }
 
     public function parserDuree(string $duree): int
