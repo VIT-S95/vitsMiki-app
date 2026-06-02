@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
+img { border: 0 !important; outline: 0 !important; }
 body { font-family: Arial, sans-serif; font-size: 12px; color: #2C2C2A; margin: 20px 25px; }
 .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; border-bottom: 2px solid #E8720C; margin-bottom: 20px; }
 .logo-badge { background: #E8720C; color: #fff; font-size: 16px; font-weight: bold; padding: 5px 14px; border-radius: 4px; display: inline-block; }
@@ -54,7 +55,7 @@ tr { page-break-inside: avoid; }
 <div class="header">
     <div>
         @if(file_exists(public_path('storage/logo/logo.png')))
-        <img src="{{ public_path('storage/logo/logo.png') }}" style="max-height:40px;width:auto;border:none;outline:none;display:block;margin-bottom:4px">
+        <img src="{{ public_path('storage/logo/logo.png') }}" style="max-height:40px;width:auto;border:0;outline:0;box-shadow:none;display:block;margin-bottom:4px">
         @else
         <div class="logo-badge">VIT-S</div>
         @endif
