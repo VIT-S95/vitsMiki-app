@@ -53,16 +53,11 @@ tr { page-break-inside: avoid; }
 
 <div class="header">
     <div>
-        <table style="border:none;border-collapse:collapse;margin-bottom:4px">
-            <tr>
-                <td style="padding:0;padding-right:10px;vertical-align:middle">
-                    <img src="{{ public_path('storage/logo/logo.png') }}" style="max-height:40px;width:auto">
-                </td>
-                <td style="padding:0;vertical-align:middle">
-                    <div class="logo-badge">VIT-S</div>
-                </td>
-            </tr>
-        </table>
+        @if(file_exists(public_path('storage/logo/logo.png')))
+        <img src="{{ public_path('storage/logo/logo.png') }}" style="max-height:40px;width:auto;border:none;outline:none;display:block;margin-bottom:4px">
+        @else
+        <div class="logo-badge">VIT-S</div>
+        @endif
         <div class="logo-sub">Services informatiques — Infogérance</div>
     </div>
     <div class="header-right">
