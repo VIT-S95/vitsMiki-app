@@ -56,6 +56,12 @@
         <option value="flash"          {{ request('type')=='flash'?'selected':'' }}>Flash</option>
         <option value="administrateur" {{ request('type')=='administrateur'?'selected':'' }}>Administrateur</option>
     </select>
+    <select name="technicien" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;min-width:130px">
+        <option value="">Tous les techniciens</option>
+        @foreach($techniciens as $t)
+            <option value="{{ $t }}" {{ request('technicien') === $t ? 'selected' : '' }}>{{ $t }}</option>
+        @endforeach
+    </select>
     <select name="deductible" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;min-width:100px">
         <option value="">Toutes</option>
         <option value="1" {{ request('deductible')==='1'?'selected':'' }}>Déductibles</option>
@@ -67,7 +73,7 @@
         <option value="50"  {{ request('per_page',20)==50?'selected':'' }}>50 / page</option>
         <option value="100" {{ request('per_page',20)==100?'selected':'' }}>100 / page</option>
     </select>
-    @if(request('search') || request('type') || request('deductible') || request('periode'))
+    @if(request('search') || request('type') || request('technicien') || request('deductible') || request('periode'))
         <a href="{{ route('interventions.index') }}" style="font-size:13px;color:#888;padding:7px 0">Effacer</a>
     @endif
 </div>

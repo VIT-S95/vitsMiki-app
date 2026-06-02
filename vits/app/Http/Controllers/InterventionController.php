@@ -8,6 +8,9 @@ class InterventionController extends Controller
 {
     public function index(Request $request)
     {
+        $techniciens = Intervention::whereNotNull('technicien')
+            ->distinct()->orderBy('technicien')->pluck('technicien');
+
         $query = Intervention::with(['contrat.client'])
             ->orderBy('date_intervention', 'desc')
             ->orderBy('heure_intervention', 'desc');
@@ -23,6 +26,7 @@ class InterventionController extends Controller
         if ($request->deductible !== null && $request->deductible !== '') {
             $query->where('deductible', $request->deductible === '1');
         }
+        $query->when($request->technicien, fn($q) => $q->where('technicien', $request->technicien));
 
         match ($request->periode) {
             'today'    => $query->whereDate('date_intervention', today()),
@@ -41,7 +45,7 @@ class InterventionController extends Controller
         };
 
         $interventions = $query->paginate((int)request('per_page', 20))->withQueryString();
-        return view('interventions.index', compact('interventions'));
+        return view('interventions.index', compact('interventions', 'techniciens'));
     }
 
         public function create(Request $request)
