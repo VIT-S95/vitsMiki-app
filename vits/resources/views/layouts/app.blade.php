@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIT-S — @yield('title', 'Application interne')</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
@@ -28,7 +29,7 @@
         .content{padding:1.5rem}
     </style>
 </head>
-<body>
+<body data-page="{{ request()->route()?->getName() ?? '' }}">
     <div class="sidebar">
         <div class="sidebar-logo">
             @php $logoPath = file_exists(public_path('storage/logo/logo.png')) ? asset('storage/logo/logo.png') : null; @endphp
@@ -179,93 +180,149 @@
     </script>
 
     <script>
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('table').forEach(function(table) {
-        if (table.closest('form')) return;
-        makeResizable(table);
-        makeSortable(table);
-    });
-});
+(function() {
+    const CSRF   = document.querySelector('meta[name="csrf-token"]')?.content;
+    const PAGE   = document.body.dataset.page || '';
+    let saveTimer = null;
 
-function makeResizable(table) {
-    table.querySelectorAll('th').forEach(function(th) {
-        th.style.position = 'relative';
-        const resizer = document.createElement('div');
-        resizer.style.cssText = 'position:absolute;right:0;top:20%;bottom:20%;width:4px;cursor:col-resize;user-select:none;z-index:2;background:#ddd;border-radius:2px;opacity:0.6';
-        resizer.addEventListener('mousedown', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const startX = e.pageX;
-            const startW = th.offsetWidth;
-            function onMove(e) { th.style.width = Math.max(50, startW + e.pageX - startX) + 'px'; }
-            function onUp() { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); }
-            document.addEventListener('mousemove', onMove);
-            document.addEventListener('mouseup', onUp);
-        });
-        th.appendChild(resizer);
-    });
-}
-
-function makeSortable(table) {
-    const thead = table.querySelector('thead tr');
-    if (!thead) return;
-    const ths = Array.from(thead.querySelectorAll('th'));
-    let dragSrc = null;
-    let isDragging = false;
-
-    ths.forEach(function(th, idx) {
-        if (!th.textContent.trim()) return;
-
-        // Poignée de drag séparée
-        const handle = document.createElement('span');
-        handle.innerHTML = '⠿';
-        handle.title = 'Déplacer la colonne';
-        handle.style.cssText = 'cursor:grab;color:#ccc;font-size:12px;margin-left:4px;user-select:none;display:inline-block';
-        handle.draggable = true;
-        th.appendChild(handle);
-
-        handle.addEventListener('dragstart', function(e) {
-            dragSrc = idx;
-            isDragging = true;
-            th.style.opacity = '0.5';
-            e.dataTransfer.effectAllowed = 'move';
-        });
-
-        handle.addEventListener('dragend', function() {
-            th.style.opacity = '1';
-            isDragging = false;
-            dragSrc = null;
-        });
-
-        th.addEventListener('dragover', function(e) {
-            if (!isDragging) return;
-            e.preventDefault();
-            th.style.background = '#fff0e0';
-        });
-
-        th.addEventListener('dragleave', function() {
-            th.style.background = '';
-        });
-
-        th.addEventListener('drop', function(e) {
-            if (!isDragging) return;
-            e.preventDefault();
-            th.style.background = '';
-            if (dragSrc === null || dragSrc === idx) return;
-            const src = dragSrc;
-            table.querySelectorAll('tr').forEach(function(row) {
-                const cells = Array.from(row.children);
-                if (cells.length <= Math.max(src, idx)) return;
-                const dragCell = cells[src];
-                const targetCell = cells[idx];
-                if (src < idx) row.insertBefore(dragCell, targetCell.nextSibling);
-                else row.insertBefore(dragCell, targetCell);
+    function schedulePreferenceSave(table) {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(function() {
+            const key   = PAGE + '.' + (table.dataset.tableId || 'table0');
+            const ths   = Array.from(table.querySelectorAll('thead th'));
+            const widths = {}, order = [];
+            ths.forEach(function(th) {
+                const orig = th.dataset.origCol;
+                if (orig === undefined) return;
+                order.push(parseInt(orig));
+                if (th.style.width) widths[orig] = th.style.width;
             });
-            dragSrc = null;
-            isDragging = false;
+            fetch('/preferences', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+                body: JSON.stringify({ page: key, preferences: { widths, order } })
+            });
+        }, 500);
+    }
+
+    function applyPreferences(table, prefs) {
+        if (!prefs) return;
+        const ths = Array.from(table.querySelectorAll('thead th'));
+
+        if (prefs.widths) {
+            ths.forEach(function(th) {
+                const w = prefs.widths[th.dataset.origCol];
+                if (w) th.style.width = w;
+            });
+        }
+
+        if (prefs.order && prefs.order.length === ths.length) {
+            const origToPos = {};
+            ths.forEach(function(th, pos) { origToPos[parseInt(th.dataset.origCol)] = pos; });
+            const reorderMap = prefs.order.map(function(orig) { return origToPos[orig]; })
+                                          .filter(function(p) { return p !== undefined; });
+            if (reorderMap.length === ths.length) {
+                table.querySelectorAll('tr').forEach(function(row) {
+                    const cells = Array.from(row.children);
+                    if (cells.length < reorderMap.length) return;
+                    reorderMap.forEach(function(fromPos) { row.appendChild(cells[fromPos]); });
+                });
+            }
+        }
+    }
+
+    function loadPreferences(table) {
+        const key = PAGE + '.' + (table.dataset.tableId || 'table0');
+        fetch('/preferences/' + encodeURIComponent(key))
+            .then(function(r) { return r.ok ? r.json() : null; })
+            .then(function(data) {
+                if (data && data.preferences) applyPreferences(table, data.preferences);
+            })
+            .catch(function() {});
+    }
+
+    function makeResizable(table) {
+        table.querySelectorAll('th').forEach(function(th) {
+            th.style.position = 'relative';
+            const resizer = document.createElement('div');
+            resizer.style.cssText = 'position:absolute;right:0;top:20%;bottom:20%;width:4px;cursor:col-resize;user-select:none;z-index:2;background:#ddd;border-radius:2px;opacity:0.6';
+            resizer.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const startX = e.pageX, startW = th.offsetWidth;
+                function onMove(e) { th.style.width = Math.max(50, startW + e.pageX - startX) + 'px'; }
+                function onUp() {
+                    document.removeEventListener('mousemove', onMove);
+                    document.removeEventListener('mouseup', onUp);
+                    schedulePreferenceSave(table);
+                }
+                document.addEventListener('mousemove', onMove);
+                document.addEventListener('mouseup', onUp);
+            });
+            th.appendChild(resizer);
+        });
+    }
+
+    function makeSortable(table) {
+        const thead = table.querySelector('thead tr');
+        if (!thead) return;
+        const ths = Array.from(thead.querySelectorAll('th'));
+        let dragSrc = null, isDragging = false;
+
+        ths.forEach(function(th, idx) {
+            if (!th.textContent.trim()) return;
+            const handle = document.createElement('span');
+            handle.innerHTML = '⠿';
+            handle.title = 'Déplacer la colonne';
+            handle.style.cssText = 'cursor:grab;color:#ccc;font-size:12px;margin-left:4px;user-select:none;display:inline-block';
+            handle.draggable = true;
+            th.appendChild(handle);
+
+            handle.addEventListener('dragstart', function(e) {
+                dragSrc = idx; isDragging = true;
+                th.style.opacity = '0.5';
+                e.dataTransfer.effectAllowed = 'move';
+            });
+            handle.addEventListener('dragend', function() {
+                th.style.opacity = '1'; isDragging = false; dragSrc = null;
+            });
+            th.addEventListener('dragover', function(e) {
+                if (!isDragging) return;
+                e.preventDefault(); th.style.background = '#fff0e0';
+            });
+            th.addEventListener('dragleave', function() { th.style.background = ''; });
+            th.addEventListener('drop', function(e) {
+                if (!isDragging) return;
+                e.preventDefault(); th.style.background = '';
+                if (dragSrc === null || dragSrc === idx) return;
+                const src = dragSrc;
+                table.querySelectorAll('tr').forEach(function(row) {
+                    const cells = Array.from(row.children);
+                    if (cells.length <= Math.max(src, idx)) return;
+                    const dragCell = cells[src], targetCell = cells[idx];
+                    if (src < idx) row.insertBefore(dragCell, targetCell.nextSibling);
+                    else row.insertBefore(dragCell, targetCell);
+                });
+                dragSrc = null; isDragging = false;
+                schedulePreferenceSave(table);
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        let tableIndex = 0;
+        document.querySelectorAll('table').forEach(function(table) {
+            if (table.closest('form')) return;
+            table.dataset.tableId = 'table' + tableIndex++;
+            table.querySelectorAll('thead th').forEach(function(th, i) {
+                th.dataset.origCol = i;
+            });
+            makeResizable(table);
+            makeSortable(table);
+            loadPreferences(table);
         });
     });
-}
+})();
     </script>
 </body>
 </html>

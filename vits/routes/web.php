@@ -56,6 +56,12 @@ Route::middleware(['auth'])->group(function () {
     })->name('bitdefender.index');
 });
 
+use App\Http\Controllers\UserPreferenceController;
+Route::middleware(['auth'])->group(function () {
+    Route::post('/preferences', [UserPreferenceController::class, 'save'])->name('preferences.save');
+    Route::get('/preferences/{page}', [UserPreferenceController::class, 'show'])->name('preferences.show');
+});
+
 use App\Http\Controllers\ParametreController;
 Route::middleware(['auth'])->group(function () {
     Route::get('/parametres', [ParametreController::class, 'index'])->name('parametres.index');
