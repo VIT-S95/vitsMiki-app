@@ -357,17 +357,18 @@ class KizeoService
         return 'imported';
     }
 
-    protected function marquerLu(string $formId, string $bonNumero): void
+    protected function marquerLu(string $formId, string $kizeoId): void
     {
         try {
-            Http::timeout(60)->retry(2, 3000)->withHeaders([
+            $response = Http::timeout(60)->retry(2, 3000)->withHeaders([
                 'Authorization' => $this->apiKey,
                 'Content-Type'  => 'application/json',
             ])->post("{$this->baseUrl}/forms/{$formId}/markasreadbyaction/vitsmiki", [
-                'data_ids' => [$bonNumero],
+                'data_ids' => [$kizeoId],
             ]);
+            Log::info("Kizeo marquerLu: formId={$formId} id={$kizeoId} status={$response->status()} body={$response->body()}");
         } catch (\Exception $e) {
-            Log::error("Kizeo marquerLu erreur (bon {$bonNumero}): " . $e->getMessage());
+            Log::error("Kizeo marquerLu erreur (id {$kizeoId}): " . $e->getMessage());
         }
     }
 
