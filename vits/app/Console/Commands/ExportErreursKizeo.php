@@ -7,12 +7,12 @@ use Illuminate\Console\Command;
 class ExportErreursKizeo extends Command
 {
     protected $signature   = 'kizeo:export-erreurs';
-    protected $description = 'Extrait les erreurs/warnings Kizeo du log Laravel et les exporte groupés';
+    protected $description = 'Extrait les erreurs/warnings Kizeo du log Laravel et les exporte en CSV';
 
     public function handle(): int
     {
         $logPath    = storage_path('logs/laravel.log');
-        $outputPath = storage_path('logs/kizeo_erreurs.txt');
+        $outputPath = storage_path('logs/kizeo_erreurs.csv');
 
         if (! file_exists($logPath)) {
             $this->error("Fichier log introuvable : {$logPath}");
@@ -21,7 +21,7 @@ class ExportErreursKizeo extends Command
 
         $logLines = file($logPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         $pattern  = '/^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\] \w+\.(ERROR|WARNING): (.+)/i';
-        $groups   = [];
+        $rows     = [];
 
         foreach ($logLines as $line) {
             if (stripos($line, 'kizeo') === false) {
@@ -36,53 +36,19 @@ class ExportErreursKizeo extends Command
             // Supprimer le contexte JSON en fin de ligne
             $message = trim(preg_replace('/\s*\{.*$/s', '', $message));
 
-            // Clé de regroupement : normaliser les valeurs variables
-            $key = preg_replace('/\b\d{5,}\b/', '{N}', $message);   // n° de bons, IDs
-            $key = preg_replace("/'[^']+'/", "'{X}'", $key);         // noms clients entre guillemets
-            $key = preg_replace('/\d{4}-\d{2}-\d{2}/', '{DATE}', $key); // dates
-
-            $groups[$key][] = [
-                'datetime' => $datetime,
-                'level'    => $level,
-                'message'  => $message,
-            ];
+            $rows[] = [$datetime, $level, $message];
         }
 
-        // Trier par nombre d'occurrences décroissant
-        uasort($groups, fn($a, $b) => count($b) - count($a));
-
-        $totalLignes = array_sum(array_map('count', $groups));
-        $totalTypes  = count($groups);
-
-        $out   = [];
-        $out[] = str_repeat('=', 60);
-        $out[] = 'EXPORT ERREURS KIZEO';
-        $out[] = 'Généré le : ' . now()->format('d/m/Y à H:i:s');
-        $out[] = "Source    : {$logPath}";
-        $out[] = "Résultat  : {$totalLignes} ligne(s) — {$totalTypes} type(s) distincts";
-        $out[] = str_repeat('=', 60);
-
-        if (empty($groups)) {
-            $out[] = '';
-            $out[] = 'Aucune ligne ERROR ou WARNING contenant "Kizeo" trouvée.';
+        $handle = fopen($outputPath, 'w');
+        fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF)); // BOM UTF-8 pour Excel
+        fputcsv($handle, ['date', 'niveau', 'message'], ';');
+        foreach ($rows as $row) {
+            fputcsv($handle, $row, ';');
         }
+        fclose($handle);
 
-        foreach ($groups as $key => $occurrences) {
-            $count  = count($occurrences);
-            $levels = implode('/', array_unique(array_column($occurrences, 'level')));
-            $out[]  = '';
-            $out[]  = "[{$levels}] {$count}x — {$key}";
-            $out[]  = str_repeat('-', 50);
-            foreach ($occurrences as $occ) {
-                $out[] = "  {$occ['datetime']}  {$occ['message']}";
-            }
-        }
-
-        $out[] = '';
-
-        file_put_contents($outputPath, implode("\n", $out));
-
-        $this->info("Export terminé : {$totalLignes} ligne(s) en {$totalTypes} type(s).");
+        $count = count($rows);
+        $this->info("{$count} ligne(s) exportée(s).");
         $this->line("  → {$outputPath}");
 
         return Command::SUCCESS;
