@@ -15,19 +15,33 @@
         .sidebar-logo{padding:0.75rem 1rem 1.25rem;border-bottom:1px solid #e0e0e0;margin-bottom:0.5rem}
         .logo-badge{background:#E8720C;color:#fff;font-size:13px;font-weight:500;padding:3px 10px;border-radius:6px;display:inline-block}
         .logo-sub{font-size:11px;color:#aaa;margin-top:4px}
-        .nav-section{font-size:10px;color:#aaa;padding:1rem 1rem 0.25rem;text-transform:uppercase;letter-spacing:0.5px}
-        .nav-item{display:flex;align-items:center;gap:9px;padding:8px 1rem;font-size:13px;color:#666;cursor:pointer;border-left:2px solid transparent;text-decoration:none}
+        /* -- Sidebar nav -- */
+        .nav-section{font-size:10px;color:#bbb;padding:1.1rem 1rem 0.3rem;text-transform:uppercase;letter-spacing:0.6px;font-weight:600}
+        /* Thème */
+        .theme-section{margin:1px 8px;border-radius:8px}
+        .theme-header{display:flex;align-items:center;gap:10px;padding:6px 8px;cursor:pointer;user-select:none;border-radius:8px}
+        .theme-header:hover{background:#f5f5f5}
+        .theme-section.open>.theme-header{background:#f5f5f5}
+        .theme-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+        .theme-icon-primary{background:#E8720C;color:#fff}
+        .theme-icon-neutral{background:#f0f0f0;border:1px solid #e4e4e4;color:#888}
+        .theme-section.open.has-active>.theme-header>.theme-icon-neutral{background:#E8720C;color:#fff;border-color:#E8720C}
+        .theme-label{font-size:12px;font-weight:500;color:#444;flex:1}
+        .theme-arrow{font-size:14px;color:#ccc;transition:transform 0.18s;margin-left:auto}
+        .theme-section.open>.theme-header>.theme-arrow{transform:rotate(90deg)}
+        .theme-items{display:none;padding-bottom:4px}
+        .theme-section.open>.theme-items{display:block}
+        /* Sous-menu */
+        .nav-sub{display:flex;align-items:center;gap:8px;padding:5px 8px 5px 46px;font-size:12px;color:#888;text-decoration:none;border-radius:6px;margin:1px 0}
+        .nav-sub:hover{background:#f5f5f5;color:#333}
+        .nav-sub.active{background:#fff8f3;color:#E8720C;font-weight:500}
+        .nav-sub i{font-size:14px;flex-shrink:0}
+        .nav-sub-disabled{display:flex;align-items:center;gap:8px;padding:5px 8px 5px 46px;font-size:12px;color:#ccc}
+        /* Système */
+        .nav-item{display:flex;align-items:center;gap:9px;padding:7px 12px;font-size:12px;color:#666;text-decoration:none;border-radius:6px;margin:1px 8px}
         .nav-item:hover{background:#f5f5f5;color:#1a1a1a}
-        .nav-item.active{color:#E8720C;border-left:2px solid #E8720C;background:#fff8f3;font-weight:500}
-        .nav-item i{font-size:16px}
-        .theme-header{display:flex;align-items:center;justify-content:space-between;padding:8px 1rem;font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;user-select:none}
-        .theme-header:hover{color:#777}
-        .theme-header.has-active{color:#E8720C}
-        .theme-arrow{font-size:10px;transition:transform 0.2s}
-        .theme-section .theme-items{display:none}
-        .theme-section.open .theme-items{display:block}
-        .theme-section.open .theme-arrow{transform:rotate(180deg)}
-        .nav-item-disabled{display:flex;align-items:center;gap:9px;padding:8px 1rem;font-size:13px;color:#ccc;border-left:2px solid transparent}
+        .nav-item.active{color:#E8720C;background:#fff8f3;font-weight:500}
+        .nav-item i{font-size:15px}
         .sidebar-bottom{margin-top:auto;padding:0.75rem 1rem;border-top:1px solid #e0e0e0}
         .user-row{display:flex;align-items:center;gap:8px}
         .avatar{width:30px;height:30px;border-radius:50%;background:#E8720C;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex-shrink:0}
@@ -58,22 +72,23 @@
 
         {{-- THÈME INTERVENTIONS --}}
         @if($user->hasTheme('interventions'))
-        <div class="theme-section {{ $inInterventions ? 'open' : '' }}">
-            <div class="theme-header {{ $inInterventions ? 'has-active' : '' }}" onclick="this.closest('.theme-section').classList.toggle('open')">
-                <span><i class="ti ti-tool" style="font-size:12px;margin-right:4px"></i>Interventions</span>
-                <span class="theme-arrow">▾</span>
+        <div class="theme-section {{ $inInterventions ? 'open has-active' : '' }}">
+            <div class="theme-header" onclick="this.closest('.theme-section').classList.toggle('open')">
+                <span class="theme-icon theme-icon-primary"><i class="ti ti-tool"></i></span>
+                <span class="theme-label">Interventions</span>
+                <i class="ti ti-chevron-right theme-arrow"></i>
             </div>
             <div class="theme-items">
-                <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                <a href="{{ route('dashboard') }}" class="nav-sub {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     <i class="ti ti-layout-dashboard"></i> Synthèse
                 </a>
-                <a href="{{ route('clients.index') }}" class="nav-item {{ request()->routeIs('clients.*') ? 'active' : '' }}">
+                <a href="{{ route('clients.index') }}" class="nav-sub {{ request()->routeIs('clients.*') ? 'active' : '' }}">
                     <i class="ti ti-users"></i> Clients
                 </a>
-                <a href="{{ route('contrats.index') }}" class="nav-item {{ request()->routeIs('contrats.*') ? 'active' : '' }}">
+                <a href="{{ route('contrats.index') }}" class="nav-sub {{ request()->routeIs('contrats.*') ? 'active' : '' }}">
                     <i class="ti ti-file-text"></i> Contrats
                 </a>
-                <a href="{{ route('interventions.index') }}" class="nav-item {{ request()->routeIs('interventions.*') ? 'active' : '' }}">
+                <a href="{{ route('interventions.index') }}" class="nav-sub {{ request()->routeIs('interventions.*') ? 'active' : '' }}">
                     <i class="ti ti-list"></i> Interventions
                 </a>
             </div>
@@ -82,13 +97,14 @@
 
         {{-- THÈME CALCULS --}}
         @if($user->hasTheme('calculs'))
-        <div class="theme-section {{ $inCalculs ? 'open' : '' }}">
-            <div class="theme-header {{ $inCalculs ? 'has-active' : '' }}" onclick="this.closest('.theme-section').classList.toggle('open')">
-                <span><i class="ti ti-calculator" style="font-size:12px;margin-right:4px"></i>Calculs</span>
-                <span class="theme-arrow">▾</span>
+        <div class="theme-section {{ $inCalculs ? 'open has-active' : '' }}">
+            <div class="theme-header" onclick="this.closest('.theme-section').classList.toggle('open')">
+                <span class="theme-icon theme-icon-neutral"><i class="ti ti-calculator"></i></span>
+                <span class="theme-label">Calculs</span>
+                <i class="ti ti-chevron-right theme-arrow"></i>
             </div>
             <div class="theme-items">
-                <a href="{{ route('bitdefender.index') }}" class="nav-item {{ request()->routeIs('bitdefender.*') ? 'active' : '' }}">
+                <a href="{{ route('bitdefender.index') }}" class="nav-sub {{ request()->routeIs('bitdefender.*') ? 'active' : '' }}">
                     <i class="ti ti-shield"></i> Calcul prorata
                 </a>
             </div>
@@ -97,13 +113,14 @@
 
         {{-- THÈME FACTURATION --}}
         @if($user->hasTheme('facturation'))
-        <div class="theme-section {{ $inFacturation ? 'open' : '' }}">
+        <div class="theme-section {{ $inFacturation ? 'open has-active' : '' }}">
             <div class="theme-header" onclick="this.closest('.theme-section').classList.toggle('open')">
-                <span><i class="ti ti-receipt" style="font-size:12px;margin-right:4px"></i>Facturation</span>
-                <span class="theme-arrow">▾</span>
+                <span class="theme-icon theme-icon-neutral"><i class="ti ti-receipt"></i></span>
+                <span class="theme-label">Facturation</span>
+                <i class="ti ti-chevron-right theme-arrow"></i>
             </div>
             <div class="theme-items">
-                <span class="nav-item-disabled"><i class="ti ti-clock"></i> Bientôt disponible</span>
+                <span class="nav-sub-disabled"><i class="ti ti-clock"></i> Bientôt disponible</span>
             </div>
         </div>
         @endif
