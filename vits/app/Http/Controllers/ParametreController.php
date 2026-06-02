@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class ParametreController extends Controller
@@ -9,11 +10,11 @@ class ParametreController extends Controller
     {
         $motifs = config('vits.motifs_intervention', []);
         $parametres = [
-            'seuil_echeance_mois' => config('vits.seuil_echeance_mois', 3),
-            'seuil_heures_pct'    => config('vits.seuil_heures_pct', 80),
-            'kizeo_frequence_min' => config('vits.kizeo_frequence_min', 15),
+            'seuil_echeance_mois' => Cache::get('vits.seuil_echeance_mois', config('vits.seuil_echeance_mois', 3)),
+            'seuil_heures_pct'    => Cache::get('vits.seuil_heures_pct',    config('vits.seuil_heures_pct', 80)),
+            'kizeo_frequence_min' => Cache::get('vits.kizeo_frequence_min', config('vits.kizeo_frequence_min', 60)),
             'kizeo_api_key'       => env('KIZEO_API_KEY', ''),
-            'session_minutes'      => config('vits.session_minutes', 8),
+            'session_minutes'     => Cache::get('vits.session_minutes',     config('vits.session_minutes', 30)),
         ];
         $logoPath = file_exists(public_path('storage/logo/logo.png')) ? asset('storage/logo/logo.png') : null;
         return view('parametres.index', compact('motifs', 'parametres', 'logoPath'));
@@ -69,6 +70,11 @@ class ParametreController extends Controller
             opcache_invalidate(config_path('vits.php'), true);
         }
         \Artisan::call('config:clear');
+
+        Cache::forever('vits.seuil_echeance_mois', (int)($request?->seuil_echeance_mois ?? Cache::get('vits.seuil_echeance_mois', 3)));
+        Cache::forever('vits.seuil_heures_pct',    (int)($request?->seuil_heures_pct    ?? Cache::get('vits.seuil_heures_pct', 80)));
+        Cache::forever('vits.kizeo_frequence_min', (int)($request?->kizeo_frequence_min ?? Cache::get('vits.kizeo_frequence_min', 60)));
+        Cache::forever('vits.session_minutes',     (int)($request?->session_minutes     ?? Cache::get('vits.session_minutes', 30)));
     }
 
     protected function updateEnv($key, $value)
