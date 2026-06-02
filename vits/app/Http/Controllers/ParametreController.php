@@ -65,6 +65,9 @@ class ParametreController extends Controller
         $config .= "    'kizeo_api_key'       => env('KIZEO_API_KEY', ''),\n";
         $config .= "];\n";
         file_put_contents(config_path('vits.php'), $config);
+        if (function_exists('opcache_invalidate')) {
+            opcache_invalidate(config_path('vits.php'), true);
+        }
         \Artisan::call('config:clear');
     }
 
