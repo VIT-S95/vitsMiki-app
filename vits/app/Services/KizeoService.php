@@ -263,6 +263,8 @@ class KizeoService
         // Nettoyer le nom client (parenthèses ex: "(COEXPAU)")
         $nomClient = trim($nomClient, '() ');
 
+        if (in_array($nomClient, ['-', '?', ''], true)) return 'skipped';
+
         // Normaliser les apostrophes
         $nomClient = str_replace("\u{2019}", "'", $nomClient);
         $nomClient = str_replace("\u{2018}", "'", $nomClient);
