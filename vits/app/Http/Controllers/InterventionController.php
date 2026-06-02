@@ -24,6 +24,22 @@ class InterventionController extends Controller
             $query->where('deductible', $request->deductible === '1');
         }
 
+        match ($request->periode) {
+            'today'    => $query->whereDate('date_intervention', today()),
+            'week'     => $query->whereBetween('date_intervention', [now()->startOfWeek(), now()->endOfWeek()]),
+            'month'    => $query->whereBetween('date_intervention', [now()->startOfMonth(), now()->endOfMonth()]),
+            'semestre' => $query->where('date_intervention', '>=', now()->subMonths(6)->toDateString()),
+            'annee'    => $query->whereBetween('date_intervention', [now()->startOfYear(), now()->endOfYear()]),
+            'n1'       => $query->whereBetween('date_intervention', [
+                              now()->subYear()->startOfYear()->toDateString(),
+                              now()->subYear()->endOfYear()->toDateString(),
+                          ]),
+            'custom'   => $query
+                              ->when($request->date_debut, fn($q) => $q->where('date_intervention', '>=', $request->date_debut))
+                              ->when($request->date_fin,   fn($q) => $q->where('date_intervention', '<=', $request->date_fin)),
+            default    => null,
+        };
+
         $interventions = $query->paginate((int)request('per_page', 20))->withQueryString();
         return view('interventions.index', compact('interventions'));
     }

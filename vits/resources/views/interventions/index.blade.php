@@ -8,7 +8,46 @@
     </div>
 </div>
 
-<form method="GET" style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap">
+<form method="GET" id="filter-form">
+@php
+    $periodeActive = request('periode', '');
+    $periodesLabels = [
+        ''         => 'Tout',
+        'today'    => "Aujourd'hui",
+        'week'     => 'Cette semaine',
+        'month'    => 'Ce mois',
+        'semestre' => 'Dernier semestre',
+        'annee'    => 'Cette année',
+        'n1'       => 'N-1',
+        'custom'   => 'Personnalisé',
+    ];
+@endphp
+
+{{-- Filtres rapides période --}}
+<div style="display:flex;gap:6px;margin-bottom:0.6rem;flex-wrap:wrap">
+    @foreach($periodesLabels as $val => $label)
+    @php $isActive = ($periodeActive === $val); @endphp
+    <button type="button" onclick="setPeriode('{{ $val }}')"
+        style="padding:5px 11px;border-radius:6px;font-size:12px;cursor:pointer;border:1px solid {{ $isActive ? '#E8720C' : '#ddd' }};background:{{ $isActive ? '#E8720C' : '#f5f5f5' }};color:{{ $isActive ? '#fff' : '#555' }}">
+        {{ $label }}
+    </button>
+    @endforeach
+</div>
+
+{{-- Champs date personnalisée --}}
+<div id="custom-dates" style="display:{{ $periodeActive === 'custom' ? 'flex' : 'none' }};gap:8px;align-items:center;margin-bottom:0.6rem">
+    <input type="date" name="date_debut" value="{{ request('date_debut') }}"
+        style="padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+    <span style="color:#aaa;font-size:13px">→</span>
+    <input type="date" name="date_fin" value="{{ request('date_fin') }}"
+        style="padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+    <button type="submit" style="padding:6px 12px;background:#E8720C;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer">Appliquer</button>
+</div>
+
+<input type="hidden" name="periode" id="periode-input" value="{{ $periodeActive }}">
+
+{{-- Filtres texte / type --}}
+<div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap">
     <input type="text" name="search" value="{{ request('search') }}" placeholder="Rechercher un client…" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;width:250px">
     <select name="type" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
         <option value="">Tous les types</option>
@@ -28,10 +67,25 @@
         <option value="50"  {{ request('per_page',20)==50?'selected':'' }}>50 / page</option>
         <option value="100" {{ request('per_page',20)==100?'selected':'' }}>100 / page</option>
     </select>
-    @if(request('search') || request('type') || request('deductible'))
+    @if(request('search') || request('type') || request('deductible') || request('periode'))
         <a href="{{ route('interventions.index') }}" style="font-size:13px;color:#888;padding:7px 0">Effacer</a>
     @endif
+</div>
 </form>
+
+<script>
+function setPeriode(val) {
+    document.getElementById('periode-input').value = val;
+    document.getElementById('custom-dates').style.display = val === 'custom' ? 'flex' : 'none';
+    if (val !== 'custom') {
+        var dd = document.querySelector('[name=date_debut]');
+        var df = document.querySelector('[name=date_fin]');
+        if (dd) dd.value = '';
+        if (df) df.value = '';
+        document.getElementById('filter-form').submit();
+    }
+}
+</script>
 
 <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;overflow:hidden">
     <table style="width:100%;border-collapse:collapse;font-size:13px">
