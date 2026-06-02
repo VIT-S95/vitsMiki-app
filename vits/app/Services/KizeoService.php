@@ -249,6 +249,18 @@ class KizeoService
 
     protected function traiterEnregistrement(array $record, string $formId): string
     {
+        static $debugCount = 0;
+        if ($debugCount < 2) {
+            Log::debug('Kizeo user fields: ' . json_encode(array_filter(
+                $record,
+                fn($k) => str_contains(strtolower($k), 'name') ||
+                          str_contains(strtolower($k), 'first') ||
+                          str_contains(strtolower($k), 'last'),
+                ARRAY_FILTER_USE_KEY
+            ), JSON_UNESCAPED_UNICODE));
+            $debugCount++;
+        }
+
         $bonNumero = (string)($record['_id'] ?? '');
         if (!$bonNumero) return 'error';
 
