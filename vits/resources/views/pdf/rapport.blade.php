@@ -6,7 +6,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 img { border: 0 !important; outline: 0 !important; }
 body { font-family: Arial, sans-serif; font-size: 12px; color: #2C2C2A; margin: 20px 25px; }
-.header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; border-bottom: 2px solid #E8720C; margin-bottom: 20px; }
+.header { padding-bottom: 7px; border-bottom: 2px solid #E8720C; margin-bottom: 16px; }
 .logo-badge { background: #E8720C; color: #fff; font-size: 16px; font-weight: bold; padding: 5px 14px; border-radius: 4px; display: inline-block; }
 .logo-sub { font-size: 11px; color: #888; margin-top: 4px; }
 .header-right { text-align: right; font-size: 11px; color: #888; }
@@ -53,18 +53,13 @@ tr { page-break-inside: avoid; }
 <body>
 
 <div class="header">
-    <div>
-        @if(file_exists(public_path('storage/logo/logo.png')))
-        <img src="{{ public_path('storage/logo/logo.png') }}" style="max-height:40px;width:auto;border:0;outline:0;box-shadow:none;display:block;margin-bottom:4px">
-        @else
-        <div class="logo-badge">VIT-S</div>
-        @endif
-        <div class="logo-sub">Services informatiques — Infogérance</div>
-    </div>
-    <div class="header-right">
-        <div>Rapport d'interventions</div>
-        <div>Généré le {{ now()->format('d/m/Y') }}</div>
-    </div>
+    @if(file_exists(public_path('storage/logo/logo.png')))
+    <img src="{{ public_path('storage/logo/logo.png') }}" style="max-height:40px;width:auto;border:0;outline:0;box-shadow:none;display:block;margin-bottom:4px">
+    @else
+    <div class="logo-badge" style="margin-bottom:4px">VIT-S</div>
+    @endif
+    <div class="logo-sub">Services informatiques — Infogérance</div>
+    <div class="logo-sub">Rapport d'interventions — Généré le {{ now()->format('d/m/Y') }}</div>
 </div>
 
 <div class="client-band">
