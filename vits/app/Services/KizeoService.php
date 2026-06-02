@@ -54,15 +54,16 @@ class KizeoService
             Cache::forget('kizeo_non_lus');
 
             $log = [
-                'debut'    => $debut->format('H:i:s'),
-                'fin'      => now()->format('H:i:s'),
-                'statut'   => $result['errors'] === 0 ? 'ok' : 'partiel',
-                'api_ok'   => true,
-                'imported' => $result['imported'],
-                'skipped'  => $result['skipped'],
-                'errors'   => $result['errors'],
-                'message'  => $result['message'],
-                'details'  => [],
+                'debut'       => $debut->format('H:i:s'),
+                'fin'         => now()->format('H:i:s'),
+                'statut'      => $result['errors'] === 0 ? 'ok' : 'partiel',
+                'api_ok'      => true,
+                'imported'    => $result['imported'],
+                'skipped'     => $result['skipped'],
+                'sans_contrat' => $result['sans_contrat'] ?? 0,
+                'errors'      => $result['errors'],
+                'message'     => $result['message'],
+                'details'     => [],
             ];
             Cache::put('kizeo_import_log', $log, now()->addDays(7));
         }
@@ -90,34 +91,42 @@ class KizeoService
             return ['success' => false, 'message' => 'Clé API non configurée'];
         }
 
-        $imported = 0;
-        $errors   = 0;
+        $imported    = 0;
+        $sansContrat = 0;
+        $errors      = 0;
 
         foreach ([self::FORM_SITE, self::FORM_DISTANCE] as $formId) {
-            $result    = $this->importerFormulaire($formId);
-            $imported += $result['imported'];
-            $errors   += $result['errors'];
+            $result      = $this->importerFormulaire($formId);
+            $imported    += $result['imported'];
+            $sansContrat += $result['sansContrat'] ?? 0;
+            $errors      += $result['errors'];
         }
 
+        $message = "{$imported} intervention(s) importée(s)";
+        if ($sansContrat > 0) $message .= ", {$sansContrat} sans contrat";
+        if ($errors > 0)      $message .= ", {$errors} erreur(s)";
+
         $log = [
-            'debut'    => $debut->format('H:i:s'),
-            'fin'      => now()->format('H:i:s'),
-            'statut'   => $errors === 0 ? 'ok' : 'partiel',
-            'api_ok'   => true,
-            'imported' => $imported,
-            'errors'   => $errors,
-            'message'  => "{$imported} intervention(s) importée(s)" . ($errors > 0 ? ", {$errors} erreur(s)" : ''),
-            'details'  => [],
+            'debut'       => $debut->format('H:i:s'),
+            'fin'         => now()->format('H:i:s'),
+            'statut'      => $errors === 0 ? 'ok' : 'partiel',
+            'api_ok'      => true,
+            'imported'    => $imported,
+            'sans_contrat' => $sansContrat,
+            'errors'      => $errors,
+            'message'     => $message,
+            'details'     => [],
         ];
         Cache::put('kizeo_import_log', $log, now()->addDays(7));
         Cache::put('kizeo_derniere_import', now()->format('Y-m-d H:i:s'), now()->addDays(30));
         Cache::forget('kizeo_non_lus');
 
         return [
-            'success'  => true,
-            'imported' => $imported,
-            'errors'   => $errors,
-            'message'  => $log['message'],
+            'success'     => true,
+            'imported'    => $imported,
+            'sans_contrat' => $sansContrat,
+            'errors'      => $errors,
+            'message'     => $message,
         ];
     }
 
@@ -127,9 +136,10 @@ class KizeoService
             return ['success' => false, 'message' => 'Clé API non configurée'];
         }
 
-        $imported = 0;
-        $skipped  = 0;
-        $errors   = 0;
+        $imported    = 0;
+        $skipped     = 0;
+        $sansContrat = 0;
+        $errors      = 0;
 
         foreach ([self::FORM_SITE, self::FORM_DISTANCE] as $formId) {
             $page = 0;
@@ -158,8 +168,9 @@ class KizeoService
                 foreach ($data as $record) {
                     try {
                         $statut = $this->traiterEnregistrement($record, $formId);
-                        if ($statut === 'imported') $imported++;
-                        elseif ($statut === 'skipped') $skipped++;
+                        if ($statut === 'imported')       $imported++;
+                        elseif ($statut === 'skipped')     $skipped++;
+                        elseif ($statut === 'sans_contrat') $sansContrat++;
                         else $errors++;
                     } catch (\Exception $e) {
                         Log::error("Kizeo traitement erreur: " . $e->getMessage());
@@ -171,20 +182,27 @@ class KizeoService
             } while (count($data) === 100 && ($page * 100) < $total);
         }
 
+        $message = "{$imported} importée(s), {$skipped} doublon(s) ignoré(s)";
+        if ($sansContrat > 0) $message .= ", {$sansContrat} sans contrat";
+        if ($errors > 0)      $message .= ", {$errors} erreur(s)";
+        $message .= " [{$dateDebut} → {$dateFin}]";
+
         return [
-            'success'  => true,
-            'imported' => $imported,
-            'skipped'  => $skipped,
-            'errors'   => $errors,
-            'message'  => "{$imported} importée(s), {$skipped} doublon(s) ignoré(s)" . ($errors > 0 ? ", {$errors} erreur(s)" : '') . " [{$dateDebut} → {$dateFin}]",
+            'success'     => true,
+            'imported'    => $imported,
+            'skipped'     => $skipped,
+            'sans_contrat' => $sansContrat,
+            'errors'      => $errors,
+            'message'     => $message,
         ];
     }
 
     protected function importerFormulaire(string $formId): array
     {
-        $imported = 0;
-        $skipped  = 0;
-        $errors   = 0;
+        $imported    = 0;
+        $skipped     = 0;
+        $sansContrat = 0;
+        $errors      = 0;
 
         try {
             $response = Http::timeout(60)->retry(2, 3000)->withHeaders([
@@ -201,8 +219,9 @@ class KizeoService
             foreach ($data as $record) {
                 try {
                     $statut = $this->traiterEnregistrement($record, $formId);
-                    if ($statut === 'imported') $imported++;
-                    elseif ($statut === 'skipped') $skipped++;
+                    if ($statut === 'imported')       $imported++;
+                    elseif ($statut === 'skipped')     $skipped++;
+                    elseif ($statut === 'sans_contrat') $sansContrat++;
                     else $errors++;
                 } catch (\Exception $e) {
                     Log::error("Kizeo traitement erreur: " . $e->getMessage());
@@ -224,7 +243,7 @@ class KizeoService
             $errors++;
         }
 
-        return compact('imported', 'skipped', 'errors');
+        return compact('imported', 'skipped', 'sansContrat', 'errors');
     }
 
     protected function traiterEnregistrement(array $record, string $formId): string
@@ -280,8 +299,8 @@ class KizeoService
         }
 
         if (!$contrat) {
-            Log::info("Kizeo : pas de contrat pour '{$nomClient}' - bon {$bonNumero}");
-            return 'error';
+            Log::warning("Kizeo : pas de contrat pour '{$nomClient}' - bon {$bonNumero}");
+            return 'sans_contrat';
         }
 
         // Déductible
