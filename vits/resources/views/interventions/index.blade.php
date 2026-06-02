@@ -18,7 +18,7 @@
         'month'    => 'Ce mois',
         'semestre' => 'Dernier semestre',
         'annee'    => 'Cette année',
-        'n1'       => 'N-1',
+        'n1'       => 'Année précédente',
         'custom'   => 'Personnalisé',
     ];
 @endphp
@@ -49,20 +49,20 @@
 {{-- Filtres texte / type --}}
 <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap">
     <input type="text" name="search" value="{{ request('search') }}" placeholder="Rechercher un client…" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;width:250px">
-    <select name="type" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+    <select name="type" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;appearance:auto">
         <option value="">Tous les types</option>
         <option value="site"           {{ request('type')=='site'?'selected':'' }}>Sur site</option>
         <option value="distance"       {{ request('type')=='distance'?'selected':'' }}>À distance</option>
         <option value="flash"          {{ request('type')=='flash'?'selected':'' }}>Flash</option>
         <option value="administrateur" {{ request('type')=='administrateur'?'selected':'' }}>Administrateur</option>
     </select>
-    <select name="deductible" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+    <select name="deductible" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;appearance:auto">
         <option value="">Toutes</option>
         <option value="1" {{ request('deductible')==='1'?'selected':'' }}>Déductibles</option>
         <option value="0" {{ request('deductible')==='0'?'selected':'' }}>Hors contrat</option>
     </select>
     <button type="submit" style="padding:7px 12px;background:#f5f5f5;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer">Filtrer</button>
-    <select name="per_page" onchange="this.form.submit()" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+    <select name="per_page" onchange="this.form.submit()" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;appearance:auto">
         <option value="20"  {{ request('per_page',20)==20?'selected':'' }}>20 / page</option>
         <option value="50"  {{ request('per_page',20)==50?'selected':'' }}>50 / page</option>
         <option value="100" {{ request('per_page',20)==100?'selected':'' }}>100 / page</option>
