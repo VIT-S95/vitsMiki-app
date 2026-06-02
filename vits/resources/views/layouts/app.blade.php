@@ -20,6 +20,14 @@
         .nav-item:hover{background:#f5f5f5;color:#1a1a1a}
         .nav-item.active{color:#E8720C;border-left:2px solid #E8720C;background:#fff8f3;font-weight:500}
         .nav-item i{font-size:16px}
+        .theme-header{display:flex;align-items:center;justify-content:space-between;padding:8px 1rem;font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;user-select:none}
+        .theme-header:hover{color:#777}
+        .theme-header.has-active{color:#E8720C}
+        .theme-arrow{font-size:10px;transition:transform 0.2s}
+        .theme-section .theme-items{display:none}
+        .theme-section.open .theme-items{display:block}
+        .theme-section.open .theme-arrow{transform:rotate(180deg)}
+        .nav-item-disabled{display:flex;align-items:center;gap:9px;padding:8px 1rem;font-size:13px;color:#ccc;border-left:2px solid transparent}
         .sidebar-bottom{margin-top:auto;padding:0.75rem 1rem;border-top:1px solid #e0e0e0}
         .user-row{display:flex;align-items:center;gap:8px}
         .avatar{width:30px;height:30px;border-radius:50%;background:#E8720C;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex-shrink:0}
@@ -41,28 +49,75 @@
             <div class="logo-sub">Application interne</div>
         </div>
 
-        <div class="nav-section">Navigation</div>
-        <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-            <i class="ti ti-layout-dashboard"></i> Tableau de bord
-        </a>
-        <a href="{{ route('clients.index') }}" class="nav-item {{ request()->routeIs('clients.*') ? 'active' : '' }}">
-            <i class="ti ti-users"></i> Clients
-        </a>
-        <a href="{{ route('contrats.index') }}" class="nav-item {{ request()->routeIs('contrats.*') ? 'active' : '' }}">
-            <i class="ti ti-file-text"></i> Contrats
-        </a>
-        <a href="{{ route('interventions.index') }}" class="nav-item {{ request()->routeIs('interventions.*') ? 'active' : '' }}">
-            <i class="ti ti-tool"></i> Interventions
-        </a>
+        @php
+            $user = auth()->user();
+            $inInterventions = request()->routeIs('dashboard', 'clients.*', 'contrats.*', 'interventions.*');
+            $inCalculs       = request()->routeIs('bitdefender.*');
+            $inFacturation   = false;
+        @endphp
 
-        <a href="{{ route('bitdefender.index') }}" class="nav-item {{ request()->routeIs('bitdefender.*') ? 'active' : '' }}">
-            <i class="ti ti-shield"></i> Calcul Bitdefender
-        </a>
+        {{-- THÈME INTERVENTIONS --}}
+        @if($user->hasTheme('interventions'))
+        <div class="theme-section {{ $inInterventions ? 'open' : '' }}">
+            <div class="theme-header {{ $inInterventions ? 'has-active' : '' }}" onclick="this.closest('.theme-section').classList.toggle('open')">
+                <span><i class="ti ti-tool" style="font-size:12px;margin-right:4px"></i>Interventions</span>
+                <span class="theme-arrow">▾</span>
+            </div>
+            <div class="theme-items">
+                <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                    <i class="ti ti-layout-dashboard"></i> Synthèse
+                </a>
+                <a href="{{ route('clients.index') }}" class="nav-item {{ request()->routeIs('clients.*') ? 'active' : '' }}">
+                    <i class="ti ti-users"></i> Clients
+                </a>
+                <a href="{{ route('contrats.index') }}" class="nav-item {{ request()->routeIs('contrats.*') ? 'active' : '' }}">
+                    <i class="ti ti-file-text"></i> Contrats
+                </a>
+                <a href="{{ route('interventions.index') }}" class="nav-item {{ request()->routeIs('interventions.*') ? 'active' : '' }}">
+                    <i class="ti ti-list"></i> Interventions
+                </a>
+            </div>
+        </div>
+        @endif
 
+        {{-- THÈME CALCULS --}}
+        @if($user->hasTheme('calculs'))
+        <div class="theme-section {{ $inCalculs ? 'open' : '' }}">
+            <div class="theme-header {{ $inCalculs ? 'has-active' : '' }}" onclick="this.closest('.theme-section').classList.toggle('open')">
+                <span><i class="ti ti-calculator" style="font-size:12px;margin-right:4px"></i>Calculs</span>
+                <span class="theme-arrow">▾</span>
+            </div>
+            <div class="theme-items">
+                <a href="{{ route('bitdefender.index') }}" class="nav-item {{ request()->routeIs('bitdefender.*') ? 'active' : '' }}">
+                    <i class="ti ti-shield"></i> Calcul prorata
+                </a>
+            </div>
+        </div>
+        @endif
+
+        {{-- THÈME FACTURATION --}}
+        @if($user->hasTheme('facturation'))
+        <div class="theme-section {{ $inFacturation ? 'open' : '' }}">
+            <div class="theme-header" onclick="this.closest('.theme-section').classList.toggle('open')">
+                <span><i class="ti ti-receipt" style="font-size:12px;margin-right:4px"></i>Facturation</span>
+                <span class="theme-arrow">▾</span>
+            </div>
+            <div class="theme-items">
+                <span class="nav-item-disabled"><i class="ti ti-clock"></i> Bientôt disponible</span>
+            </div>
+        </div>
+        @endif
+
+        {{-- SYSTÈME --}}
         <div class="nav-section">Système</div>
+        @if($user->isAdmin())
         <a href="{{ route('parametres.index') }}" class="nav-item {{ request()->routeIs('parametres.*') ? 'active' : '' }}">
             <i class="ti ti-settings"></i> Paramètres
         </a>
+        <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+            <i class="ti ti-user-cog"></i> Utilisateurs
+        </a>
+        @endif
         <a href="{{ route('logout') }}" class="nav-item"
            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
             <i class="ti ti-logout"></i> Déconnexion
@@ -73,10 +128,10 @@
 
         <div class="sidebar-bottom">
             <div class="user-row">
-                <div class="avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
+                <div class="avatar">{{ strtoupper(substr($user->name, 0, 2)) }}</div>
                 <div>
-                    <div class="user-name">{{ auth()->user()->name }}</div>
-                    <div class="user-role">{{ auth()->user()->getRoleNames()->first() }}</div>
+                    <div class="user-name">{{ $user->name }}</div>
+                    <div class="user-role">{{ $user->isAdmin() ? 'Admin' : implode(', ', $user->themes ?? ['—']) }}</div>
                 </div>
             </div>
         </div>

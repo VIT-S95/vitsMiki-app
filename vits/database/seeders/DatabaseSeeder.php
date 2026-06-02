@@ -13,7 +13,7 @@ class DatabaseSeeder extends Seeder
         $this->call(VitsSeeder::class);
 
         User::updateOrCreate(
-            ['email' => 'stephane@vit-s.fr'],
+            ['email' => 'sraza@vit-s.com'],
             [
                 'name'     => 'Stéphane',
                 'password' => Hash::make('changeme'),

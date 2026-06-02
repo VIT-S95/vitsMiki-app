@@ -62,8 +62,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/preferences/{page}', [UserPreferenceController::class, 'show'])->name('preferences.show');
 });
 
+use App\Http\Controllers\UserController;
+Route::middleware(['auth', 'admin.only'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('users', UserController::class);
+});
+
 use App\Http\Controllers\ParametreController;
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'admin.only'])->group(function () {
     Route::get('/parametres', [ParametreController::class, 'index'])->name('parametres.index');
     Route::post('/parametres', [ParametreController::class, 'update'])->name('parametres.update');
     Route::delete('/parametres/logo', [ParametreController::class, 'deleteLogo'])->name('parametres.logo.delete');
