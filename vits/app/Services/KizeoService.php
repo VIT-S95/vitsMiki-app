@@ -300,6 +300,7 @@ class KizeoService
 
         if (!$contrat) {
             Log::warning("Kizeo : pas de contrat pour '{$nomClient}' - bon {$bonNumero}");
+            $this->marquerLu($formId, $bonNumero);
             return 'sans_contrat';
         }
 
@@ -354,6 +355,20 @@ class KizeoService
         }
 
         return 'imported';
+    }
+
+    protected function marquerLu(string $formId, string $bonNumero): void
+    {
+        try {
+            Http::timeout(60)->retry(2, 3000)->withHeaders([
+                'Authorization' => $this->apiKey,
+                'Content-Type'  => 'application/json',
+            ])->post("{$this->baseUrl}/forms/{$formId}/markasreadbyaction/vitsmiki", [
+                'data_ids' => [$bonNumero],
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Kizeo marquerLu erreur (bon {$bonNumero}): " . $e->getMessage());
+        }
     }
 
     public function parserDuree(string $duree): int
