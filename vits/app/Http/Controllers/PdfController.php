@@ -1,7 +1,6 @@
 <?php
 namespace App\Http\Controllers;
 use App\Models\Contrat;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class PdfController extends Controller
@@ -72,17 +71,30 @@ class PdfController extends Controller
                 'heures_allouees' => $heuresAllouees,
                 'diff_minutes'    => $diff,
                 'credit'          => $diff >= 0,
-                'pct'             => $heuresAllouees > 0 ? min(100, round(($totalMinutes / ($heuresAllouees * 60)) * 100)) : 0,
+                'pct'             => $heuresAllouees > 0 ? round(($totalMinutes / ($heuresAllouees * 60)) * 100) : 0,
             ]);
         });
 
-        $pdf = Pdf::loadView('pdf.rapport', compact('contrat', 'periodesAvecInterventions'))
-            ->setPaper('a4', 'portrait')
-            ->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => false, 'debugPng' => false]);
         $filename = 'rapport-' . $contrat->client->nom_societe . '-' . now()->format('Y-m-d') . '.pdf';
+
+        $mpdf = new \Mpdf\Mpdf([
+            'mode'          => 'utf-8',
+            'format'        => 'A4',
+            'margin_top'    => 15,
+            'margin_bottom' => 15,
+            'margin_left'   => 15,
+            'margin_right'  => 15,
+        ]);
+        $html = view('pdf.rapport', compact('contrat', 'periodesAvecInterventions'))->render();
+        $mpdf->WriteHTML($html);
+
         if ($request->get('action') === 'download') {
-            return $pdf->download($filename);
+            return response($mpdf->Output($filename, 'S'))
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
         }
-        return $pdf->stream($filename);
+        return response($mpdf->Output($filename, 'S'))
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'inline; filename="' . $filename . '"');
     }
 }

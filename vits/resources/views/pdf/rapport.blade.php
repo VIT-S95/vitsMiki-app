@@ -28,12 +28,14 @@ table { width: 100%; border-collapse: collapse; font-size: 11px; }
 thead { display: table-header-group; }
 th { padding: 5px 8px; text-align: left; font-size: 10px; color: #888; text-transform: uppercase; border-bottom: 1px solid #D3D1C7; background: #fff; }
 td { padding: 5px 8px; border-bottom: 1px solid #F1EFE8; color: #444; }
+tr { page-break-inside: avoid; }
+.mois-block { page-break-inside: avoid; }
 .tag-site { background: #E6F1FB; color: #0C447C; padding: 1px 5px; border-radius: 3px; font-size: 10px; }
 .tag-dist { background: #E1F5EE; color: #085041; padding: 1px 5px; border-radius: 3px; font-size: 10px; }
 .tag-flash { background: #FFF3E6; color: #854F0B; padding: 1px 5px; border-radius: 3px; font-size: 10px; }
 .tag-admin { background: #F3F0FF; color: #4C1D95; padding: 1px 5px; border-radius: 3px; font-size: 10px; }
 .total-row td { background: #F1EFE8; font-weight: bold; }
-.bilan { border-radius: 4px; padding: 10px 14px; margin: 12px 0; }
+.bilan { border-radius: 4px; padding: 10px 14px; margin: 12px 0; page-break-inside: avoid; }
 .bilan-credit { border: 2px solid #0F6E56; background: #F0FDF4; }
 .bilan-debit  { border: 2px solid #A32D2D; background: #FEF2F2; }
 .bilan-title-credit { font-size: 11px; font-weight: bold; color: #0F6E56; text-transform: uppercase; margin-bottom: 8px; }
@@ -51,7 +53,16 @@ td { padding: 5px 8px; border-bottom: 1px solid #F1EFE8; color: #444; }
 
 <div class="header">
     <div>
-        <div class="logo-badge">VIT-S</div>
+        <table style="border:none;border-collapse:collapse;margin-bottom:4px">
+            <tr>
+                <td style="padding:0;padding-right:10px;vertical-align:middle">
+                    <img src="{{ public_path('storage/logo/logo.png') }}" style="max-height:40px;width:auto">
+                </td>
+                <td style="padding:0;vertical-align:middle">
+                    <div class="logo-badge">VIT-S</div>
+                </td>
+            </tr>
+        </table>
         <div class="logo-sub">Services informatiques — Infogérance</div>
     </div>
     <div class="header-right">
@@ -132,6 +143,7 @@ td { padding: 5px 8px; border-bottom: 1px solid #F1EFE8; color: #444; }
     $isPast = $hasInts && !$isFuture;
 @endphp
 @if($isPast)
+<div class="mois-block">
 <div class="mois-title">
     <span>{{ $mois['label'] }}</span>
 </div>
@@ -178,6 +190,7 @@ td { padding: 5px 8px; border-bottom: 1px solid #F1EFE8; color: #444; }
         </tr>
     </tbody>
 </table>
+</div>
 @endif
 @endforeach
 
