@@ -2,7 +2,6 @@
 namespace App\Http\Controllers;
 use App\Models\Contrat;
 use App\Models\Client;
-use App\Models\KizeoIgnore;
 use App\Services\KizeoService;
 use Illuminate\Http\Request;
 
@@ -105,8 +104,6 @@ class ContratController extends Controller
 
     public function reimportKizeo(Contrat $contrat, KizeoService $kizeo)
     {
-        KizeoIgnore::truncate();
-
         $result = $kizeo->importerParPeriode(
             $contrat->date_debut->format('Y-m-d'),
             now()->format('Y-m-d')
