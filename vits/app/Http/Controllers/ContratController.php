@@ -2,6 +2,8 @@
 namespace App\Http\Controllers;
 use App\Models\Contrat;
 use App\Models\Client;
+use App\Models\KizeoIgnore;
+use App\Services\KizeoService;
 use Illuminate\Http\Request;
 
 class ContratController extends Controller
@@ -99,5 +101,21 @@ class ContratController extends Controller
     {
         $contrat->delete();
         return redirect()->route('contrats.index')->with('success', 'Contrat supprimé.');
+    }
+
+    public function reimportKizeo(Contrat $contrat, KizeoService $kizeo)
+    {
+        KizeoIgnore::truncate();
+
+        $result = $kizeo->importerParPeriode(
+            $contrat->date_debut->format('Y-m-d'),
+            now()->format('Y-m-d')
+        );
+
+        $msg = $result['success']
+            ? "Réimport terminé : {$result['message']}"
+            : "Erreur réimport : {$result['message']}";
+
+        return redirect()->back()->with('success', $msg);
     }
 }
