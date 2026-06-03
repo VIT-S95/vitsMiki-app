@@ -26,7 +26,7 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap">
             <a href="{{ route('contrats.edit', $contrat) }}" style="padding:6px 12px;font-size:12px;border:1px solid #ddd;border-radius:8px;color:#666;text-decoration:none">✏ Modifier</a>
             <a href="{{ route('contrats.pdf.choix', $contrat) }}" style="padding:6px 12px;font-size:12px;border:1px solid #ddd;border-radius:8px;color:#666;text-decoration:none">📄 PDF</a>
-            @if($contrat->statut === 'actif')
+            @if($contrat->statut === 'en-cours')
             <form method="POST" action="{{ route('contrats.reimport-kizeo', $contrat) }}" style="display:inline">
                 @csrf
                 <button type="submit" style="padding:6px 12px;font-size:12px;border:1px solid #E8720C;border-radius:8px;color:#E8720C;background:#fff;cursor:pointer">🔄 Récupérer interventions manquantes</button>
