@@ -27,7 +27,7 @@ class FixClientNom extends Command
         Intervention::whereNull('client_nom')
             ->whereNotNull('contrat_id')
             ->with('contrat.client')
-            ->chunk(500, function ($interventions) use (&$updated) {
+            ->chunkById(500, function ($interventions) use (&$updated) {
                 foreach ($interventions as $i) {
                     $nom = $i->contrat?->client?->nom_societe;
                     if ($nom) {
