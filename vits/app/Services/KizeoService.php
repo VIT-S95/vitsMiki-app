@@ -51,12 +51,12 @@ class KizeoService
         $result = $this->importerParPeriode($dateDebut, $dateFin);
 
         if ($result['success']) {
-            Cache::put('kizeo_derniere_import', now()->format('Y-m-d H:i:s'), now()->addDays(30));
+            Cache::put('kizeo_derniere_import', now()->setTimezone(config('app.timezone'))->format('Y-m-d H:i:s'), now()->addDays(30));
             Cache::forget('kizeo_non_lus');
 
             $log = [
                 'debut'       => $debut->format('H:i:s'),
-                'fin'         => now()->format('H:i:s'),
+                'fin'         => now()->setTimezone(config('app.timezone'))->format('H:i:s'),
                 'statut'      => $result['errors'] === 0 ? 'ok' : 'partiel',
                 'api_ok'      => true,
                 'imported'    => $result['imported'],
@@ -119,7 +119,7 @@ class KizeoService
             'details'     => [],
         ];
         Cache::put('kizeo_import_log', $log, now()->addDays(7));
-        Cache::put('kizeo_derniere_import', now()->format('Y-m-d H:i:s'), now()->addDays(30));
+        Cache::put('kizeo_derniere_import', now()->setTimezone(config('app.timezone'))->format('Y-m-d H:i:s'), now()->addDays(30));
         Cache::forget('kizeo_non_lus');
 
         return [

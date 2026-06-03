@@ -56,10 +56,7 @@
                 <div style="font-size:12px;color:#888;margin-top:1px">
                     <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:{{ $derniereImport ? '#166534' : '#aaa' }};margin-right:4px;vertical-align:middle"></span>
                     Dernière import :
-                    <strong>{{ $derniereImport ? $derniereImport->locale('fr')->diffForHumans() : 'jamais' }}</strong>
-                    @if($derniereImport)
-                        <span style="color:#bbb">({{ $derniereImport->format('d/m/Y H:i') }})</span>
-                    @endif
+                    <strong>{{ $derniereImport ? $derniereImport->format('d/m/Y H:i') : 'jamais' }}</strong>
                 </div>
             </div>
         </div>
