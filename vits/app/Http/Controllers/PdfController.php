@@ -57,6 +57,7 @@ class PdfController extends Controller
                     'label'         => ucfirst($current->locale('fr')->isoFormat('MMMM YYYY')),
                     'interventions' => $moisInterventions,
                     'total_minutes' => $moisInterventions->sum('duree_minutes'),
+                    'is_future'     => $current->copy()->startOfMonth()->gt(now()->copy()->startOfMonth()),
                 ]);
                 $current->addMonth();
             }

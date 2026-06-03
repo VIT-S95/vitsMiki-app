@@ -129,11 +129,8 @@ tr { page-break-inside: avoid; }
     $mMin = $mois['total_minutes'];
     $mH   = intdiv($mMin, 60);
     $mM   = $mMin - ($mH * 60);
-    $hasInts = $mois['interventions']->count() > 0;
-    $isFuture = $hasInts && $mois['interventions']->first()->date_intervention->gt(now());
-    $isPast = $hasInts && !$isFuture;
 @endphp
-@if($isPast)
+@if(!$mois['is_future'])
 <div class="mois-block">
 <div class="mois-title">
     <span>{{ $mois['label'] }}</span>
