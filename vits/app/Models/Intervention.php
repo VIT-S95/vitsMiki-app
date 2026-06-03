@@ -6,15 +6,16 @@ class Intervention extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'contrat_id','date_intervention','heure_intervention','technicien','numero_bon_kizeo',
+        'contrat_id','client_nom','date_intervention','heure_intervention','technicien','numero_bon_kizeo',
         'type','flash_numero','flash_consomme','duree_minutes',
-        'motif','notes','statut','type_tri','source_kizeo','deductible'
+        'motif','notes','statut','type_tri','source_kizeo','deductible','hors_contrat'
     ];
     protected $casts = [
         'date_intervention' => 'date',
         'flash_consomme'    => 'boolean',
         'source_kizeo'      => 'boolean',
         'deductible'        => 'boolean',
+        'hors_contrat'      => 'boolean',
     ];
     public function contrat()
     {

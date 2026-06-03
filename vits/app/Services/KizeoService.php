@@ -301,24 +301,6 @@ class KizeoService
                 ->first();
         }
 
-        if (!$contrat) {
-            if (KizeoIgnore::where('kizeo_id', $bonNumero)->where('form_id', $formId)->exists()) {
-                return 'skipped';
-            }
-            Log::warning("Kizeo : pas de contrat pour '{$nomClient}' - bon {$bonNumero}");
-            KizeoIgnore::create(['kizeo_id' => $bonNumero, 'form_id' => $formId, 'raison' => 'sans_contrat']);
-            return 'sans_contrat';
-        }
-
-        // Déductible
-        $contratIndicateur = strtolower(trim($record['contrat'] ?? ''));
-        $forfaitIndicateur = strtolower(trim($record['forfait'] ?? ''));
-        $flashIndicateur   = strtolower(trim($record['flash']   ?? ''));
-        $deductible = (bool)(
-            ($flashIndicateur === 'oui')
-            || ($contratIndicateur === 'oui' && $forfaitIndicateur !== 'oui')
-        );
-
         // Type
         $estFlash = false;
         $type     = 'site';
@@ -352,18 +334,48 @@ class KizeoService
             $technicien = $m[1];
         }
 
+        if (!$contrat) {
+            Intervention::create([
+                'contrat_id'         => null,
+                'client_nom'         => $client->nom_societe,
+                'date_intervention'  => $date,
+                'heure_intervention' => $heureArrivee,
+                'technicien'         => $technicien,
+                'numero_bon_kizeo'   => $bonNumero,
+                'type'               => $type,
+                'duree_minutes'      => $estFlash ? 0 : $dureeMinutes,
+                'statut'             => $statut,
+                'type_tri'           => 'hors-contrat',
+                'source_kizeo'       => true,
+                'deductible'         => false,
+                'hors_contrat'       => true,
+            ]);
+            return 'imported';
+        }
+
+        // Déductible
+        $contratIndicateur = strtolower(trim($record['contrat'] ?? ''));
+        $forfaitIndicateur = strtolower(trim($record['forfait'] ?? ''));
+        $flashIndicateur   = strtolower(trim($record['flash']   ?? ''));
+        $deductible = (bool)(
+            ($flashIndicateur === 'oui')
+            || ($contratIndicateur === 'oui' && $forfaitIndicateur !== 'oui')
+        );
+
         Intervention::create([
             'contrat_id'         => $contrat->id,
+            'client_nom'         => $client->nom_societe,
             'date_intervention'  => $date,
             'heure_intervention' => $heureArrivee,
             'technicien'         => $technicien,
             'numero_bon_kizeo'   => $bonNumero,
-            'type'              => $type,
-            'duree_minutes'     => $estFlash ? 0 : $dureeMinutes,
-            'statut'            => $statut,
-            'type_tri'          => $deductible ? 'standard' : 'hors-contrat',
-            'source_kizeo'      => true,
-            'deductible'        => $deductible,
+            'type'               => $type,
+            'duree_minutes'      => $estFlash ? 0 : $dureeMinutes,
+            'statut'             => $statut,
+            'type_tri'           => $deductible ? 'standard' : 'hors-contrat',
+            'source_kizeo'       => true,
+            'deductible'         => $deductible,
+            'hors_contrat'       => false,
         ]);
 
         if ($estFlash) {
