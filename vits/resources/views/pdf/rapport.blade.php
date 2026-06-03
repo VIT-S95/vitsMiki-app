@@ -135,13 +135,13 @@ tr { page-break-inside: avoid; }
 <div class="mois-title">
     <span>{{ $mois['label'] }}</span>
 </div>
-<table>
+<table style="table-layout:fixed;width:100%">
     <thead>
         <tr>
-            <th>Date</th>
-            <th>N° Intervention</th>
-            <th>Type</th>
-            <th style="text-align:right">Durée</th>
+            <th style="width:18%">Date</th>
+            <th style="width:32%">N° Intervention</th>
+            <th style="width:28%">Type</th>
+            <th style="width:22%;text-align:right">Durée</th>
         </tr>
     </thead>
     <tbody>
