@@ -27,9 +27,9 @@
             <a href="{{ route('contrats.edit', $contrat) }}" style="padding:6px 12px;font-size:12px;border:1px solid #ddd;border-radius:8px;color:#666;text-decoration:none">✏ Modifier</a>
             <a href="{{ route('contrats.pdf.choix', $contrat) }}" style="padding:6px 12px;font-size:12px;border:1px solid #ddd;border-radius:8px;color:#666;text-decoration:none">📄 PDF</a>
             @if($contrat->statut === 'en-cours')
-            <form method="POST" action="{{ route('contrats.reimport-kizeo', $contrat) }}" style="display:inline">
+            <form method="POST" action="{{ route('contrats.reimport-kizeo', $contrat) }}" style="display:inline" onsubmit="lancerReimport(this)">
                 @csrf
-                <button type="submit" style="padding:6px 12px;font-size:12px;border:1px solid #E8720C;border-radius:8px;color:#E8720C;background:#fff;cursor:pointer">🔄 Récupérer interventions manquantes</button>
+                <button type="submit" id="btn-reimport" style="padding:6px 12px;font-size:12px;border:1px solid #E8720C;border-radius:8px;color:#E8720C;background:#fff;cursor:pointer">🔄 Récupérer interventions manquantes</button>
             </form>
             @endif
             <a href="{{ route('interventions.create', ['contrat_id' => $contrat->id]) }}" style="padding:6px 12px;font-size:12px;background:#E8720C;color:#fff;border-radius:8px;text-decoration:none">+ Intervention</a>
@@ -165,6 +165,25 @@
     </div>
     @endforeach
 </div>
+<div id="loading-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9998;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:12px;padding:2rem 2.5rem;max-width:380px;width:90%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.18)">
+        <div style="width:40px;height:40px;border:3px solid #f0f0f0;border-top-color:#E8720C;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 1.25rem"></div>
+        <div style="font-size:14px;font-weight:500;color:#1a1a1a;margin-bottom:0.4rem">Récupération en cours depuis Kizeo...</div>
+        <div style="font-size:12px;color:#888">Cette opération peut prendre quelques secondes</div>
+    </div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+<script>
+function lancerReimport(form) {
+    var btn = document.getElementById('btn-reimport');
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    btn.style.cursor = 'not-allowed';
+    var overlay = document.getElementById('loading-overlay');
+    overlay.style.display = 'flex';
+}
+</script>
+
 @if(session('success'))
 <div id="success-modal" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:9999">
     <div style="background:#fff;border-radius:12px;padding:2rem 2.5rem;max-width:480px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.18);text-align:center">
