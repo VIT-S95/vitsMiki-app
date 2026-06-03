@@ -8,5 +8,5 @@ try {
     $freqMin = (int) config('vits.kizeo_frequence_min', 60);
 }
 Schedule::command('kizeo:import')
-    ->everyXMinutes($freqMin)
+    ->cron("*/{$freqMin} * * * *")
     ->withoutOverlapping($freqMin);
