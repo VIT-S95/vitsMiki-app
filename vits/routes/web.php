@@ -70,6 +70,11 @@ Route::middleware(['auth', 'admin.only'])->prefix('admin')->name('admin.')->grou
     Route::resource('users', UserController::class);
 });
 
+use App\Http\Controllers\PerformanceController;
+Route::middleware(['auth', 'admin.only'])->group(function () {
+    Route::get('/performance', [PerformanceController::class, 'index'])->name('performance.index');
+});
+
 use App\Http\Controllers\ParametreController;
 Route::middleware(['auth', 'admin.only'])->group(function () {
     Route::get('/parametres', [ParametreController::class, 'index'])->name('parametres.index');
