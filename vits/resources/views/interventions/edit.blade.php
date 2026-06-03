@@ -1,7 +1,11 @@
 @extends('layouts.app')
 @section('title', 'Modifier intervention')
 @section('content')
-<a href="{{ route('contrats.show', $intervention->contrat) }}" style="display:flex;align-items:center;gap:6px;font-size:13px;color:#888;text-decoration:none;margin-bottom:1.25rem">← Retour au contrat — {{ $intervention->contrat->client->nom_societe }}</a>
+@if($intervention->contrat_id)
+<a href="{{ route('contrats.show', $intervention->contrat_id) }}" style="display:flex;align-items:center;gap:6px;font-size:13px;color:#888;text-decoration:none;margin-bottom:1.25rem">← Retour au contrat — {{ $intervention->contrat?->client?->nom_societe }}</a>
+@else
+<span style="display:flex;align-items:center;gap:6px;font-size:13px;color:#888;margin-bottom:1.25rem">Intervention hors contrat — {{ $intervention->client_nom ?? '—' }}</span>
+@endif
 <h1 style="font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:4px">Modifier l'intervention</h1>
 <p style="font-size:13px;color:#888;margin-bottom:1.5rem">Bon n° {{ $intervention->numero_bon_kizeo ?? $intervention->id }} — {{ $intervention->date_intervention->format('d/m/Y') }}</p>
 
@@ -129,7 +133,11 @@
                 <button type="submit" style="padding:8px 14px;font-size:12px;background:#fff;border:1px solid #fca5a5;color:#dc2626;border-radius:8px;cursor:pointer">🗑 Supprimer</button>
             </form>
             <div style="display:flex;gap:8px">
-                <a href="{{ route('contrats.show', $intervention->contrat) }}" style="padding:8px 16px;font-size:13px;border:1px solid #ddd;border-radius:8px;color:#666;text-decoration:none">Annuler</a>
+                @if($intervention->contrat_id)
+                <a href="{{ route('contrats.show', $intervention->contrat_id) }}" style="padding:8px 16px;font-size:13px;border:1px solid #ddd;border-radius:8px;color:#666;text-decoration:none">Annuler</a>
+                @else
+                <a href="{{ route('interventions.index') }}" style="padding:8px 16px;font-size:13px;border:1px solid #ddd;border-radius:8px;color:#666;text-decoration:none">Annuler</a>
+                @endif
                 <button type="submit" form="form-intervention" style="padding:8px 20px;font-size:13px;font-weight:500;background:#E8720C;color:#fff;border:none;border-radius:8px;cursor:pointer">✓ Enregistrer</button>
             </div>
         </div>

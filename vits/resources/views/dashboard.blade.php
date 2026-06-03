@@ -224,7 +224,7 @@
             <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 14px;border-bottom:1px solid #f5f5f5">
                 <div style="display:flex;align-items:center;gap:6px;font-size:12px">
                     <span style="width:7px;height:7px;border-radius:50%;background:#FFF3E6;border:1.5px solid #E8720C;display:inline-block"></span>
-                    {{ $intervention->contrat->client->nom_societe ?? '—' }} — {{ $intervention->type_tri }}
+                    {{ $intervention->client_nom ?? $intervention->contrat?->client?->nom_societe ?? '—' }} — {{ $intervention->type_tri }}
                 </div>
                 <span style="font-size:11px;color:#aaa">{{ $intervention->date_intervention->format('d/m') }}</span>
             </div>

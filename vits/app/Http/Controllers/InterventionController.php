@@ -16,8 +16,11 @@ class InterventionController extends Controller
             ->orderBy('heure_intervention', 'desc');
 
         if ($request->search) {
-            $query->whereHas('contrat.client', function($q) use ($request) {
-                $q->where('nom_societe', 'like', '%'.$request->search.'%');
+            $query->where(function($q) use ($request) {
+                $q->where('client_nom', 'like', '%'.$request->search.'%')
+                  ->orWhereHas('contrat.client', function($q2) use ($request) {
+                      $q2->where('nom_societe', 'like', '%'.$request->search.'%');
+                  });
             });
         }
         if ($request->type) {
@@ -160,8 +163,10 @@ class InterventionController extends Controller
             Intervention::recalculerFlash($intervention->contrat_id, $request->date_intervention);
         }
 
-        return redirect()->route('contrats.show', $intervention->contrat_id)
-            ->with('success', 'Intervention modifiée.');
+        $redirect = $intervention->contrat_id
+            ? redirect()->route('contrats.show', $intervention->contrat_id)
+            : redirect()->route('interventions.index');
+        return $redirect->with('success', 'Intervention modifiée.');
     }
 
     public function destroy(Intervention $intervention)
@@ -173,7 +178,9 @@ class InterventionController extends Controller
         if ($estFlash) {
             Intervention::recalculerFlash($contratId, $date);
         }
-        return redirect()->route('contrats.show', $contratId)
-            ->with('success', 'Intervention supprimée.');
+        $redirect = $contratId
+            ? redirect()->route('contrats.show', $contratId)
+            : redirect()->route('interventions.index');
+        return $redirect->with('success', 'Intervention supprimée.');
     }
 }
