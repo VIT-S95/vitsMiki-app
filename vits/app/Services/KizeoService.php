@@ -258,12 +258,38 @@ class KizeoService
         $nomClient = trim($record['client'] ?? '');
         $date      = $record['date'] ?? null;
 
-        if (!$nomClient || !$date) return 'error';
+        if (!$date) return 'error';
 
         // Nettoyer le nom client (parenthèses ex: "(COEXPAU)")
         $nomClient = trim($nomClient, '() ');
 
-        if (in_array($nomClient, ['-', '?', ''], true)) return 'skipped';
+        // Client inconnu : vérifier le champ libre saisi par le technicien
+        if (in_array($nomClient, ['-', '?', ''], true)) {
+            $autreClient = trim($record['autre_client'] ?? '');
+            if (!$autreClient) return 'skipped';
+
+            // Créer directement en hors_contrat avec le nom libre
+            // (pas de lookup Client ni de contrat possible)
+            [$type, $estFlash, $dureeMinutes, $statut, $heureArrivee, $technicien]
+                = $this->extraireChampsTechniques($record, $formId);
+
+            Intervention::create([
+                'contrat_id'         => null,
+                'client_nom'         => $autreClient,
+                'date_intervention'  => $date,
+                'heure_intervention' => $heureArrivee,
+                'technicien'         => $technicien,
+                'numero_bon_kizeo'   => $bonNumero,
+                'type'               => $type,
+                'duree_minutes'      => $estFlash ? 0 : $dureeMinutes,
+                'statut'             => $statut,
+                'type_tri'           => 'hors-contrat',
+                'source_kizeo'       => true,
+                'deductible'         => false,
+                'hors_contrat'       => true,
+            ]);
+            return 'imported';
+        }
 
         // Normaliser les apostrophes
         $nomClient = str_replace("\u{2019}", "'", $nomClient);
@@ -301,38 +327,8 @@ class KizeoService
                 ->first();
         }
 
-        // Type
-        $estFlash = false;
-        $type     = 'site';
-
-        if ($formId === self::FORM_DISTANCE) {
-            $type     = 'distance';
-            $estFlash = strtolower($record['flash'] ?? 'non') === 'oui';
-        }
-
-        if ($estFlash) $type = 'flash';
-
-        // Durée
-        $dureeMinutes = 0;
-        if ($formId === self::FORM_DISTANCE) {
-            $dureeMinutes = $this->parserDuree($record['forfait_temps'] ?? '');
-            if ($dureeMinutes === 0) {
-                $dureeMinutes = $this->parserDuree($record['temps'] ?? '');
-            }
-        } else {
-            $heures = (float)($record['temps'] ?? 0);
-            $dureeMinutes = (int)($heures * 60);
-        }
-
-        $statut = strtolower($record['intervention'] ?? '') === 'clôturée' ? 'traitee' : 'non-traitee';
-
-        $heureArrivee = isset($record['_answer_time']) ? substr($record['_answer_time'], 11, 5) : null;
-
-        $userName   = $record['_user_name'] ?? '';
-        $technicien = null;
-        if (preg_match('/\(.*\s+(\w+)\)/', $userName, $m)) {
-            $technicien = $m[1];
-        }
+        [$type, $estFlash, $dureeMinutes, $statut, $heureArrivee, $technicien]
+            = $this->extraireChampsTechniques($record, $formId);
 
         if (!$contrat) {
             Intervention::create([
@@ -383,6 +379,40 @@ class KizeoService
         }
 
         return 'imported';
+    }
+
+    protected function extraireChampsTechniques(array $record, string $formId): array
+    {
+        $estFlash = false;
+        $type     = 'site';
+
+        if ($formId === self::FORM_DISTANCE) {
+            $type     = 'distance';
+            $estFlash = strtolower($record['flash'] ?? 'non') === 'oui';
+        }
+
+        if ($estFlash) $type = 'flash';
+
+        $dureeMinutes = 0;
+        if ($formId === self::FORM_DISTANCE) {
+            $dureeMinutes = $this->parserDuree($record['forfait_temps'] ?? '');
+            if ($dureeMinutes === 0) {
+                $dureeMinutes = $this->parserDuree($record['temps'] ?? '');
+            }
+        } else {
+            $heures = (float)($record['temps'] ?? 0);
+            $dureeMinutes = (int)($heures * 60);
+        }
+
+        $statut       = strtolower($record['intervention'] ?? '') === 'clôturée' ? 'traitee' : 'non-traitee';
+        $heureArrivee = isset($record['_answer_time']) ? substr($record['_answer_time'], 11, 5) : null;
+
+        $technicien = null;
+        if (preg_match('/\(.*\s+(\w+)\)/', $record['_user_name'] ?? '', $m)) {
+            $technicien = $m[1];
+        }
+
+        return [$type, $estFlash, $dureeMinutes, $statut, $heureArrivee, $technicien];
     }
 
     public function parserDuree(string $duree): int
