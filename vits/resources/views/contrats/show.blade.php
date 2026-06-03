@@ -165,4 +165,13 @@
     </div>
     @endforeach
 </div>
+@if(session('success'))
+<div id="success-modal" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:9999">
+    <div style="background:#fff;border-radius:12px;padding:2rem 2.5rem;max-width:480px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.18);text-align:center">
+        <div style="font-size:24px;margin-bottom:0.75rem">✅</div>
+        <div style="font-size:14px;color:#1a1a1a;line-height:1.6;margin-bottom:1.5rem">{{ session('success') }}</div>
+        <button onclick="document.getElementById('success-modal').remove()" style="padding:8px 24px;background:#E8720C;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer">OK</button>
+    </div>
+</div>
+@endif
 @endsection
