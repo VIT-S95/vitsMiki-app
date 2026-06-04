@@ -87,6 +87,16 @@ function setPeriode(val) {
 </div>
 @else
 
+{{-- Checkboxes techniciens --}}
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0.75rem">
+    @foreach($statsByTech as $tech => $stats)
+    <label style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid #E8720C;background:#FFF3EC;color:#E8720C;user-select:none">
+        <input type="checkbox" data-tech="{{ $tech }}" checked onchange="toggleTech(this)" style="accent-color:#E8720C;cursor:pointer">
+        {{ $tech }}
+    </label>
+    @endforeach
+</div>
+
 {{-- Tableau récapitulatif --}}
 <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;overflow:hidden;margin-bottom:1rem">
     <table style="width:100%;border-collapse:collapse;font-size:13px">
@@ -102,7 +112,7 @@ function setPeriode(val) {
         </thead>
         <tbody>
             @foreach($statsByTech as $tech => $stats)
-            <tr style="border-bottom:1px solid #f0f0f0">
+            <tr data-tech="{{ $tech }}" style="border-bottom:1px solid #f0f0f0">
                 <td style="padding:10px 14px;font-weight:500">{{ $tech }}</td>
                 <td style="padding:10px 14px;text-align:right;font-weight:600;color:#E8720C">{{ $stats['heures_label'] }}</td>
                 <td style="padding:10px 14px;text-align:right">{{ $stats['nb'] }}</td>
@@ -137,25 +147,41 @@ function setPeriode(val) {
 
 <script>
 (function() {
-    const techLabels       = @json($techLabels);
-    const techHeures       = @json($techHeures);
-    const moisLabels       = @json($moisLabels);
+    const techLabels        = @json($techLabels);
+    const techHeuresOrig    = @json($techHeures);
+    const techHeures        = [...techHeuresOrig];
+    const moisLabels        = @json($moisLabels);
     const evolutionDatasets = @json($evolutionDatasets);
 
-    new Chart(document.getElementById('chart-barres'), {
+    function fmtHeures(raw) {
+        if (raw === null || raw === undefined) return '';
+        const totalMin = Math.round(raw * 60);
+        const h = Math.floor(totalMin / 60);
+        const m = totalMin % 60;
+        return m > 0 ? h + 'h ' + m + 'min' : h + 'h';
+    }
+
+    const chartBarres = new Chart(document.getElementById('chart-barres'), {
         type: 'bar',
         data: {
             labels: techLabels,
             datasets: [{
                 label: 'Heures',
                 data: techHeures,
-                backgroundColor: '#E8720C',
+                backgroundColor: techLabels.map(() => '#E8720C'),
                 borderRadius: 6,
             }]
         },
         options: {
             responsive: true,
-            plugins: { legend: { display: false } },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) { return fmtHeures(context.raw); }
+                    }
+                }
+            },
             scales: {
                 y: { beginAtZero: true, ticks: { font: { size: 11 } } },
                 x: { ticks: { font: { size: 11 } } }
@@ -163,8 +189,9 @@ function setPeriode(val) {
         }
     });
 
+    let chartCourbes = null;
     if (moisLabels.length > 0) {
-        new Chart(document.getElementById('chart-courbes'), {
+        chartCourbes = new Chart(document.getElementById('chart-courbes'), {
             type: 'line',
             data: { labels: moisLabels, datasets: evolutionDatasets },
             options: {
@@ -179,6 +206,39 @@ function setPeriode(val) {
             }
         });
     }
+
+    window.toggleTech = function(cb) {
+        const tech    = cb.dataset.tech;
+        const checked = cb.checked;
+        const idx     = techLabels.indexOf(tech);
+        const label   = cb.closest('label');
+
+        if (checked) {
+            label.style.borderColor = '#E8720C';
+            label.style.background  = '#FFF3EC';
+            label.style.color       = '#E8720C';
+        } else {
+            label.style.borderColor = '#ddd';
+            label.style.background  = '#f5f5f5';
+            label.style.color       = '#aaa';
+        }
+
+        const row = document.querySelector('tr[data-tech="' + tech + '"]');
+        if (row) row.style.display = checked ? '' : 'none';
+
+        if (idx !== -1) {
+            chartBarres.data.datasets[0].data[idx] = checked ? techHeuresOrig[idx] : null;
+            chartBarres.update();
+        }
+
+        if (chartCourbes) {
+            const dsIdx = chartCourbes.data.datasets.findIndex(ds => ds.label === tech);
+            if (dsIdx !== -1) {
+                chartCourbes.setDatasetVisibility(dsIdx, checked);
+                chartCourbes.update();
+            }
+        }
+    };
 })();
 </script>
 
