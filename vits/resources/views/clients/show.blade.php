@@ -52,7 +52,33 @@
         <div style="margin-bottom:0.75rem"><div style="font-size:11px;color:#aaa;text-transform:uppercase">Société</div><div style="font-size:13px">{{ $client->nom_societe }}</div></div>
         <div style="margin-bottom:0.75rem"><div style="font-size:11px;color:#aaa;text-transform:uppercase">Signataire</div><div style="font-size:13px">{{ $client->nom_signataire }}</div></div>
         <div style="margin-bottom:0.75rem"><div style="font-size:11px;color:#aaa;text-transform:uppercase">Email</div><div style="font-size:13px;color:#E8720C">{{ $client->email_signataire ?? '—' }}</div></div>
-        <div><div style="font-size:11px;color:#aaa;text-transform:uppercase">N° Kizeo</div><div style="font-size:13px;font-family:monospace">{{ $client->numero_client_kizeo ?? '—' }}</div></div>
+        <div style="margin-bottom:0.75rem"><div style="font-size:11px;color:#aaa;text-transform:uppercase">N° Kizeo</div><div style="font-size:13px;font-family:monospace">{{ $client->numero_client_kizeo ?? '—' }}</div></div>
+
+        {{-- Paramètres mail --}}
+        <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid #f0f0f0">
+            <div style="font-size:11px;color:#aaa;text-transform:uppercase;margin-bottom:8px">Paramètres mail</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+                <div style="display:flex;align-items:center;gap:8px">
+                    @if($client->mail_alerte_fin_contrat)
+                        <span style="color:#166534;font-size:13px">&#10003;</span>
+                        <span style="font-size:12px;color:#1a1a1a">Alertes fin de contrat activées</span>
+                    @else
+                        <span style="color:#aaa;font-size:13px">&#8212;</span>
+                        <span style="font-size:12px;color:#aaa">Pas d'alerte fin de contrat</span>
+                    @endif
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                    @if($client->mail_rapport_periodique)
+                        @php $freq = ['mensuel'=>'Mensuel','hebdo'=>'Hebdomadaire','trimestriel'=>'Trimestriel'][$client->mail_frequence] ?? 'Mensuel'; @endphp
+                        <span style="color:#166534;font-size:13px">&#10003;</span>
+                        <span style="font-size:12px;color:#1a1a1a">Rapport périodique — {{ $freq }}</span>
+                    @else
+                        <span style="color:#aaa;font-size:13px">&#8212;</span>
+                        <span style="font-size:12px;color:#aaa">Pas de rapport périodique</span>
+                    @endif
+                </div>
+            </div>
+        </div>
     </div>
 
     {{-- HISTORIQUE CONTRATS --}}

@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Client extends Model
 {
     use HasFactory;
-    protected $fillable = ['nom_societe','nom_signataire','email_signataire','numero_client_kizeo','numero_contrat_vits','statut'];
+    protected $fillable = ['nom_societe','nom_signataire','email_signataire','numero_client_kizeo','numero_contrat_vits','statut','mail_alerte_fin_contrat','mail_rapport_periodique','mail_frequence'];
+    protected $casts = ['mail_alerte_fin_contrat' => 'boolean', 'mail_rapport_periodique' => 'boolean'];
 
     public function contrats() { return $this->hasMany(Contrat::class); }
 
