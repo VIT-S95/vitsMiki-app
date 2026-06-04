@@ -3,7 +3,7 @@
 @section('content')
 
 @php
-    $periodeActive      = request('periode', '');
+    // $periodeActive est injecté par le contrôleur (défaut 'week')
     $periodesLabels     = [
         ''         => 'Tout',
         'today'    => "Aujourd'hui",
@@ -60,7 +60,7 @@
             <option value="{{ $t }}" {{ request('technicien') === $t ? 'selected' : '' }}>{{ $t }}</option>
         @endforeach
     </select>
-    @if(request('technicien') || request('periode'))
+    @if(request('technicien') || request()->query('periode'))
         <a href="{{ route('performance.index') }}" style="font-size:13px;color:#888;padding:7px 0">Effacer</a>
     @endif
 </div>

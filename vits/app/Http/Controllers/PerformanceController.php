@@ -16,6 +16,10 @@ class PerformanceController extends Controller
 
         $query->when($request->technicien, fn($q) => $q->where('technicien', $request->technicien));
 
+        if (!$request->has('periode')) {
+            $request->merge(['periode' => 'week']);
+        }
+
         match ($request->periode) {
             'today'    => $query->whereDate('date_intervention', today()),
             'week'     => $query->whereBetween('date_intervention', [now()->startOfWeek(), now()->endOfWeek()]),
@@ -81,9 +85,11 @@ class PerformanceController extends Controller
             ];
         }
 
+        $periodeActive = $request->periode;
+
         return view('performance.index', compact(
             'techniciens', 'statsByTech', 'moisLabels',
-            'techLabels', 'techHeures', 'evolutionDatasets'
+            'techLabels', 'techHeures', 'evolutionDatasets', 'periodeActive'
         ));
     }
 }
