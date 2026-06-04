@@ -69,6 +69,9 @@
         $heuresConsommees = floor($minutesConsommees / 60);
         $minRestants = $minutesConsommees % 60;
         $heuresAllouees = $contrat->heures_par_periode;
+        $minutesNonDed = $interventionsPeriode->where('deductible', false)->where('duree_minutes', '>', 0)->sum('duree_minutes');
+        $hNonDed = floor($minutesNonDed / 60);
+        $mNonDed = $minutesNonDed % 60;
         $pct = $heuresAllouees > 0 ? min(100, round(($minutesConsommees / ($heuresAllouees * 60)) * 100)) : 0;
         $couleur = $pct >= 80 ? '#E8720C' : '#166534';
         $enCours = now()->between($periode['debut'], $periode['fin']);
@@ -93,7 +96,13 @@
                 @if($enCours)<span style="font-size:11px;color:#888;font-weight:400">(période en cours)</span>@endif
             </div>
             <div style="display:flex;align-items:center;gap:10px">
-                <span style="font-size:12px;color:#888">{{ $heuresConsommees }}h @if($minRestants > 0){{ $minRestants }}min @endif / {{ $heuresAllouees }}h</span>
+                <span style="font-size:12px;color:#888">
+                    {{ $heuresConsommees }}h @if($minRestants > 0){{ $minRestants }}min @endif
+                    @if($minutesNonDed > 0)
+                        <span style="color:#bbb">dont {{ $hNonDed > 0 ? $hNonDed.'h' : '' }}{{ $mNonDed > 0 ? $mNonDed.'min' : '' }} non déductibles</span>
+                    @endif
+                    / {{ $heuresAllouees }}h
+                </span>
                 <div style="width:80px;height:5px;background:#e0e0e0;border-radius:99px;overflow:hidden">
                     <div style="width:{{ $pct }}%;height:100%;background:{{ $couleur }};border-radius:99px"></div>
                 </div>
@@ -129,7 +138,7 @@
                                 @elseif($intervention->type === 'administrateur') <span style="background:#F3F0FF;color:#4C1D95;padding:2px 6px;border-radius:4px;font-size:10px">admin</span>
                                 @else <span style="background:#FFF3E6;color:#854F0B;padding:2px 6px;border-radius:4px;font-size:10px">flash {{ $intervention->flash_numero }}/3</span>
                                 @endif
-                                @if($nonDed)<span style="font-size:10px;color:#aaa;margin-left:4px">hors contrat</span>@endif
+                                @if($nonDed)<span style="font-size:10px;color:#777;background:#f0f0f0;border:1px solid #ddd;padding:1px 5px;border-radius:3px;margin-left:4px">Non déductible</span>@endif
                                 @if($intervention->motif)<span style="font-size:10px;color:#aaa;margin-left:4px">— {{ $intervention->motif }}</span>@endif
                             </td>
                             <td style="padding:6px 12px;text-align:right;font-weight:500;width:80px">

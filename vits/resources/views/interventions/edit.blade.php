@@ -128,21 +128,25 @@
         </div>
 
         <div style="display:flex;justify-content:space-between;align-items:center;padding-top:1.25rem;border-top:1px solid #f0f0f0">
-            <form method="POST" action="{{ route('interventions.destroy', $intervention) }}" onsubmit="return confirm('Supprimer cette intervention ?')">
-                @csrf @method('DELETE')
-                <button type="submit" style="padding:8px 14px;font-size:12px;background:#fff;border:1px solid #fca5a5;color:#dc2626;border-radius:8px;cursor:pointer">🗑 Supprimer</button>
-            </form>
+            <button type="submit" form="form-delete-intervention"
+                    onclick="return confirm('Supprimer cette intervention ?')"
+                    style="padding:8px 14px;font-size:12px;background:#fff;border:1px solid #fca5a5;color:#dc2626;border-radius:8px;cursor:pointer">&#128465; Supprimer</button>
             <div style="display:flex;gap:8px">
                 @if($intervention->contrat_id)
                 <a href="{{ route('contrats.show', $intervention->contrat_id) }}" style="padding:8px 16px;font-size:13px;border:1px solid #ddd;border-radius:8px;color:#666;text-decoration:none">Annuler</a>
                 @else
                 <a href="{{ route('interventions.index') }}" style="padding:8px 16px;font-size:13px;border:1px solid #ddd;border-radius:8px;color:#666;text-decoration:none">Annuler</a>
                 @endif
-                <button type="submit" form="form-intervention" style="padding:8px 20px;font-size:13px;font-weight:500;background:#E8720C;color:#fff;border:none;border-radius:8px;cursor:pointer">✓ Enregistrer</button>
+                <button type="submit" form="form-intervention" style="padding:8px 20px;font-size:13px;font-weight:500;background:#E8720C;color:#fff;border:none;border-radius:8px;cursor:pointer">&#10003; Enregistrer</button>
             </div>
         </div>
     </form>
 </div>
+
+{{-- Formulaire de suppression séparé (hors du form d'édition pour éviter les forms imbriqués) --}}
+<form id="form-delete-intervention" method="POST" action="{{ route('interventions.destroy', $intervention) }}">
+    @csrf @method('DELETE')
+</form>
 
 <script>
 function onTypeChange() {

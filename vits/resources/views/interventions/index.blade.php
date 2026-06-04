@@ -125,7 +125,7 @@ function setPeriode(val) {
                     @else
                         <span style="background:#FFF3E6;color:#854F0B;padding:2px 6px;border-radius:4px;font-size:10px">flash {{ $intervention->flash_numero }}/3</span>
                     @endif
-                    @if($nonDed)<span style="font-size:10px;color:#aaa;margin-left:4px">hors contrat</span>@endif
+                    @if($nonDed)<span style="font-size:10px;color:#777;background:#f0f0f0;border:1px solid #ddd;padding:1px 5px;border-radius:3px;margin-left:4px">Non déductible</span>@endif
                 </td>
                 <td style="padding:10px 14px;text-align:right;font-weight:500">
                     @php $h=floor($intervention->duree_minutes/60); $m=$intervention->duree_minutes%60; @endphp
