@@ -23,6 +23,8 @@ use App\Http\Controllers\FusionController;
 Route::middleware(['auth', 'admin.only'])->group(function () {
     Route::get('/clients/fusion', [FusionController::class, 'index'])->name('clients.fusion');
     Route::post('/clients/fusion', [FusionController::class, 'fusionner'])->name('clients.fusion.store');
+    Route::post('/clients/fusion/ignorer', [FusionController::class, 'ignorer'])->name('clients.fusion.ignorer');
+    Route::post('/clients/fusion/ignores/reset', [FusionController::class, 'resetIgnores'])->name('clients.fusion.ignores.reset');
 });
 
 use App\Http\Controllers\ClientController;

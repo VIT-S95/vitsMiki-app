@@ -22,7 +22,7 @@
         $m = $saisie->total_minutes % 60;
         $duree = ($h > 0 ? $h.'h' : '').($h > 0 && $m > 0 ? ' ' : '').($m > 0 ? $m.'min' : ($h === 0 ? '0min' : ''));
     @endphp
-    <div class="fusion-card" id="card-{{ $loop->index }}" style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1rem 1.25rem">
+    <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1rem 1.25rem">
         <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
             <div style="flex:1;min-width:180px">
                 <div style="font-size:13px;font-weight:500;color:#1a1a1a">{{ $saisie->client_nom }}</div>
@@ -48,14 +48,29 @@
                     Fusionner
                 </button>
             </form>
-            <button type="button"
-                    onclick="document.getElementById('card-{{ $loop->index }}').style.display='none'"
-                    style="padding:7px 14px;font-size:13px;border:1px solid #ddd;border-radius:8px;color:#888;background:#fff;cursor:pointer;white-space:nowrap">
-                Ignorer
-            </button>
+            <form method="POST" action="{{ route('clients.fusion.ignorer') }}">
+                @csrf
+                <input type="hidden" name="client_nom_source" value="{{ $saisie->client_nom }}">
+                <button type="submit"
+                        style="padding:7px 14px;font-size:13px;border:1px solid #ddd;border-radius:8px;color:#888;background:#fff;cursor:pointer;white-space:nowrap">
+                    Ignorer
+                </button>
+            </form>
         </div>
     </div>
     @endforeach
+</div>
+@endif
+
+@if($hasIgnores)
+<div style="margin-top:1.25rem;text-align:center">
+    <form method="POST" action="{{ route('clients.fusion.ignores.reset') }}" style="display:inline">
+        @csrf
+        <button type="submit"
+                style="font-size:12px;color:#888;background:none;border:none;cursor:pointer;text-decoration:underline;padding:0">
+            Réafficher les ignorés
+        </button>
+    </form>
 </div>
 @endif
 @endsection
