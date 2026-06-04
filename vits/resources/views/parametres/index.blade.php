@@ -206,14 +206,21 @@
             </div>
         </div>
 
-        <div style="padding:10px 16px;display:flex;align-items:center;justify-content:space-between">
+        <div style="padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
             <button type="button" id="btn-test-smtp"
                     onclick="testSmtp()"
-                    style="padding:7px 14px;font-size:12px;background:#fff;border:1px solid #ddd;border-radius:8px;cursor:pointer;color:#555">
+                    style="padding:7px 14px;font-size:12px;background:#fff;border:1px solid #ddd;border-radius:8px;cursor:pointer;color:#555;white-space:nowrap">
                 Tester la connexion SMTP
             </button>
-            <span id="smtp-test-result" style="font-size:12px;margin:0 12px;flex:1"></span>
-            <button type="submit" style="padding:8px 20px;font-size:13px;font-weight:500;background:#E8720C;color:#fff;border:none;border-radius:8px;cursor:pointer">
+            <input type="email" id="test-email" placeholder="email@example.com"
+                   style="padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:12px;width:190px">
+            <button type="button" id="btn-send-test"
+                    onclick="sendTestMail()"
+                    style="padding:7px 14px;font-size:12px;background:#fff;border:1px solid #ddd;border-radius:8px;cursor:pointer;color:#555;white-space:nowrap">
+                Envoyer un mail de test
+            </button>
+            <span id="smtp-test-result" style="font-size:12px;flex:1;min-width:80px"></span>
+            <button type="submit" style="padding:8px 20px;font-size:13px;font-weight:500;background:#E8720C;color:#fff;border:none;border-radius:8px;cursor:pointer;white-space:nowrap">
                 Enregistrer la config mail
             </button>
         </div>
@@ -271,15 +278,16 @@ function toggleAcc(btn) {
     }
 }
 
-function testSmtp() {
-    const btn = document.getElementById('btn-test-smtp');
+function smtpFetch(body, btnId, btnLabel, loadingLabel) {
+    const btn = document.getElementById(btnId);
     const res = document.getElementById('smtp-test-result');
     btn.disabled = true;
-    btn.textContent = 'Test en cours...';
+    btn.textContent = loadingLabel;
     res.textContent = '';
     fetch('{{ route('parametres.mail.test') }}', {
         method: 'POST',
-        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' }
+        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
     })
     .then(r => r.json())
     .then(data => {
@@ -287,7 +295,15 @@ function testSmtp() {
         res.style.color = data.ok ? '#166534' : '#dc2626';
     })
     .catch(() => { res.textContent = 'Erreur réseau.'; res.style.color = '#dc2626'; })
-    .finally(() => { btn.disabled = false; btn.textContent = 'Tester la connexion SMTP'; });
+    .finally(() => { btn.disabled = false; btn.textContent = btnLabel; });
+}
+function testSmtp() {
+    smtpFetch({}, 'btn-test-smtp', 'Tester la connexion SMTP', 'Test en cours...');
+}
+function sendTestMail() {
+    const email = document.getElementById('test-email').value.trim();
+    if (!email) { document.getElementById('smtp-test-result').textContent = 'Entrez une adresse email.'; document.getElementById('smtp-test-result').style.color = '#dc2626'; return; }
+    smtpFetch({ test_email: email }, 'btn-send-test', 'Envoyer un mail de test', 'Envoi...');
 }
 
 function addMotif(){

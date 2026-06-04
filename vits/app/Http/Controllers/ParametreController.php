@@ -71,20 +71,39 @@ class ParametreController extends Controller
 
     public function testSmtp(Request $request)
     {
-        $host     = Setting::get('mail_host', '');
-        $port     = (int) Setting::get('mail_port', 587);
-        $username = Setting::get('mail_username', '');
-        $password = Setting::get('mail_password', '');
-        $from     = Setting::get('mail_from_address', '');
+        $host      = Setting::get('mail_host', '');
+        $port      = (int) Setting::get('mail_port', 587);
+        $username  = Setting::get('mail_username', '');
+        $password  = Setting::get('mail_password', '');
+        $from      = Setting::get('mail_from_address', '');
+        $fromName  = Setting::get('mail_from_name', 'VIT-S');
 
         if (!$host || !$username || !$from) {
             return response()->json(['ok' => false, 'message' => 'Configuration SMTP incomplète.']);
         }
 
+        $testEmail = $request->input('test_email');
+
         try {
             $transport = new \Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport($host, $port);
             $transport->setUsername($username);
             $transport->setPassword($password);
+
+            if ($testEmail) {
+                $signature = Setting::get('mail_signature', '');
+                $body = "Ceci est un mail de test envoyé depuis l'application VIT-S.";
+                if ($signature) {
+                    $body .= "\n\n" . $signature;
+                }
+                $email = (new \Symfony\Component\Mime\Email())
+                    ->from(new \Symfony\Component\Mime\Address($from, $fromName))
+                    ->to($testEmail)
+                    ->subject('Test mail VIT-S')
+                    ->text($body);
+                (new \Symfony\Component\Mailer\Mailer($transport))->send($email);
+                return response()->json(['ok' => true, 'message' => "Mail de test envoyé à {$testEmail}."]);
+            }
+
             $transport->start();
             $transport->stop();
             return response()->json(['ok' => true, 'message' => 'Connexion SMTP réussie.']);
