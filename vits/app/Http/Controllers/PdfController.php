@@ -33,13 +33,19 @@ class PdfController extends Controller
         // Filtrer sur la période choisie si spécifiée
         $periodeChoisie = $request->get('periode'); // numéro de période ou 'toutes'
 
+        $interventionsAnterieures = $contrat->interventions
+            ->filter(fn($i) => $i->date_intervention < $contrat->date_debut)
+            ->sortBy('date_intervention')->values();
+        $minutesAnterieures = $interventionsAnterieures->where('deductible', true)->sum('duree_minutes');
+
+        $isFirstPeriode = true;
         $periodesAvecInterventions = $periodes->filter(function($periode) use ($periodeChoisie) {
             if (!$periode['debut']->lte(now())) return false;
             if ($periodeChoisie && $periodeChoisie !== 'toutes') {
                 return $periode['numero'] == $periodeChoisie;
             }
             return true;
-        })->map(function($periode) use ($contrat) {
+        })->map(function($periode) use ($contrat, $minutesAnterieures, &$isFirstPeriode) {
             $interventions = $contrat->interventions->filter(function($i) use ($periode) {
                 return $i->deductible
                     && $i->date_intervention >= $periode['debut']
@@ -61,7 +67,11 @@ class PdfController extends Controller
                 ]);
                 $current->addMonth();
             }
-            $totalMinutes   = $interventions->sum('duree_minutes');
+            $totalMinutes = $interventions->sum('duree_minutes');
+            if ($isFirstPeriode) {
+                $totalMinutes  += $minutesAnterieures;
+                $isFirstPeriode = false;
+            }
             $heuresAllouees = $contrat->heures_par_periode;
             $diff           = ($heuresAllouees * 60) - $totalMinutes;
             $periodeFinie   = $periode['fin']->lt(now());
@@ -86,7 +96,7 @@ class PdfController extends Controller
             'margin_left'   => 15,
             'margin_right'  => 15,
         ]);
-        $html = view('pdf.rapport', compact('contrat', 'periodesAvecInterventions'))->render();
+        $html = view('pdf.rapport', compact('contrat', 'periodesAvecInterventions', 'interventionsAnterieures'))->render();
         $mpdf->WriteHTML($html);
 
         if ($request->get('action') === 'download') {

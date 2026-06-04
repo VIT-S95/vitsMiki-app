@@ -124,6 +124,51 @@ tr { page-break-inside: avoid; }
     </span>
 </div>
 
+@if($loop->first && !empty($interventionsAnterieures) && $interventionsAnterieures->isNotEmpty())
+@php
+    $minAntPdf   = $interventionsAnterieures->sum('duree_minutes');
+    $hAntPdf     = intdiv($minAntPdf, 60);
+    $mAntPdf     = $minAntPdf % 60;
+    $labelAntPdf = ($hAntPdf > 0 ? $hAntPdf.'h' : '').($hAntPdf > 0 && $mAntPdf > 0 ? ' ' : '').($mAntPdf > 0 ? $mAntPdf.'min' : '');
+    $nbAntPdf    = $interventionsAnterieures->count();
+@endphp
+<div style="border:2px dashed #E8720C;border-radius:4px;background:#FFF8F3;padding:8px 10px;margin:8px 0">
+    <div style="font-size:11px;font-weight:bold;color:#E8720C;margin-bottom:3px">Interventions antérieures au contrat</div>
+    <div style="font-size:10px;color:#aaa;margin-bottom:6px">Rattachées manuellement — comptabilisées dans cette période</div>
+    <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead>
+            <tr style="border-bottom:1px solid #f0e0d0">
+                <th style="width:18%;padding:3px 6px">Date</th>
+                <th style="width:25%;padding:3px 6px">Technicien</th>
+                <th style="width:35%;padding:3px 6px">Type</th>
+                <th style="width:22%;padding:3px 6px;text-align:right">Durée</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($interventionsAnterieures as $i)
+            @php $hiA=intdiv($i->duree_minutes,60); $miA=$i->duree_minutes%60; @endphp
+            <tr style="border-top:1px solid #f5ede5">
+                <td style="padding:3px 6px;color:#888">{{ $i->date_intervention->format('d/m/Y') }}</td>
+                <td style="padding:3px 6px;color:#555">{{ $i->technicien ?? '—' }}</td>
+                <td style="padding:3px 6px">
+                    @if($i->type==='site')<span class="tag-site">sur site</span>
+                    @elseif($i->type==='distance')<span class="tag-dist">à distance</span>
+                    @elseif($i->type==='administrateur')<span class="tag-admin">admin</span>
+                    @else<span class="tag-flash">flash {{ $i->flash_numero }}/3</span>@endif
+                </td>
+                <td style="padding:3px 6px;text-align:right;font-weight:bold">{{ $hiA>0?$hiA.'h ':'' }}{{ $miA>0?$miA.'min':'' }}</td>
+            </tr>
+            @endforeach
+            <tr style="border-top:2px solid #f0e0d0;background:#fff0e8">
+                <td colspan="4" style="padding:4px 6px;font-size:10px;font-weight:bold;color:#E8720C">
+                    Total : {{ $labelAntPdf }} ({{ $nbAntPdf }} intervention{{ $nbAntPdf > 1 ? 's' : '' }})
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+@endif
+
 @foreach($periode['mois'] as $mois)
 @php
     $mMin = $mois['total_minutes'];

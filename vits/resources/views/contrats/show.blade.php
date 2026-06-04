@@ -58,54 +58,6 @@
     </div>
 </div>
 
-@if($interventionsAnterieures->isNotEmpty())
-@php
-    $minAnt = $interventionsAnterieures->sum('duree_minutes');
-    $hAnt   = floor($minAnt / 60);
-    $mAnt   = $minAnt % 60;
-    $labelAnt = ($hAnt > 0 ? $hAnt.'h' : '').($hAnt > 0 && $mAnt > 0 ? ' ' : '').($mAnt > 0 ? $mAnt.'min' : '');
-    $nbAnt = $interventionsAnterieures->count();
-@endphp
-<div style="border:2px dashed #E8720C;border-radius:12px;background:#FFF8F3;padding:1rem 1.25rem;margin-bottom:1rem">
-    <div style="font-size:13px;font-weight:500;color:#E8720C;margin-bottom:2px">Interventions antérieures au contrat</div>
-    <div style="font-size:12px;color:#888;margin-bottom:0.75rem">Rattachées manuellement — comptabilisées dans la première période</div>
-    <table style="width:100%;border-collapse:collapse;font-size:12px">
-        <thead>
-            <tr style="border-bottom:1px solid #f0e0d0">
-                <th style="padding:4px 8px;text-align:left;font-size:10px;color:#888;text-transform:uppercase;width:90px">Date</th>
-                <th style="padding:4px 8px;text-align:left;font-size:10px;color:#888;text-transform:uppercase">Technicien</th>
-                <th style="padding:4px 8px;text-align:left;font-size:10px;color:#888;text-transform:uppercase">Type</th>
-                <th style="padding:4px 8px;text-align:right;font-size:10px;color:#888;text-transform:uppercase;width:80px">Durée</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($interventionsAnterieures as $i)
-            @php $hi=floor($i->duree_minutes/60); $mi=$i->duree_minutes%60; @endphp
-            <tr style="border-top:1px solid #f5ede5">
-                <td style="padding:5px 8px;color:#888">{{ $i->date_intervention->format('d/m/Y') }}</td>
-                <td style="padding:5px 8px;color:#555">{{ $i->technicien ?? '—' }}</td>
-                <td style="padding:5px 8px">
-                    @if($i->type==='site')<span style="background:#E6F1FB;color:#0C447C;padding:2px 6px;border-radius:4px;font-size:10px">sur site</span>
-                    @elseif($i->type==='distance')<span style="background:#E1F5EE;color:#085041;padding:2px 6px;border-radius:4px;font-size:10px">à distance</span>
-                    @elseif($i->type==='administrateur')<span style="background:#F3F0FF;color:#4C1D95;padding:2px 6px;border-radius:4px;font-size:10px">admin</span>
-                    @else<span style="background:#FFF3E6;color:#854F0B;padding:2px 6px;border-radius:4px;font-size:10px">flash {{ $i->flash_numero }}/3</span>
-                    @endif
-                </td>
-                <td style="padding:5px 8px;text-align:right;font-weight:500">{{ $hi>0?$hi.'h ':'' }}{{ $mi>0?$mi.'min':'' }}</td>
-            </tr>
-            @endforeach
-        </tbody>
-        <tfoot>
-            <tr style="border-top:2px solid #f0e0d0;background:#fff0e8">
-                <td colspan="4" style="padding:6px 8px;font-size:11px;font-weight:500;color:#E8720C">
-                    Total : {{ $labelAnt }} ({{ $nbAnt }} intervention{{ $nbAnt > 1 ? 's' : '' }})
-                </td>
-            </tr>
-        </tfoot>
-    </table>
-</div>
-@endif
-
 <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1rem 1.25rem">
     <div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:0.75rem">Périodes et interventions</div>
     @foreach($periodes as $periode)
@@ -161,6 +113,57 @@
             </div>
         </div>
         <div style="display:{{ $enCours ? 'block' : 'none' }}">
+            @if($loop->first && $interventionsAnterieures->isNotEmpty())
+            @php
+                $minAnt   = $interventionsAnterieures->sum('duree_minutes');
+                $hAnt     = floor($minAnt / 60);
+                $mAnt     = $minAnt % 60;
+                $labelAnt = ($hAnt > 0 ? $hAnt.'h' : '').($hAnt > 0 && $mAnt > 0 ? ' ' : '').($mAnt > 0 ? $mAnt.'min' : '');
+                $nbAnt    = $interventionsAnterieures->count();
+            @endphp
+            <div style="margin:10px 12px;border:2px dashed #E8720C;border-radius:8px;background:#FFF8F3;padding:10px 12px">
+                <div style="font-size:12px;font-weight:500;color:#E8720C;margin-bottom:2px">Interventions antérieures au contrat</div>
+                <div style="font-size:11px;color:#aaa;margin-bottom:8px">Rattachées manuellement — comptabilisées dans cette période</div>
+                <table style="width:100%;border-collapse:collapse;font-size:12px">
+                    <thead>
+                        <tr style="border-bottom:1px solid #f0e0d0">
+                            <th style="padding:3px 8px;text-align:left;font-size:10px;color:#888;text-transform:uppercase;width:90px">Date</th>
+                            <th style="padding:3px 8px;text-align:left;font-size:10px;color:#888;text-transform:uppercase">Technicien</th>
+                            <th style="padding:3px 8px;text-align:left;font-size:10px;color:#888;text-transform:uppercase">Type</th>
+                            <th style="padding:3px 8px;text-align:right;font-size:10px;color:#888;text-transform:uppercase;width:80px">Durée</th>
+                            <th style="width:40px"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($interventionsAnterieures as $i)
+                        @php $hi=floor($i->duree_minutes/60); $mi=$i->duree_minutes%60; @endphp
+                        <tr style="border-top:1px solid #f5ede5">
+                            <td style="padding:4px 8px;color:#888">{{ $i->date_intervention->format('d/m/Y') }}</td>
+                            <td style="padding:4px 8px;color:#555">{{ $i->technicien ?? '—' }}</td>
+                            <td style="padding:4px 8px">
+                                @if($i->type==='site')<span style="background:#E6F1FB;color:#0C447C;padding:2px 6px;border-radius:4px;font-size:10px">sur site</span>
+                                @elseif($i->type==='distance')<span style="background:#E1F5EE;color:#085041;padding:2px 6px;border-radius:4px;font-size:10px">à distance</span>
+                                @elseif($i->type==='administrateur')<span style="background:#F3F0FF;color:#4C1D95;padding:2px 6px;border-radius:4px;font-size:10px">admin</span>
+                                @else<span style="background:#FFF3E6;color:#854F0B;padding:2px 6px;border-radius:4px;font-size:10px">flash {{ $i->flash_numero }}/3</span>
+                                @endif
+                            </td>
+                            <td style="padding:4px 8px;text-align:right;font-weight:500">{{ $hi>0?$hi.'h ':'' }}{{ $mi>0?$mi.'min':'' }}</td>
+                            <td style="padding:4px 8px;text-align:right">
+                                <a href="{{ route('interventions.edit', $i) }}" style="font-size:11px;color:#888;text-decoration:none;padding:3px 7px;border:1px solid #ddd;border-radius:5px">✏</a>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr style="border-top:2px solid #f0e0d0;background:#fff0e8">
+                            <td colspan="5" style="padding:5px 8px;font-size:11px;font-weight:500;color:#E8720C">
+                                Total : {{ $labelAnt }} ({{ $nbAnt }} intervention{{ $nbAnt > 1 ? 's' : '' }})
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            @endif
             @if($interventionsPeriode->count() > 0)
                 @foreach($moisList as $mois)
                 @if($mois['ints']->count() > 0)
