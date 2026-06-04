@@ -35,14 +35,21 @@ class PerformanceController extends Controller
         $interventions = $query->orderBy('date_intervention')->get();
 
         $statsByTech = $interventions->groupBy('technicien')
-            ->map(fn($items) => [
-                'nb'       => $items->count(),
-                'heures'   => round($items->sum('duree_minutes') / 60, 1),
-                'site'     => $items->where('type', 'site')->count(),
-                'distance' => $items->where('type', 'distance')->count(),
-                'flash'    => $items->where('type', 'flash')->count(),
-            ])
-            ->sortByDesc('heures');
+            ->map(function ($items) {
+                $totalMinutes = $items->sum('duree_minutes');
+                $h = intdiv($totalMinutes, 60);
+                $m = $totalMinutes % 60;
+                return [
+                    'nb'          => $items->count(),
+                    'minutes'     => $totalMinutes,
+                    'heures'      => round($totalMinutes / 60, 2),
+                    'heures_label'=> $m > 0 ? "{$h}h {$m}min" : "{$h}h",
+                    'site'        => $items->where('type', 'site')->count(),
+                    'distance'    => $items->where('type', 'distance')->count(),
+                    'flash'       => $items->where('type', 'flash')->count(),
+                ];
+            })
+            ->sortByDesc('minutes');
 
         $moisPresents = $interventions
             ->map(fn($i) => $i->date_intervention->format('Y-m'))

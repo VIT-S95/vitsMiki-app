@@ -14,14 +14,17 @@
         'n1'       => 'Année précédente',
         'custom'   => 'Personnalisé',
     ];
-    $totalNb     = $statsByTech->sum('nb');
-    $totalHeures = round($statsByTech->sum('heures'), 1);
+    $totalNb          = $statsByTech->sum('nb');
+    $totalMinutes     = $statsByTech->sum('minutes');
+    $th = intdiv($totalMinutes, 60);
+    $tm = $totalMinutes % 60;
+    $totalHeuresLabel = $tm > 0 ? "{$th}h {$tm}min" : "{$th}h";
 @endphp
 
 <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem">
     <div>
         <h1 style="font-size:18px;font-weight:500;color:#1a1a1a">Performance techniciens</h1>
-        <p style="font-size:13px;color:#888;margin-top:2px">{{ $totalNb }} interventions · {{ $totalHeures }}h dans la période</p>
+        <p style="font-size:13px;color:#888;margin-top:2px">{{ $totalNb }} interventions · {{ $totalHeuresLabel }} dans la période</p>
     </div>
 </div>
 
@@ -101,7 +104,7 @@ function setPeriode(val) {
             @foreach($statsByTech as $tech => $stats)
             <tr style="border-bottom:1px solid #f0f0f0">
                 <td style="padding:10px 14px;font-weight:500">{{ $tech }}</td>
-                <td style="padding:10px 14px;text-align:right;font-weight:600;color:#E8720C">{{ $stats['heures'] }}h</td>
+                <td style="padding:10px 14px;text-align:right;font-weight:600;color:#E8720C">{{ $stats['heures_label'] }}</td>
                 <td style="padding:10px 14px;text-align:right">{{ $stats['nb'] }}</td>
                 <td style="padding:10px 14px;text-align:right">
                     @if($stats['site'])<span style="background:#E6F1FB;color:#0C447C;padding:2px 8px;border-radius:4px;font-size:12px">{{ $stats['site'] }}</span>@else —@endif
