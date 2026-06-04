@@ -16,8 +16,17 @@ class ParametreController extends Controller
             'kizeo_api_key'       => env('KIZEO_API_KEY', ''),
             'session_minutes'     => (int) Setting::get('session_minutes',     config('vits.session_minutes', 30)),
         ];
+        $mailSettings = [
+            'mail_host'         => Setting::get('mail_host', ''),
+            'mail_port'         => Setting::get('mail_port', '587'),
+            'mail_username'     => Setting::get('mail_username', ''),
+            'mail_password'     => Setting::get('mail_password', ''),
+            'mail_from_address' => Setting::get('mail_from_address', ''),
+            'mail_from_name'    => Setting::get('mail_from_name', 'VIT-S'),
+            'mail_signature'    => Setting::get('mail_signature', ''),
+        ];
         $logoPath = file_exists(public_path('storage/logo/logo.png')) ? asset('storage/logo/logo.png') : null;
-        return view('parametres.index', compact('motifs', 'parametres', 'logoPath'));
+        return view('parametres.index', compact('motifs', 'parametres', 'mailSettings', 'logoPath'));
     }
 
     public function update(Request $request)
@@ -38,6 +47,50 @@ class ParametreController extends Controller
         $this->updateEnv('KIZEO_API_KEY', $request->kizeo_api_key ?? '');
         $this->saveConfig(config('vits.motifs_intervention', []), $request);
         return redirect()->route('parametres.index')->with('success', 'Paramètres enregistrés.');
+    }
+
+    public function updateMail(Request $request)
+    {
+        $request->validate([
+            'mail_host'         => 'nullable|string|max:255',
+            'mail_port'         => 'nullable|integer|min:1|max:65535',
+            'mail_username'     => 'nullable|string|max:255',
+            'mail_password'     => 'nullable|string|max:255',
+            'mail_from_address' => 'nullable|email|max:255',
+            'mail_from_name'    => 'nullable|string|max:255',
+            'mail_signature'    => 'nullable|string',
+        ]);
+
+        $keys = ['mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_from_address', 'mail_from_name', 'mail_signature'];
+        foreach ($keys as $key) {
+            Setting::set($key, $request->input($key, ''));
+        }
+
+        return redirect()->route('parametres.index')->with('success', 'Configuration mail enregistrée.');
+    }
+
+    public function testSmtp(Request $request)
+    {
+        $host     = Setting::get('mail_host', '');
+        $port     = (int) Setting::get('mail_port', 587);
+        $username = Setting::get('mail_username', '');
+        $password = Setting::get('mail_password', '');
+        $from     = Setting::get('mail_from_address', '');
+
+        if (!$host || !$username || !$from) {
+            return response()->json(['ok' => false, 'message' => 'Configuration SMTP incomplète.']);
+        }
+
+        try {
+            $transport = new \Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport($host, $port);
+            $transport->setUsername($username);
+            $transport->setPassword($password);
+            $transport->start();
+            $transport->stop();
+            return response()->json(['ok' => true, 'message' => 'Connexion SMTP réussie.']);
+        } catch (\Exception $e) {
+            return response()->json(['ok' => false, 'message' => $e->getMessage()]);
+        }
     }
 
     public function updateMotifs(Request $request)

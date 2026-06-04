@@ -133,8 +133,11 @@
         {{-- SYSTÈME --}}
         <div class="nav-section">Système</div>
         @if($user->isAdmin())
-        <a href="{{ route('parametres.index') }}" class="nav-item {{ request()->routeIs('parametres.*') ? 'active' : '' }}">
+        <a href="{{ route('parametres.index') }}" class="nav-item {{ request()->routeIs('parametres.*') && !request()->routeIs('mail-templates.*') ? 'active' : '' }}">
             <i class="ti ti-settings"></i> Paramètres
+        </a>
+        <a href="{{ route('mail-templates.index') }}" class="nav-item {{ request()->routeIs('mail-templates.*') ? 'active' : '' }}">
+            <i class="ti ti-mail"></i> Templates mail
         </a>
         <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
             <i class="ti ti-user-cog"></i> Utilisateurs

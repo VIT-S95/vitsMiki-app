@@ -76,9 +76,14 @@ Route::middleware(['auth', 'admin.only'])->group(function () {
 });
 
 use App\Http\Controllers\ParametreController;
+use App\Http\Controllers\MailTemplateController;
 Route::middleware(['auth', 'admin.only'])->group(function () {
     Route::get('/parametres', [ParametreController::class, 'index'])->name('parametres.index');
     Route::post('/parametres', [ParametreController::class, 'update'])->name('parametres.update');
     Route::delete('/parametres/logo', [ParametreController::class, 'deleteLogo'])->name('parametres.logo.delete');
     Route::post('/parametres/motifs', [ParametreController::class, 'updateMotifs'])->name('parametres.motifs');
+    Route::post('/parametres/mail', [ParametreController::class, 'updateMail'])->name('parametres.mail.update');
+    Route::post('/parametres/mail/test', [ParametreController::class, 'testSmtp'])->name('parametres.mail.test');
+
+    Route::resource('mail-templates', MailTemplateController::class);
 });

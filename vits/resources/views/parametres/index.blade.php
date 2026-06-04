@@ -106,6 +106,102 @@
 </div>
 </form>
 
+{{-- CONFIGURATION MAIL --}}
+<form method="POST" action="{{ route('parametres.mail.update') }}">
+@csrf
+<div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;margin-bottom:1rem;overflow:hidden">
+    <div style="padding:12px 16px;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;justify-content:space-between">
+        <div>
+            <div style="font-size:13px;font-weight:500">Configuration Mail</div>
+            <div style="font-size:12px;color:#aaa">Paramètres SMTP pour l'envoi d'emails depuis l'application</div>
+        </div>
+        <a href="{{ route('mail-templates.index') }}" style="font-size:12px;color:#E8720C;text-decoration:none;border:1px solid #E8720C;padding:4px 10px;border-radius:6px">Templates mail</a>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e0e0e0;border-right:1px solid #e0e0e0">
+            <div>
+                <div style="font-size:13px;color:#1a1a1a">Serveur SMTP</div>
+                <div style="font-size:12px;color:#aaa;margin-top:2px">Hôte du serveur mail sortant</div>
+            </div>
+            <input type="text" name="mail_host" value="{{ $mailSettings['mail_host'] }}" placeholder="smtp.example.com"
+                   style="width:180px;padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e0e0e0">
+            <div>
+                <div style="font-size:13px;color:#1a1a1a">Port SMTP</div>
+                <div style="font-size:12px;color:#aaa;margin-top:2px">587 (TLS) ou 465 (SSL)</div>
+            </div>
+            <input type="number" name="mail_port" value="{{ $mailSettings['mail_port'] }}" min="1" max="65535"
+                   style="width:80px;padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;text-align:center">
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e0e0e0;border-right:1px solid #e0e0e0">
+            <div>
+                <div style="font-size:13px;color:#1a1a1a">Identifiant SMTP</div>
+                <div style="font-size:12px;color:#aaa;margin-top:2px">Nom d'utilisateur de connexion</div>
+            </div>
+            <input type="text" name="mail_username" value="{{ $mailSettings['mail_username'] }}" placeholder="user@example.com"
+                   style="width:180px;padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e0e0e0">
+            <div>
+                <div style="font-size:13px;color:#1a1a1a">Mot de passe SMTP</div>
+                <div style="font-size:12px;color:#aaa;margin-top:2px">Mot de passe ou token d'application</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+                <input type="password" name="mail_password" value="{{ $mailSettings['mail_password'] }}" id="mail-pwd"
+                       style="width:160px;padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+                <button type="button" onclick="var i=document.getElementById('mail-pwd');i.type=i.type==='password'?'text':'password'"
+                        style="background:none;border:none;cursor:pointer;font-size:15px;color:#888">👁</button>
+            </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e0e0e0;border-right:1px solid #e0e0e0">
+            <div>
+                <div style="font-size:13px;color:#1a1a1a">Email expéditeur</div>
+                <div style="font-size:12px;color:#aaa;margin-top:2px">Adresse affichée dans le champ "De"</div>
+            </div>
+            <input type="email" name="mail_from_address" value="{{ $mailSettings['mail_from_address'] }}" placeholder="noreply@vit-s.com"
+                   style="width:180px;padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e0e0e0">
+            <div>
+                <div style="font-size:13px;color:#1a1a1a">Nom expéditeur</div>
+                <div style="font-size:12px;color:#aaa;margin-top:2px">Nom affiché dans le champ "De"</div>
+            </div>
+            <input type="text" name="mail_from_name" value="{{ $mailSettings['mail_from_name'] }}" placeholder="VIT-S"
+                   style="width:180px;padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+        </div>
+    </div>
+
+    {{-- Signature --}}
+    <div style="padding:12px 16px;border-bottom:1px solid #e0e0e0">
+        <div style="font-size:13px;color:#1a1a1a;margin-bottom:6px">Signature email</div>
+        <div style="display:flex;gap:12px">
+            <textarea name="mail_signature" id="mail-signature" rows="5"
+                      placeholder="Cordialement,&#10;L'équipe VIT-S&#10;Tél : 01 23 45 67 89"
+                      oninput="document.getElementById('mail-sig-preview').innerHTML=this.value.replace(/\n/g,'<br>')"
+                      style="flex:1;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;resize:vertical;font-family:Arial,sans-serif">{{ $mailSettings['mail_signature'] }}</textarea>
+            <div style="flex:1;border:1px solid #e0e0e0;border-radius:8px;padding:10px;font-size:13px;color:#555;background:#fafafa;min-height:90px">
+                <div style="font-size:11px;color:#aaa;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px">Aperçu</div>
+                <div id="mail-sig-preview" style="white-space:pre-wrap">{!! nl2br(e($mailSettings['mail_signature'])) !!}</div>
+            </div>
+        </div>
+    </div>
+
+    <div style="padding:10px 16px;display:flex;align-items:center;justify-content:space-between">
+        <button type="button" id="btn-test-smtp"
+                onclick="testSmtp()"
+                style="padding:7px 14px;font-size:12px;background:#fff;border:1px solid #ddd;border-radius:8px;cursor:pointer;color:#555">
+            Tester la connexion SMTP
+        </button>
+        <span id="smtp-test-result" style="font-size:12px;margin:0 12px;flex:1"></span>
+        <button type="submit" style="padding:8px 20px;font-size:13px;font-weight:500;background:#E8720C;color:#fff;border:none;border-radius:8px;cursor:pointer">
+            Enregistrer la config mail
+        </button>
+    </div>
+</div>
+</form>
+
 <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;overflow:hidden">
     <div style="padding:12px 16px;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;justify-content:space-between">
         <div>
@@ -135,6 +231,25 @@
 </div>
 
 <script>
+function testSmtp() {
+    const btn = document.getElementById('btn-test-smtp');
+    const res = document.getElementById('smtp-test-result');
+    btn.disabled = true;
+    btn.textContent = 'Test en cours...';
+    res.textContent = '';
+    fetch('{{ route('parametres.mail.test') }}', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        res.textContent = data.message;
+        res.style.color = data.ok ? '#166534' : '#dc2626';
+    })
+    .catch(() => { res.textContent = 'Erreur réseau.'; res.style.color = '#dc2626'; })
+    .finally(() => { btn.disabled = false; btn.textContent = 'Tester la connexion SMTP'; });
+}
+
 function addMotif(){
     const val = document.getElementById('new-motif').value.trim();
     if (!val) return;
