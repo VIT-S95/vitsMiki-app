@@ -12,7 +12,7 @@
 
 <style>
 .acc-item{background:#fff;border:1px solid #e0e0e0;border-radius:12px;margin-bottom:8px;overflow:hidden}
-.acc-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#f8f8f8;cursor:pointer;user-select:none;border:none;width:100%;text-align:left}
+.acc-header{display:flex;align-items:center;justify-content:flex-start;gap:10px;padding:12px 16px;background:#f8f8f8;cursor:pointer;user-select:none;border:none;width:100%;text-align:left}
 .acc-header:hover{background:#f2f2f2}
 .acc-title{font-size:13px;font-weight:500;color:#1a1a1a}
 .acc-chevron{color:#E8720C;font-size:13px;transition:transform 0.25s ease;display:inline-block;line-height:1}
@@ -27,8 +27,8 @@
 {{-- 1. Alertes & Seuils --}}
 <div class="acc-item">
     <button type="button" class="acc-header" onclick="toggleAcc(this)">
-        <span class="acc-title">Alertes &amp; Seuils</span>
         <span class="acc-chevron">&#9654;</span>
+        <span class="acc-title">Alertes &amp; Seuils</span>
     </button>
     <div class="acc-body">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e0e0e0">
@@ -67,8 +67,8 @@
 {{-- 2. Synchronisation Kizeo --}}
 <div class="acc-item">
     <button type="button" class="acc-header" onclick="toggleAcc(this)">
-        <span class="acc-title">Synchronisation Kizeo</span>
         <span class="acc-chevron">&#9654;</span>
+        <span class="acc-title">Synchronisation Kizeo</span>
     </button>
     <div class="acc-body">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e0e0e0">
@@ -97,8 +97,8 @@
 {{-- 3. Logo VIT-S --}}
 <div class="acc-item">
     <button type="button" class="acc-header" onclick="toggleAcc(this)">
-        <span class="acc-title">Logo VIT-S</span>
         <span class="acc-chevron">&#9654;</span>
+        <span class="acc-title">Logo VIT-S</span>
     </button>
     <div class="acc-body">
         <div style="padding:12px 16px;display:flex;align-items:center;gap:16px">
@@ -117,19 +117,18 @@
                 <div style="font-size:11px;color:#aaa;margin-top:3px">PNG, JPG ou SVG — max 2 Mo</div>
             </div>
         </div>
+        <div style="padding:10px 16px;border-top:1px solid #e0e0e0;display:flex;justify-content:flex-end">
+            <button type="submit" style="padding:8px 20px;font-size:13px;font-weight:500;background:#E8720C;color:#fff;border:none;border-radius:8px;cursor:pointer">Enregistrer</button>
+        </div>
     </div>
-</div>
-
-<div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px">
-    <button type="submit" style="padding:8px 20px;font-size:13px;font-weight:500;background:#E8720C;color:#fff;border:none;border-radius:8px;cursor:pointer">Enregistrer</button>
 </div>
 </form>
 
 {{-- 4. Configuration Mail --}}
 <div class="acc-item">
     <button type="button" class="acc-header" onclick="toggleAcc(this)">
-        <span class="acc-title">Configuration Mail</span>
         <span class="acc-chevron">&#9654;</span>
+        <span class="acc-title">Configuration Mail</span>
     </button>
     <div class="acc-body">
         <form method="POST" action="{{ route('parametres.mail.update') }}">
@@ -225,8 +224,8 @@
 {{-- 5. Motifs d'intervention --}}
 <div class="acc-item" style="margin-bottom:1rem">
     <button type="button" class="acc-header" onclick="toggleAcc(this)">
-        <span class="acc-title">Motifs d'intervention</span>
         <span class="acc-chevron">&#9654;</span>
+        <span class="acc-title">Motifs d'intervention</span>
     </button>
     <div class="acc-body">
         <form method="POST" action="{{ route('parametres.motifs') }}">
