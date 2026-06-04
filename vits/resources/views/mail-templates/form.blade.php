@@ -46,14 +46,14 @@
                 <div>
                     <label style="font-size:12px;color:#555;display:block;margin-bottom:5px;font-weight:500">Sujet de l'email *</label>
                     <input type="text" name="sujet" value="{{ old('sujet', $template->sujet) }}"
-                           placeholder="Ex: Rapport de maintenance — {{client_nom}}"
+                           placeholder="Ex: Rapport de maintenance — @{{client_nom}}"
                            style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px">
-                    <div style="font-size:11px;color:#aaa;margin-top:4px">Vous pouvez utiliser des variables entre accolades doubles : <code>{{"{{"}}variable{{"}}"}}</code></div>
+                    <div style="font-size:11px;color:#aaa;margin-top:4px">Vous pouvez utiliser des variables entre accolades doubles : <code>&#123;&#123;variable&#125;&#125;</code></div>
                 </div>
                 <div>
                     <label style="font-size:12px;color:#555;display:block;margin-bottom:5px;font-weight:500">Corps de l'email *</label>
                     <textarea name="corps" rows="14"
-                              placeholder="Bonjour {{"{{"}}client_nom{{"}}"}},&#10;&#10;Veuillez trouver ci-joint votre rapport de maintenance pour la période du {{"{{"}}periode_debut{{"}}"}} au {{"{{"}}periode_fin{{"}}"}}.&#10;&#10;{{"{{"}}signature{{"}}"}}"
+                              placeholder="Bonjour &#123;&#123;client_nom&#125;&#125;,&#10;&#10;Veuillez trouver ci-joint votre rapport de maintenance pour la période du &#123;&#123;periode_debut&#125;&#125; au &#123;&#123;periode_fin&#125;&#125;.&#10;&#10;&#123;&#123;signature&#125;&#125;"
                               style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;resize:vertical;font-family:Arial,sans-serif;line-height:1.5">{{ old('corps', $template->corps) }}</textarea>
                 </div>
                 <div style="display:flex;align-items:center;gap:10px">
@@ -107,16 +107,17 @@
                     ['heures_consommees',   'Heures consommées'],
                     ['heures_allouees',     'Heures allouées'],
                     ['technicien_nom',      'Nom du technicien'],
-                    ['date_intervention',   'Date d\'intervention'],
+                    ['date_intervention',   "Date d'intervention"],
                     ['signature',           'Signature email'],
                 ];
                 @endphp
                 @foreach($suggestions as [$var, $desc])
                 <button type="button"
-                        onclick="insertVar('{{'{{'}}{{ $var }}{{'}}'}}' )"
+                        data-varname="{{ $var }}"
+                        onclick="insertVar('{'+'{'+this.dataset.varname+'}'+'}')"
                         title="{{ $desc }}"
                         style="text-align:left;padding:6px 10px;border:1px solid #e0e0e0;border-radius:6px;background:#f9f9f9;cursor:pointer;font-size:12px;color:#555;display:flex;justify-content:space-between;align-items:center">
-                    <code style="color:#E8720C;font-size:11px">{{"{{"}}{{ $var }}{{"}}"}}</code>
+                    <code style="color:#E8720C;font-size:11px">&#123;&#123;{{ $var }}&#125;&#125;</code>
                     <span style="color:#aaa;font-size:11px">{{ $desc }}</span>
                 </button>
                 @endforeach
