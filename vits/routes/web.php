@@ -19,6 +19,12 @@ Route::middleware(['auth'])->group(function () {
 });
 
 require __DIR__.'/auth.php';
+use App\Http\Controllers\FusionController;
+Route::middleware(['auth', 'admin.only'])->group(function () {
+    Route::get('/clients/fusion', [FusionController::class, 'index'])->name('clients.fusion');
+    Route::post('/clients/fusion', [FusionController::class, 'fusionner'])->name('clients.fusion.store');
+});
+
 use App\Http\Controllers\ClientController;
 Route::middleware(['auth'])->group(function () {
     Route::resource('clients', ClientController::class);

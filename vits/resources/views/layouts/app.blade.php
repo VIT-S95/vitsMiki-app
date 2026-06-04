@@ -65,7 +65,7 @@
 
         @php
             $user = auth()->user();
-            $inInterventions = request()->routeIs('dashboard', 'clients.*', 'contrats.*', 'interventions.*', 'performance.*');
+            $inInterventions = request()->routeIs('dashboard', 'clients.*', 'contrats.*', 'interventions.*', 'performance.*', 'clients.fusion*');
             $inCalculs       = request()->routeIs('bitdefender.*');
             $inFacturation   = false;
         @endphp
@@ -94,6 +94,9 @@
                 @if($user->isAdmin())
                 <a href="{{ route('performance.index') }}" class="nav-sub {{ request()->routeIs('performance.*') ? 'active' : '' }}">
                     <i class="ti ti-chart-bar"></i> Performance
+                </a>
+                <a href="{{ route('clients.fusion') }}" class="nav-sub {{ request()->routeIs('clients.fusion*') ? 'active' : '' }}">
+                    <i class="ti ti-arrows-join"></i> Fusion saisies
                 </a>
                 @endif
             </div>
