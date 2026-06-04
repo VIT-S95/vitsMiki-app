@@ -72,7 +72,11 @@ class ContratController extends Controller
             $q->orderBy('date_intervention', 'asc');
         }]);
         $periodes = $contrat->getPeriodes();
-        return view('contrats.show', compact('contrat', 'periodes'));
+        $interventionsAnterieures = $contrat->interventions()
+            ->where('date_intervention', '<', $contrat->date_debut)
+            ->orderBy('date_intervention')
+            ->get();
+        return view('contrats.show', compact('contrat', 'periodes', 'interventionsAnterieures'));
     }
 
     public function edit(Contrat $contrat)
