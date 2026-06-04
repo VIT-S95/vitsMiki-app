@@ -107,7 +107,11 @@ function setPeriode(val) {
         </thead>
         <tbody>
             @forelse($interventions as $intervention)
-            @php $nonDed = !$intervention->deductible; @endphp
+            @php
+                $nonDed    = !$intervention->deductible;
+                $manuelle  = $intervention->source_manuelle ?? false;
+                $horsCtrat = $intervention->hors_contrat ?? false;
+            @endphp
             <tr @if($intervention->contrat_id) onclick="window.location='{{ route('contrats.show', $intervention->contrat_id) }}'" @endif
                 style="{{ $intervention->contrat_id ? 'cursor:pointer;' : '' }}border-bottom:1px solid #f0f0f0;{{ $nonDed ? 'opacity:0.5' : '' }}"
                 onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='#fff'">
@@ -126,6 +130,7 @@ function setPeriode(val) {
                         <span style="background:#FFF3E6;color:#854F0B;padding:2px 6px;border-radius:4px;font-size:10px">flash {{ $intervention->flash_numero }}/3</span>
                     @endif
                     @if($nonDed)<span style="font-size:10px;color:#777;background:#f0f0f0;border:1px solid #ddd;padding:1px 5px;border-radius:3px;margin-left:4px">Non déductible</span>@endif
+                    @if($manuelle)<span style="font-size:10px;color:#b84c00;background:#fff0e8;border:1px solid #f5b48a;padding:1px 5px;border-radius:3px;margin-left:4px">Saisie manuelle</span>@endif
                 </td>
                 <td style="padding:10px 14px;text-align:right;font-weight:500">
                     @php $h=floor($intervention->duree_minutes/60); $m=$intervention->duree_minutes%60; @endphp
@@ -133,7 +138,11 @@ function setPeriode(val) {
                     @else {{ $h>0?$h.'h ':'' }}{{ $m>0?$m.'min':'' }}
                     @endif
                 </td>
-                <td style="padding:10px 14px;text-align:right">
+                <td style="padding:10px 14px;text-align:right;white-space:nowrap">
+                    @if($horsCtrat)
+                    <button type="button" onclick="event.stopPropagation();openRattacher({{ $intervention->id }},'{{ addslashes($intervention->client_nom ?? '—') }}','{{ $intervention->date_intervention->format('d/m/Y') }}','{{ $intervention->duree_formatee }}')"
+                            style="font-size:11px;color:#E8720C;background:#fff;border:1px solid #E8720C;padding:3px 8px;border-radius:6px;cursor:pointer;margin-right:4px">Rattacher</button>
+                    @endif
                     <a href="{{ route('interventions.edit', $intervention) }}" onclick="event.stopPropagation()" style="font-size:12px;color:#888;text-decoration:none;padding:4px 8px;border:1px solid #ddd;border-radius:6px">✏</a>
                 </td>
             </tr>
@@ -144,4 +153,46 @@ function setPeriode(val) {
     </table>
     <div style="padding:10px 14px;border-top:1px solid #e0e0e0;font-size:12px;color:#888">{{ $interventions->links() }}</div>
 </div>
+{{-- Modal Rattacher --}}
+<div id="modal-rattacher" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9998;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:12px;padding:1.5rem;max-width:480px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.18)">
+        <div style="font-size:15px;font-weight:500;color:#1a1a1a;margin-bottom:0.75rem">Rattacher à un contrat</div>
+        <div id="modal-info" style="font-size:12px;color:#888;background:#f8f8f8;border-radius:8px;padding:10px 12px;margin-bottom:1rem;line-height:1.7"></div>
+        <form id="form-rattacher" method="POST">
+            @csrf
+            <div style="margin-bottom:1rem">
+                <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Contrat actif à associer <span style="color:#E8720C">*</span></label>
+                <select name="contrat_id" required style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+                    <option value="">— Choisir un contrat —</option>
+                    @foreach($contratsActifs as $c)
+                    <option value="{{ $c->id }}">
+                        {{ $c->client->nom_societe }} — {{ $c->numero_contrat_vits ?? 'N/A' }}
+                        ({{ $c->date_debut?->format('d/m/Y') }} → {{ $c->date_fin?->format('d/m/Y') }})
+                    </option>
+                    @endforeach
+                </select>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:8px">
+                <button type="button" onclick="closeRattacher()" style="padding:8px 16px;font-size:13px;border:1px solid #ddd;border-radius:8px;color:#666;background:#fff;cursor:pointer">Annuler</button>
+                <button type="submit" style="padding:8px 20px;font-size:13px;font-weight:500;background:#E8720C;color:#fff;border:none;border-radius:8px;cursor:pointer">Rattacher</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openRattacher(id, client, date, duree) {
+    document.getElementById('modal-info').innerHTML =
+        '<strong>' + client + '</strong><br>' + date + ' · ' + duree;
+    document.getElementById('form-rattacher').action = '/interventions/' + id + '/rattacher';
+    var modal = document.getElementById('modal-rattacher');
+    modal.style.display = 'flex';
+}
+function closeRattacher() {
+    document.getElementById('modal-rattacher').style.display = 'none';
+}
+document.getElementById('modal-rattacher').addEventListener('click', function(e) {
+    if (e.target === this) closeRattacher();
+});
+</script>
 @endsection

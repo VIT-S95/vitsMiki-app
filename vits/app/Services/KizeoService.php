@@ -285,6 +285,7 @@ class KizeoService
                 'statut'             => $statut,
                 'type_tri'           => 'hors-contrat',
                 'source_kizeo'       => true,
+                'source_manuelle'    => true,
                 'deductible'         => false,
                 'hors_contrat'       => true,
             ]);

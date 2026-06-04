@@ -39,6 +39,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/interventions/{intervention}/edit', [InterventionController::class, 'edit'])->name('interventions.edit');
     Route::put('/interventions/{intervention}', [InterventionController::class, 'update'])->name('interventions.update');
     Route::delete('/interventions/{intervention}', [InterventionController::class, 'destroy'])->name('interventions.destroy');
+    Route::post('/interventions/{intervention}/rattacher', [InterventionController::class, 'rattacher'])->name('interventions.rattacher');
 });
 
 use App\Http\Controllers\KizeoController;

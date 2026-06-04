@@ -47,8 +47,10 @@ class InterventionController extends Controller
             default    => null,
         };
 
-        $interventions = $query->paginate((int)request('per_page', 20))->withQueryString();
-        return view('interventions.index', compact('interventions', 'techniciens'));
+        $interventions  = $query->paginate((int)request('per_page', 20))->withQueryString();
+        $contratsActifs = Contrat::with('client')->where('statut', 'en-cours')
+            ->orderBy('client_id')->get();
+        return view('interventions.index', compact('interventions', 'techniciens', 'contratsActifs'));
     }
 
         public function create(Request $request)
@@ -167,6 +169,18 @@ class InterventionController extends Controller
             ? redirect()->route('contrats.show', $intervention->contrat_id)
             : redirect()->route('interventions.index');
         return $redirect->with('success', 'Intervention modifiée.');
+    }
+
+    public function rattacher(Request $request, Intervention $intervention)
+    {
+        $request->validate(['contrat_id' => 'required|exists:contrats,id']);
+        $intervention->update([
+            'contrat_id'   => $request->contrat_id,
+            'hors_contrat' => false,
+            'deductible'   => true,
+            'type_tri'     => 'standard',
+        ]);
+        return redirect()->route('interventions.index')->with('success', 'Intervention rattachée au contrat.');
     }
 
     public function destroy(Intervention $intervention)
