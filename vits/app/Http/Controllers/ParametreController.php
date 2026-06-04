@@ -1,5 +1,6 @@
 <?php
 namespace App\Http\Controllers;
+use App\Models\Intervention;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -26,7 +27,10 @@ class ParametreController extends Controller
             'mail_signature'    => Setting::get('mail_signature', ''),
         ];
         $logoPath = file_exists(public_path('storage/logo/logo.png')) ? asset('storage/logo/logo.png') : null;
-        return view('parametres.index', compact('motifs', 'parametres', 'mailSettings', 'logoPath'));
+        $techniciensDisponibles = Intervention::whereNotNull('technicien')
+            ->distinct()->orderBy('technicien')->pluck('technicien');
+        $techActifs = json_decode(Setting::get('techniciens_actifs', '[]'), true) ?? [];
+        return view('parametres.index', compact('motifs', 'parametres', 'mailSettings', 'logoPath', 'techniciensDisponibles', 'techActifs'));
     }
 
     public function update(Request $request)
@@ -110,6 +114,13 @@ class ParametreController extends Controller
         } catch (\Exception $e) {
             return response()->json(['ok' => false, 'message' => $e->getMessage()]);
         }
+    }
+
+    public function updateTechniciens(Request $request)
+    {
+        $actifs = array_values(array_filter($request->input('techniciens_actifs', []), fn($t) => !empty(trim($t))));
+        Setting::set('techniciens_actifs', json_encode($actifs));
+        return redirect()->route('parametres.index')->with('success', 'Techniciens actifs mis à jour.');
     }
 
     public function updateMotifs(Request $request)

@@ -228,13 +228,43 @@
     </div>
 </div>
 
-{{-- 5. Motifs d'intervention --}}
+{{-- 5. Interventions --}}
 <div class="acc-item" style="margin-bottom:1rem">
     <button type="button" class="acc-header" onclick="toggleAcc(this)">
         <span class="acc-chevron">&#9654;</span>
-        <span class="acc-title">Motifs d'intervention</span>
+        <span class="acc-title">Interventions</span>
     </button>
     <div class="acc-body">
+
+        {{-- Techniciens actifs --}}
+        <form method="POST" action="{{ route('parametres.techniciens') }}">
+            @csrf
+            <div style="padding:12px 16px;border-bottom:1px solid #e0e0e0">
+                <div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:4px">Techniciens actifs</div>
+                <div style="font-size:12px;color:#aaa;margin-bottom:10px">Affichés dans Performance. Si aucun coché, tous sont affichés.</div>
+                @if($techniciensDisponibles->isEmpty())
+                    <div style="font-size:12px;color:#aaa">Aucun technicien trouvé en base.</div>
+                @else
+                <div style="display:flex;flex-wrap:wrap;gap:8px">
+                    @foreach($techniciensDisponibles as $tech)
+                    @php $actif = in_array($tech, $techActifs); @endphp
+                    <label style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;border:1px solid {{ $actif ? '#E8720C' : '#ddd' }};background:{{ $actif ? '#FFF3EC' : '#f5f5f5' }};color:{{ $actif ? '#E8720C' : '#888' }};font-size:12px;cursor:pointer;user-select:none">
+                        <input type="checkbox" name="techniciens_actifs[]" value="{{ $tech }}" {{ $actif ? 'checked' : '' }} style="accent-color:#E8720C;cursor:pointer">
+                        {{ $tech }}
+                    </label>
+                    @endforeach
+                </div>
+                @endif
+            </div>
+            <div style="padding:10px 16px;border-bottom:1px solid #e0e0e0;display:flex;justify-content:flex-end">
+                <button type="submit" style="padding:7px 16px;font-size:13px;font-weight:500;background:#E8720C;color:#fff;border:none;border-radius:8px;cursor:pointer">Enregistrer les techniciens actifs</button>
+            </div>
+        </form>
+
+        {{-- Motifs d'intervention --}}
+        <div style="padding:10px 16px 8px;background:#fafafa;border-bottom:1px solid #e8e8e8">
+            <div style="font-size:13px;font-weight:500;color:#1a1a1a">Motifs d'intervention</div>
+        </div>
         <form method="POST" action="{{ route('parametres.motifs') }}">
             @csrf
             <div style="padding:12px 16px" id="motifs-list">

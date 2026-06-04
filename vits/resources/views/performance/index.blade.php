@@ -87,13 +87,13 @@ function setPeriode(val) {
 </div>
 @else
 
-{{-- Checkboxes techniciens --}}
+{{-- Pills techniciens --}}
 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0.75rem">
     @foreach($statsByTech as $tech => $stats)
-    <label style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid #E8720C;background:#FFF3EC;color:#E8720C;user-select:none">
-        <input type="checkbox" data-tech="{{ $tech }}" checked onchange="toggleTech(this)" style="accent-color:#E8720C;cursor:pointer">
+    <span onclick="toggleTech(this)" data-tech="{{ $tech }}" data-active="1"
+          style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid #E8720C;background:#fff;color:#E8720C;font-weight:500;user-select:none">
         {{ $tech }}
-    </label>
+    </span>
     @endforeach
 </div>
 
@@ -207,34 +207,37 @@ function setPeriode(val) {
         });
     }
 
-    window.toggleTech = function(cb) {
-        const tech    = cb.dataset.tech;
-        const checked = cb.checked;
-        const idx     = techLabels.indexOf(tech);
-        const label   = cb.closest('label');
+    window.toggleTech = function(pill) {
+        const tech      = pill.dataset.tech;
+        const isActive  = pill.dataset.active === '1';
+        const nowActive = !isActive;
+        const idx       = techLabels.indexOf(tech);
 
-        if (checked) {
-            label.style.borderColor = '#E8720C';
-            label.style.background  = '#FFF3EC';
-            label.style.color       = '#E8720C';
+        pill.dataset.active = nowActive ? '1' : '0';
+        if (nowActive) {
+            pill.style.borderColor = '#E8720C';
+            pill.style.background  = '#fff';
+            pill.style.color       = '#E8720C';
+            pill.style.fontWeight  = '500';
         } else {
-            label.style.borderColor = '#ddd';
-            label.style.background  = '#f5f5f5';
-            label.style.color       = '#aaa';
+            pill.style.borderColor = '#ddd';
+            pill.style.background  = '#f5f5f5';
+            pill.style.color       = '#aaa';
+            pill.style.fontWeight  = 'normal';
         }
 
         const row = document.querySelector('tr[data-tech="' + tech + '"]');
-        if (row) row.style.display = checked ? '' : 'none';
+        if (row) row.style.display = nowActive ? '' : 'none';
 
         if (idx !== -1) {
-            chartBarres.data.datasets[0].data[idx] = checked ? techHeuresOrig[idx] : null;
+            chartBarres.data.datasets[0].data[idx] = nowActive ? techHeuresOrig[idx] : null;
             chartBarres.update();
         }
 
         if (chartCourbes) {
             const dsIdx = chartCourbes.data.datasets.findIndex(ds => ds.label === tech);
             if (dsIdx !== -1) {
-                chartCourbes.setDatasetVisibility(dsIdx, checked);
+                chartCourbes.setDatasetVisibility(dsIdx, nowActive);
                 chartCourbes.update();
             }
         }

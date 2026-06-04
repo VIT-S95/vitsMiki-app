@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Intervention;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -9,10 +10,19 @@ class PerformanceController extends Controller
 {
     public function index(Request $request)
     {
-        $techniciens = Intervention::whereNotNull('technicien')
+        $allTechniciens = Intervention::whereNotNull('technicien')
             ->distinct()->orderBy('technicien')->pluck('technicien');
 
+        $techActifs = json_decode(Setting::get('techniciens_actifs', '[]'), true) ?? [];
+        $techniciens = !empty($techActifs)
+            ? $allTechniciens->filter(fn($t) => in_array($t, $techActifs))->values()
+            : $allTechniciens;
+
         $query = Intervention::whereNotNull('technicien');
+
+        if (!empty($techActifs)) {
+            $query->whereIn('technicien', $techActifs);
+        }
 
         $query->when($request->technicien, fn($q) => $q->where('technicien', $request->technicien));
 
