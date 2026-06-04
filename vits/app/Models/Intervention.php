@@ -22,14 +22,13 @@ class Intervention extends Model
     {
         return $this->belongsTo(Contrat::class);
     }
-    public function getDureeFormateeAttribute()
+    public function getDureeFormateeAttribute(): string
     {
-        if ($this->type === 'flash' && $this->flash_numero < 3) return '—';
-        $h = floor($this->duree_minutes / 60);
+        $h = intdiv($this->duree_minutes, 60);
         $m = $this->duree_minutes % 60;
-        if ($h > 0 && $m > 0) return "{$h}h {$m}min";
-        if ($h > 0) return "{$h}h";
-        return "{$m}min";
+        if ($h > 0 && $m > 0) return $h.'h '.$m.'min';
+        if ($h > 0) return $h.'h';
+        return $m.'min';
     }
     public static function recalculerFlash($contrat_id, $date_insertion)
     {
