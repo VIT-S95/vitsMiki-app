@@ -350,6 +350,26 @@ class KizeoService
             return 'imported';
         }
 
+        // Si la date est antérieure au début du contrat → hors contrat, sans rattachement
+        if ($contrat->date_debut && \Carbon\Carbon::parse($date)->lt($contrat->date_debut)) {
+            Intervention::create([
+                'contrat_id'         => null,
+                'client_nom'         => $client->nom_societe,
+                'date_intervention'  => $date,
+                'heure_intervention' => $heureArrivee,
+                'technicien'         => $technicien,
+                'numero_bon_kizeo'   => $bonNumero,
+                'type'               => $type,
+                'duree_minutes'      => $estFlash ? 0 : $dureeMinutes,
+                'statut'             => $statut,
+                'type_tri'           => 'hors-contrat',
+                'source_kizeo'       => true,
+                'deductible'         => false,
+                'hors_contrat'       => true,
+            ]);
+            return 'imported';
+        }
+
         // Déductible
         $contratIndicateur = strtolower(trim($record['contrat'] ?? ''));
         $forfaitIndicateur = strtolower(trim($record['forfait'] ?? ''));
