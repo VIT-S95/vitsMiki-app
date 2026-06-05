@@ -10,6 +10,7 @@ class Client extends Model
     protected $casts = ['mail_alerte_fin_contrat' => 'boolean', 'mail_rapport_periodique' => 'boolean'];
 
     public function contrats() { return $this->hasMany(Contrat::class); }
+    public function users()   { return $this->hasMany(\App\Models\User::class); }
 
     public function getInitialesAttribute() {
         $words = explode(' ', $this->nom_societe);

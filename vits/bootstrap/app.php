@@ -13,8 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->trustProxies(at: '*');
         $middleware->alias([
-            'check.theme' => \App\Http\Middleware\CheckTheme::class,
-            'admin.only'  => \App\Http\Middleware\AdminOnly::class,
+            'check.theme'  => \App\Http\Middleware\CheckTheme::class,
+            'admin.only'   => \App\Http\Middleware\AdminOnly::class,
+            'portail.only' => \App\Http\Middleware\PortailOnly::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

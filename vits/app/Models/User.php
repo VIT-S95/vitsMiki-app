@@ -11,7 +11,7 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles;
 
-    protected $fillable = ['name', 'email', 'password', 'themes', 'is_admin'];
+    protected $fillable = ['name', 'email', 'password', 'themes', 'is_admin', 'client_id'];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -25,9 +25,16 @@ class User extends Authenticatable
         ];
     }
 
+    public function client() { return $this->belongsTo(Client::class); }
+
     public function isAdmin(): bool
     {
         return (bool) $this->is_admin;
+    }
+
+    public function isPortailClient(): bool
+    {
+        return !is_null($this->client_id);
     }
 
     public function hasTheme(string $theme): bool

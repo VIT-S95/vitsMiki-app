@@ -34,7 +34,7 @@ class ClientController extends Controller
     }
     public function show(Client $client)
     {
-        $client->load(['contrats' => function($q) { $q->orderBy('date_debut','desc'); }, 'contrats.interventions']);
+        $client->load(['contrats' => function($q) { $q->orderBy('date_debut','desc'); }, 'contrats.interventions', 'users']);
         return view('clients.show', compact('client'));
     }
     public function edit(Client $client) { return view('clients.edit', compact('client')); }

@@ -10,7 +10,10 @@ class AdminOnly
     public function handle(Request $request, Closure $next): mixed
     {
         if (!auth()->check() || !auth()->user()->isAdmin()) {
-            return redirect('/')->with('error', 'Accès réservé aux administrateurs.');
+            $target = auth()->check() && auth()->user()->client_id
+                ? route('portail.index')
+                : route('dashboard');
+            return redirect($target)->with('error', 'Accès réservé aux administrateurs.');
         }
 
         return $next($request);

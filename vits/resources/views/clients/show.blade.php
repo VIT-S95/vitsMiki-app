@@ -127,4 +127,60 @@
         @endif
     </div>
 </div>
+
+{{-- ACCÈS PORTAIL --}}
+<div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1.25rem;margin-top:1rem">
+    <div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:1rem">🔑 Accès portail client</div>
+
+    @if($client->users->isEmpty())
+        <div style="font-size:13px;color:#aaa;margin-bottom:1rem">Aucun accès portail pour ce client.</div>
+    @else
+        <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:1rem">
+            <thead>
+                <tr style="border-bottom:1px solid #f0f0f0">
+                    <th style="text-align:left;padding:4px 8px;font-size:11px;color:#aaa;text-transform:uppercase;font-weight:500">Nom</th>
+                    <th style="text-align:left;padding:4px 8px;font-size:11px;color:#aaa;text-transform:uppercase;font-weight:500">Email</th>
+                    <th style="width:80px"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($client->users as $portalUser)
+                <tr style="border-top:1px solid #f5f5f5">
+                    <td style="padding:6px 8px;color:#1a1a1a">{{ $portalUser->name }}</td>
+                    <td style="padding:6px 8px;color:#888;font-family:monospace;font-size:12px">{{ $portalUser->email }}</td>
+                    <td style="padding:6px 8px;text-align:right">
+                        <form action="{{ route('portail-users.destroy', [$client, $portalUser]) }}" method="POST" onsubmit="return confirm('Supprimer cet accès ?')">
+                            @csrf @method('DELETE')
+                            <button type="submit" style="font-size:11px;color:#dc2626;background:#fff;border:1px solid #fca5a5;padding:3px 8px;border-radius:5px;cursor:pointer">Supprimer</button>
+                        </form>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
+
+    <details style="margin-top:0.5rem">
+        <summary style="font-size:12px;color:#E8720C;cursor:pointer;user-select:none;list-style:none">&#43; Créer un accès portail</summary>
+        <form action="{{ route('portail-users.store', $client) }}" method="POST" style="margin-top:0.75rem;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+            @csrf
+            <div>
+                <div style="font-size:11px;color:#aaa;margin-bottom:4px">Nom</div>
+                <input type="text" name="name" required placeholder="Nom du contact" style="padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;width:160px">
+            </div>
+            <div>
+                <div style="font-size:11px;color:#aaa;margin-bottom:4px">Email</div>
+                <input type="email" name="email" required placeholder="contact@societe.fr" style="padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;width:200px">
+            </div>
+            <div>
+                <div style="font-size:11px;color:#aaa;margin-bottom:4px">Mot de passe temporaire</div>
+                <input type="text" name="password" required minlength="8" placeholder="Min. 8 caractères" style="padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;width:180px">
+            </div>
+            <button type="submit" style="padding:7px 16px;font-size:13px;font-weight:500;background:#E8720C;color:#fff;border:none;border-radius:8px;cursor:pointer">Créer</button>
+        </form>
+        @error('email') <div style="font-size:12px;color:#dc2626;margin-top:6px">{{ $message }}</div> @enderror
+        @if(session('success')) <div style="font-size:12px;color:#166534;margin-top:6px">{{ session('success') }}</div> @endif
+    </details>
+</div>
+
 @endsection

@@ -84,6 +84,17 @@ Route::middleware(['auth', 'admin.only'])->group(function () {
     Route::get('/performance', [PerformanceController::class, 'index'])->name('performance.index');
 });
 
+use App\Http\Controllers\PortailController;
+use App\Http\Controllers\PortailUserController;
+Route::middleware(['auth', 'portail.only'])->group(function () {
+    Route::get('/portail', [PortailController::class, 'index'])->name('portail.index');
+});
+
+Route::middleware(['auth', 'admin.only'])->group(function () {
+    Route::post('/clients/{client}/portail-users', [PortailUserController::class, 'store'])->name('portail-users.store');
+    Route::delete('/clients/{client}/portail-users/{user}', [PortailUserController::class, 'destroy'])->name('portail-users.destroy');
+});
+
 use App\Http\Controllers\ParametreController;
 use App\Http\Controllers\MailTemplateController;
 Route::middleware(['auth', 'admin.only'])->group(function () {
