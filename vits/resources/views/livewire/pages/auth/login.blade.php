@@ -13,7 +13,12 @@ new #[Layout('layouts.login')] class extends Component
         $this->validate();
         $this->form->authenticate();
         Session::regenerate();
-        $this->redirectIntended(default: route('dashboard', absolute: false));
+
+        if (auth()->user()->client_id) {
+            $this->redirect(route('portail.index', absolute: false));
+        } else {
+            $this->redirectIntended(default: route('dashboard', absolute: false));
+        }
     }
 }; ?>
 
