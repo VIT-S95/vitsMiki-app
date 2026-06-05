@@ -44,10 +44,10 @@
     </header>
 
     <nav class="p-nav">
-        <a href="{{ route('portail.index') }}" class="{{ request()->routeIs('portail.index') ? 'active' : '' }}">Tableau de bord</a>
-        <a href="#" class="{{ request()->routeIs('portail.interventions*') ? 'active' : '' }}">Interventions</a>
-        <a href="#" class="{{ request()->routeIs('portail.contrats*') ? 'active' : '' }}">Contrats</a>
-        <a href="#" class="{{ request()->routeIs('portail.documents*') ? 'active' : '' }}">Documents</a>
+        <a href="{{ route('portail.index') }}"         class="{{ request()->routeIs('portail.index')         ? 'active' : '' }}">Tableau de bord</a>
+        <a href="{{ route('portail.interventions') }}" class="{{ request()->routeIs('portail.interventions') ? 'active' : '' }}">Interventions</a>
+        <a href="{{ route('portail.contrats') }}"      class="{{ request()->routeIs('portail.contrats')      ? 'active' : '' }}">Contrats</a>
+        <a href="{{ route('portail.documents') }}"     class="{{ request()->routeIs('portail.documents')     ? 'active' : '' }}">Documents</a>
     </nav>
 
     <main class="p-main">

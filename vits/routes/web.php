@@ -87,7 +87,10 @@ Route::middleware(['auth', 'admin.only'])->group(function () {
 use App\Http\Controllers\PortailController;
 use App\Http\Controllers\PortailUserController;
 Route::middleware(['auth', 'portail.only'])->group(function () {
-    Route::get('/portail', [PortailController::class, 'index'])->name('portail.index');
+    Route::get('/portail',               [PortailController::class, 'index'])->name('portail.index');
+    Route::get('/portail/interventions', [PortailController::class, 'interventions'])->name('portail.interventions');
+    Route::get('/portail/contrats',      [PortailController::class, 'contrats'])->name('portail.contrats');
+    Route::get('/portail/documents',     [PortailController::class, 'documents'])->name('portail.documents');
 });
 
 Route::middleware(['auth', 'admin.only'])->group(function () {
