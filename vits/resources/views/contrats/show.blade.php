@@ -175,6 +175,7 @@
                         <tr style="border-bottom:1px solid #f0f0f0;background:#fefefe">
                             <th style="padding:5px 12px;text-align:left;font-size:10px;color:#aaa;text-transform:uppercase;width:90px">Date</th>
                             <th style="padding:5px 12px;text-align:left;font-size:10px;color:#aaa;text-transform:uppercase">N° Intervention</th>
+                            <th style="padding:5px 12px;text-align:left;font-size:10px;color:#aaa;text-transform:uppercase">Technicien</th>
                             <th style="padding:5px 12px;text-align:left;font-size:10px;color:#aaa;text-transform:uppercase">Type</th>
                             <th style="padding:5px 12px;text-align:right;font-size:10px;color:#aaa;text-transform:uppercase;width:80px">Durée</th>
                             <th style="width:40px"></th>
@@ -186,6 +187,7 @@
                         <tr style="border-top:1px solid #f5f5f5;{{ $nonDed ? 'opacity:0.45' : '' }}">
                             <td style="padding:6px 12px;color:#888;width:90px">{{ $intervention->date_intervention->format('d/m/Y') }}</td>
                             <td style="padding:6px 12px;font-family:monospace;font-size:11px;color:#888">{{ $intervention->numero_bon_kizeo ?? '—' }}</td>
+                            <td style="padding:6px 12px;color:#555">{{ $intervention->technicien ?? '—' }}</td>
                             <td style="padding:6px 12px">
                                 @if($intervention->type === 'site') <span style="background:#E6F1FB;color:#0C447C;padding:2px 6px;border-radius:4px;font-size:10px">sur site</span>
                                 @elseif($intervention->type === 'distance') <span style="background:#E1F5EE;color:#085041;padding:2px 6px;border-radius:4px;font-size:10px">à distance</span>
@@ -213,7 +215,7 @@
                     </tbody>
                     <tfoot>
                         <tr style="border-top:2px solid #e0e0e0;background:#fafafa">
-                            <td colspan="3" style="padding:5px 12px;font-size:11px;color:#555;font-weight:500;text-transform:uppercase;letter-spacing:0.5px">Total {{ $mois['label'] }}</td>
+                            <td colspan="4" style="padding:5px 12px;font-size:11px;color:#555;font-weight:500;text-transform:uppercase;letter-spacing:0.5px">Total {{ $mois['label'] }}</td>
                             <td style="padding:5px 12px;text-align:right;font-size:11px;font-weight:600;color:#1a1a1a">{{ $mois['h'] > 0 ? $mois['h'].'h' : '' }}{{ $mois['m'] > 0 ? $mois['m'].'min' : '' }}</td>
                             <td></td>
                         </tr>

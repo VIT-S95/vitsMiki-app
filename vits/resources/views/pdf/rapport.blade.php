@@ -184,9 +184,10 @@ tr { page-break-inside: avoid; }
     <thead>
         <tr>
             <th style="width:18%">Date</th>
-            <th style="width:32%">N° Intervention</th>
-            <th style="width:28%">Type</th>
-            <th style="width:22%;text-align:right">Durée</th>
+            <th style="width:22%">N° Intervention</th>
+            <th style="width:18%">Technicien</th>
+            <th style="width:22%">Type</th>
+            <th style="width:20%;text-align:right">Durée</th>
         </tr>
     </thead>
     <tbody>
@@ -200,6 +201,7 @@ tr { page-break-inside: avoid; }
         <tr>
             <td>{{ $intervention->date_intervention->format('d/m/Y') }}</td>
             <td style="font-family:monospace;font-size:10px;color:#888">{{ $intervention->numero_bon_kizeo ?? '—' }}</td>
+            <td>{{ $intervention->technicien ?? '—' }}</td>
             <td>
                 @if($intervention->type === 'site')<span class="tag-site">sur site</span>
                 @elseif($intervention->type === 'distance')<span class="tag-dist">à distance</span>
@@ -218,7 +220,7 @@ tr { page-break-inside: avoid; }
         </tr>
         @endforeach
         <tr class="total-row">
-            <td colspan="3">Total {{ $mois['label'] }}</td>
+            <td colspan="4">Total {{ $mois['label'] }}</td>
             <td style="text-align:right">{{ $mH }}h{{ $mM > 0 ? ' '.$mM.'min' : '' }}</td>
         </tr>
     </tbody>
