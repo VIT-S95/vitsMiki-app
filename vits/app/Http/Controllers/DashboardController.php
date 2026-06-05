@@ -4,6 +4,7 @@ use App\Models\Client;
 use App\Models\Contrat;
 use App\Models\Intervention;
 use App\Models\PeriodeAjustement;
+use App\Models\Setting;
 use App\Services\KizeoService;
 use Illuminate\Support\Facades\Cache;
 
@@ -87,17 +88,18 @@ class DashboardController extends Controller
             + $clientsSansInfos + $clientsSansContrat + $contratsDepassement->count()
             + $periodesARegler->count();
 
-        $derniereImportRaw = Cache::get('kizeo_derniere_import');
-        $derniereImport    = $derniereImportRaw ? \Carbon\Carbon::parse($derniereImportRaw) : null;
-        $kizeoLog       = Cache::get('kizeo_import_log');
-        $nonLus         = Cache::remember('kizeo_non_lus', 300, fn() => $kizeo->getNombreNonLus());
+        $derniereImportRaw  = Cache::get('kizeo_derniere_import');
+        $derniereImport     = $derniereImportRaw ? \Carbon\Carbon::parse($derniereImportRaw) : null;
+        $kizeoLog           = Cache::get('kizeo_import_log');
+        $nonLus             = Cache::remember('kizeo_non_lus', 300, fn() => $kizeo->getNombreNonLus());
+        $kizeoFrequenceMin  = (int) Setting::get('kizeo_frequence_min', 60);
 
         return view('dashboard', compact(
             'totalClients', 'totalContrats', 'interventionsMois', 'totalAlertes',
             'contratsExpires', 'contratsEcheance', 'interventionsNonTraitees',
             'contratsBrouillon', 'clientsSansInfos', 'clientsSansContrat',
             'contratsDepassement', 'periodesARegler',
-            'derniereImport', 'kizeoLog', 'nonLus'
+            'derniereImport', 'kizeoLog', 'nonLus', 'kizeoFrequenceMin'
         ));
     }
 }

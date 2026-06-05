@@ -91,6 +91,9 @@
                 <button type="button" onclick="document.getElementById('api-key').type=document.getElementById('api-key').type==='password'?'text':'password'" style="background:none;border:none;cursor:pointer;font-size:16px;color:#888">&#128065;</button>
             </div>
         </div>
+        <div style="padding:12px 16px;text-align:right">
+            <button type="submit" style="padding:8px 20px;font-size:13px;font-weight:500;background:#E8720C;color:#fff;border:none;border-radius:8px;cursor:pointer">Enregistrer</button>
+        </div>
     </div>
 </div>
 

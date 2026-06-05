@@ -124,31 +124,19 @@
 
 <script>
 (function() {
-    const STORAGE_KEY  = 'kizeo_last_import_ts';
-    const freqMs       = {{ config('vits.kizeo_frequence_min', 60) }} * 60 * 1000;
-    const serverTs     = {{ $derniereImport ? $derniereImport->timestamp * 1000 : 'null' }};
-    const el           = document.getElementById('kizeo-countdown');
-    if (!el) return;
+    const freqMs   = {{ $kizeoFrequenceMin }} * 60 * 1000;
+    const serverTs = {{ $derniereImport ? $derniereImport->timestamp * 1000 : 'null' }};
+    const el       = document.getElementById('kizeo-countdown');
+    if (!el || !serverTs) { if (el) el.textContent = '—'; return; }
 
-    // Synchroniser localStorage avec la valeur serveur (la plus récente gagne)
-    const storedTs = parseInt(localStorage.getItem(STORAGE_KEY) || '0');
-    let lastTs = Math.max(storedTs, serverTs || 0);
-    if (serverTs) localStorage.setItem(STORAGE_KEY, serverTs);
-
-    // Si jamais importé, on ne peut pas faire de countdown fiable
-    if (!lastTs) {
-        el.textContent = '—';
-        return;
-    }
-
-    const nextTs = lastTs + freqMs;
+    const nextTs = serverTs + freqMs;
 
     function tick() {
-        const reste = Math.max(0, nextTs - Date.now());
-        const m = Math.floor(reste / 60000);
-        const s = Math.floor((reste % 60000) / 1000);
+        const secondesRestantes = Math.max(0, Math.floor((nextTs - Date.now()) / 1000));
+        const m = Math.floor(secondesRestantes / 60);
+        const s = secondesRestantes % 60;
         el.textContent = m + 'min ' + String(s).padStart(2, '0') + 's';
-        if (reste === 0) {
+        if (secondesRestantes === 0) {
             el.textContent = '⟳ en cours…';
             clearInterval(timer);
             setTimeout(() => window.location.reload(), 5000);
