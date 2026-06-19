@@ -17,6 +17,7 @@ class KizeoService
 
     const FORM_SITE     = '45252';
     const FORM_DISTANCE = '108738';
+    const LIST_CLIENTS  = '21312';
 
     public function __construct()
     {
@@ -462,6 +463,59 @@ class KizeoService
         }
 
         return 0;
+    }
+
+    public function syncClientsDepuisListe(): array
+    {
+        if (!$this->apiKey) {
+            return ['success' => false, 'message' => 'Clé API non configurée', 'created' => 0, 'skipped' => 0];
+        }
+
+        $response = Http::timeout(30)->withHeaders(['Authorization' => $this->apiKey])
+            ->get("{$this->baseUrl}/lists/" . self::LIST_CLIENTS);
+
+        if (!$response->successful()) {
+            return ['success' => false, 'message' => 'Erreur API Kizeo (' . $response->status() . ')', 'created' => 0, 'skipped' => 0];
+        }
+
+        $items   = $response->json('list.items', []);
+        $created = 0;
+        $skipped = 0;
+
+        foreach ($items as $item) {
+            $cols       = explode('|', $item);
+            $nom        = strstr($cols[0] ?? '', ':', true) ?: ($cols[0] ?? '');
+            $email      = strstr($cols[1] ?? '', ':', true) ?: ($cols[1] ?? '');
+            $signataire = strstr($cols[2] ?? '', ':', true) ?: ($cols[2] ?? '');
+            $code       = strstr($cols[3] ?? '', ':', true) ?: ($cols[3] ?? '');
+            $actif      = (int)(strstr($cols[4] ?? '0', ':', true) ?: ($cols[4] ?? '0'));
+
+            $nom = trim($nom);
+            if (!$nom || $nom === '-') {
+                continue;
+            }
+
+            if (Client::where('nom_societe', $nom)->exists()) {
+                $skipped++;
+                continue;
+            }
+
+            Client::create([
+                'nom_societe'           => $nom,
+                'email_signataire'      => $email ?: null,
+                'nom_signataire'        => $signataire ?: '',
+                'numero_client_kizeo'   => $code ?: null,
+                'statut'                => $actif ? 'actif' : 'inactif',
+            ]);
+            $created++;
+        }
+
+        return [
+            'success' => true,
+            'message' => "{$created} client(s) créé(s), {$skipped} déjà existant(s)",
+            'created' => $created,
+            'skipped' => $skipped,
+        ];
     }
 
     public function getNombreNonLus(): array

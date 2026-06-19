@@ -53,6 +53,7 @@ Route::middleware(['auth'])->group(function () {
 use App\Http\Controllers\KizeoController;
 Route::middleware(['auth'])->group(function () {
     Route::post('/kizeo/forcer', [KizeoController::class, 'forcer'])->name('kizeo.forcer');
+    Route::post('/kizeo/sync-clients', [KizeoController::class, 'syncClients'])->name('kizeo.sync-clients');
 });
 
 use App\Http\Controllers\PdfController;
