@@ -313,8 +313,12 @@ class KizeoService
             ?? Client::where('nom_societe', 'like', '%'.$nomClient.'%')->first();
 
         if (!$client) {
-            Log::info("Kizeo : client non trouvé '{$nomClient}' - bon {$bonNumero}");
-            return 'error';
+            Log::info("Kizeo : nouveau client créé automatiquement '{$nomClient}' - bon {$bonNumero}");
+            $client = Client::create([
+                'nom_societe'    => $nomClient,
+                'nom_signataire' => '',
+                'statut'         => 'actif',
+            ]);
         }
 
         // Trouver le contrat actif à la date de l'intervention
