@@ -14,7 +14,7 @@ class ClientController extends Controller
         }
         if ($request->get('sans_contrat') === '1') {
             $query->whereDoesntHave('contrats');
-        } else {
+        } elseif (!$request->search) {
             $query->whereHas('contrats');
         }
         $clients = $query->orderBy('nom_societe')->paginate((int)request('per_page', 20))->withQueryString();
