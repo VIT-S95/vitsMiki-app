@@ -62,7 +62,9 @@ class ContratController extends Controller
         $data['date_fin'] = \Carbon\Carbon::parse($data['date_debut'])->addMonths((int)$data['duree_mois'])->toDateString();
         $data['statut'] = 'en-cours';
         $data['numero_renouvellement'] = 0;
-        Contrat::create($data);
+        $contrat = Contrat::create($data);
+        $client  = Client::find($data['client_id']);
+        if ($client) app(KizeoService::class)->reventilerInterventionsHorsContrat($client);
         return redirect()->route('contrats.index')->with('success', 'Contrat créé.');
     }
 
@@ -97,6 +99,7 @@ class ContratController extends Controller
         $data = $request->all();
         $data['date_fin'] = \Carbon\Carbon::parse($data['date_debut'])->addMonths((int)$data['duree_mois'])->toDateString();
         $contrat->update($data);
+        app(KizeoService::class)->reventilerInterventionsHorsContrat($contrat->client);
         return redirect()->route('contrats.show', $contrat)->with('success', 'Contrat modifié.');
     }
 

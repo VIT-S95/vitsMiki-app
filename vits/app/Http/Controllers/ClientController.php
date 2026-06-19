@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 use App\Models\Client;
+use App\Services\KizeoService;
 use Illuminate\Http\Request;
 class ClientController extends Controller
 {
@@ -60,5 +61,11 @@ class ClientController extends Controller
     {
         $client->delete();
         return redirect()->route('clients.index')->with('success', 'Client supprimé.');
+    }
+
+    public function reventiler(Client $client, KizeoService $kizeo)
+    {
+        $result = $kizeo->reventilerInterventionsHorsContrat($client);
+        return response()->json($result);
     }
 }

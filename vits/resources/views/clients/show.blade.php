@@ -21,11 +21,37 @@
         </div>
         <div style="display:flex;gap:8px">
             <a href="{{ route('clients.edit', $client) }}" style="padding:6px 12px;font-size:12px;border:1px solid #ddd;border-radius:8px;color:#666;text-decoration:none">✏ Modifier</a>
+            <button id="btn-reventiler" onclick="reventilerClient(this)"
+                style="padding:6px 12px;font-size:12px;border:1px solid #ddd;border-radius:8px;color:#7F77DD;background:#fff;cursor:pointer">
+                ↩ Re-ventiler
+            </button>
             <form action="{{ route('clients.destroy', $client) }}" method="POST" onsubmit="return confirm('Supprimer ce client ?')">
                 @csrf @method('DELETE')
                 <button type="submit" style="padding:6px 12px;font-size:12px;border:1px solid #ddd;border-radius:8px;color:#dc2626;background:#fff;cursor:pointer">🗑 Supprimer</button>
             </form>
         </div>
+<script>
+function reventilerClient(btn) {
+    btn.disabled = true;
+    btn.textContent = '⏳';
+    fetch('{{ route('clients.reventiler', $client) }}', {
+        method: 'POST',
+        headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json'}
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.disabled = false;
+        btn.textContent = '↩ Re-ventiler';
+        alert(data.reventilees + ' intervention(s) re-ventilée(s), ' + data.restantes + ' sans contrat couvrant.');
+        if (data.reventilees > 0) window.location.reload();
+    })
+    .catch(() => {
+        btn.disabled = false;
+        btn.textContent = '↩ Re-ventiler';
+        alert('Erreur lors de la re-ventilation.');
+    });
+}
+</script>
     </div>
 </div>
 

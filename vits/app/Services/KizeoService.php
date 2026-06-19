@@ -465,6 +465,40 @@ class KizeoService
         return 0;
     }
 
+    public function reventilerInterventionsHorsContrat(Client $client): array
+    {
+        $interventions = \App\Models\Intervention::where('client_nom', $client->nom_societe)
+            ->where('hors_contrat', true)
+            ->get();
+
+        $reventilees = 0;
+        $restantes   = 0;
+
+        foreach ($interventions as $intervention) {
+            $date   = $intervention->date_intervention instanceof \Carbon\Carbon
+                ? $intervention->date_intervention
+                : \Carbon\Carbon::parse($intervention->date_intervention);
+
+            $contrat = \App\Models\Contrat::where('client_id', $client->id)
+                ->where('date_debut', '<=', $date->toDateString())
+                ->where('date_fin',   '>=', $date->toDateString())
+                ->first();
+
+            if ($contrat) {
+                $intervention->update([
+                    'contrat_id'  => $contrat->id,
+                    'hors_contrat' => false,
+                    'type_tri'    => 'standard',
+                ]);
+                $reventilees++;
+            } else {
+                $restantes++;
+            }
+        }
+
+        return ['reventilees' => $reventilees, 'restantes' => $restantes];
+    }
+
     public function syncClientsDepuisListe(): array
     {
         if (!$this->apiKey) {
