@@ -271,7 +271,7 @@ class KizeoService
 
             // Créer directement en hors_contrat avec le nom libre
             // (pas de lookup Client ni de contrat possible)
-            [$type, $estFlash, $dureeMinutes, $statut, $heureArrivee, $technicien]
+            [$type, $estFlash, $dureeMinutes, $statut, $heureArrivee, $technicien, $dureeDevisMinutes]
                 = $this->extraireChampsTechniques($record, $formId);
 
             Intervention::create([
@@ -283,6 +283,7 @@ class KizeoService
                 'numero_bon_kizeo'   => $bonNumero,
                 'type'               => $type,
                 'duree_minutes'      => $estFlash ? 0 : $dureeMinutes,
+                'duree_devis_minutes'=> $dureeDevisMinutes,
                 'statut'             => $statut,
                 'type_tri'           => 'hors-contrat',
                 'source_kizeo'       => true,
@@ -333,7 +334,7 @@ class KizeoService
                 ->first();
         }
 
-        [$type, $estFlash, $dureeMinutes, $statut, $heureArrivee, $technicien]
+        [$type, $estFlash, $dureeMinutes, $statut, $heureArrivee, $technicien, $dureeDevisMinutes]
             = $this->extraireChampsTechniques($record, $formId);
 
         if (!$contrat) {
@@ -346,6 +347,7 @@ class KizeoService
                 'numero_bon_kizeo'   => $bonNumero,
                 'type'               => $type,
                 'duree_minutes'      => $estFlash ? 0 : $dureeMinutes,
+                'duree_devis_minutes'=> $dureeDevisMinutes,
                 'statut'             => $statut,
                 'type_tri'           => 'hors-contrat',
                 'source_kizeo'       => true,
@@ -366,6 +368,7 @@ class KizeoService
                 'numero_bon_kizeo'   => $bonNumero,
                 'type'               => $type,
                 'duree_minutes'      => $estFlash ? 0 : $dureeMinutes,
+                'duree_devis_minutes'=> $dureeDevisMinutes,
                 'statut'             => $statut,
                 'type_tri'           => 'hors-contrat',
                 'source_kizeo'       => true,
@@ -393,6 +396,7 @@ class KizeoService
             'numero_bon_kizeo'   => $bonNumero,
             'type'               => $type,
             'duree_minutes'      => $estFlash ? 0 : $dureeMinutes,
+            'duree_devis_minutes'=> $dureeDevisMinutes,
             'statut'             => $statut,
             'type_tri'           => $deductible ? 'standard' : 'hors-contrat',
             'source_kizeo'       => true,
@@ -430,6 +434,12 @@ class KizeoService
             $dureeMinutes = (int)($heures * 60);
         }
 
+        $dureeDevisMinutes = 0;
+        if ($formId === self::FORM_SITE) {
+            $devisHeures       = (float)($record['temps_du_devis'] ?? 0);
+            $dureeDevisMinutes = (int)($devisHeures * 60);
+        }
+
         $statut       = strtolower($record['intervention'] ?? '') === 'clôturée' ? 'traitee' : 'non-traitee';
         $heureArrivee = isset($record['_answer_time']) ? substr($record['_answer_time'], 11, 5) : null;
 
@@ -438,7 +448,7 @@ class KizeoService
             $technicien = $m[1];
         }
 
-        return [$type, $estFlash, $dureeMinutes, $statut, $heureArrivee, $technicien];
+        return [$type, $estFlash, $dureeMinutes, $statut, $heureArrivee, $technicien, $dureeDevisMinutes];
     }
 
     public function parserDuree(string $duree): int

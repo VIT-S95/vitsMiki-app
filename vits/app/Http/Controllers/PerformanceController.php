@@ -50,7 +50,7 @@ class PerformanceController extends Controller
 
         $statsByTech = $interventions->groupBy('technicien')
             ->map(function ($items) {
-                $totalMinutes = $items->sum('duree_minutes');
+                $totalMinutes = $items->sum(fn($i) => $i->duree_minutes + $i->duree_devis_minutes);
                 $h = intdiv($totalMinutes, 60);
                 $m = $totalMinutes % 60;
                 return [
