@@ -10,3 +10,11 @@ try {
 Schedule::command('kizeo:import')
     ->cron("*/{$freqMin} * * * *")
     ->withoutOverlapping($freqMin);
+
+Schedule::command('kizeo:reimport', [
+    now()->subDay()->format('Y-m-d'),
+    now()->subDay()->format('Y-m-d'),
+])
+    ->dailyAt('00:30')
+    ->withoutOverlapping(30)
+    ->appendOutputTo(storage_path('logs/kizeo_nuit.log'));
