@@ -184,14 +184,21 @@
                     <tbody>
                         @foreach($mois['ints'] as $intervention)
                         @php $nonDed = !$intervention->deductible; @endphp
-                        <tr style="border-top:1px solid #f5f5f5;{{ $nonDed ? 'opacity:0.45' : '' }}">
+                        <tr class="{{ $intervention->type === 'ajustement' ? 'bg-blue-50 italic' : '' }}" style="border-top:1px solid #f5f5f5;{{ $nonDed ? 'opacity:0.45' : '' }}">
                             <td style="padding:6px 12px;color:#888;width:90px">{{ $intervention->date_intervention->format('d/m/Y') }}</td>
                             <td style="padding:6px 12px;font-family:monospace;font-size:11px;color:#888">{{ $intervention->numero_bon_kizeo ?? '—' }}</td>
-                            <td style="padding:6px 12px;color:#555">{{ $intervention->technicien ?? '—' }}</td>
+                            <td style="padding:6px 12px;color:#555">
+                                @if($intervention->technicien === 'Système')
+                                    <span style="font-style:italic;color:#999">{{ $intervention->technicien }}</span>
+                                @else
+                                    {{ $intervention->technicien ?? '—' }}
+                                @endif
+                            </td>
                             <td style="padding:6px 12px">
                                 @if($intervention->type === 'site') <span style="background:#E6F1FB;color:#0C447C;padding:2px 6px;border-radius:4px;font-size:10px">sur site</span>
                                 @elseif($intervention->type === 'distance') <span style="background:#E1F5EE;color:#085041;padding:2px 6px;border-radius:4px;font-size:10px">à distance</span>
                                 @elseif($intervention->type === 'administrateur') <span style="background:#F3F0FF;color:#4C1D95;padding:2px 6px;border-radius:4px;font-size:10px">admin</span>
+                                @elseif($intervention->type === 'ajustement') <span style="background:#F0F0F0;color:#555;padding:2px 6px;border-radius:4px;font-size:10px">Ajustement</span>
                                 @else <span style="background:#FFF3E6;color:#854F0B;padding:2px 6px;border-radius:4px;font-size:10px">flash {{ $intervention->flash_numero }}/3</span>
                                 @endif
                                 @if($nonDed)<span style="font-size:10px;color:#777;background:#f0f0f0;border:1px solid #ddd;padding:1px 5px;border-radius:3px;margin-left:4px">Non déductible</span>@endif
