@@ -134,7 +134,7 @@ function setPeriode(val) {
                     @elseif($intervention->type === 'administrateur')
                         <span style="background:#F3F0FF;color:#4C1D95;padding:2px 6px;border-radius:4px;font-size:10px">admin</span>
                     @elseif($intervention->type === 'ajustement')
-                        <span style="background:#F0F0F0;color:#555;padding:2px 6px;border-radius:4px;font-size:10px">Ajustement</span>
+                        <span style="background:#F0F0F0;color:#555;padding:2px 6px;border-radius:4px;font-size:10px">{{ $intervention->duree_minutes < 0 ? 'Report n-1' : 'Dépassement n-1' }}</span>
                     @else
                         <span style="background:#FFF3E6;color:#854F0B;padding:2px 6px;border-radius:4px;font-size:10px">flash {{ $intervention->flash_numero }}/3</span>
                     @endif

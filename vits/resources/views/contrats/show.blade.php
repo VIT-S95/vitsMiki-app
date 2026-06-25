@@ -150,7 +150,7 @@
                                 @if($i->type==='site')<span style="background:#E6F1FB;color:#0C447C;padding:2px 6px;border-radius:4px;font-size:10px">sur site</span>
                                 @elseif($i->type==='distance')<span style="background:#E1F5EE;color:#085041;padding:2px 6px;border-radius:4px;font-size:10px">à distance</span>
                                 @elseif($i->type==='administrateur')<span style="background:#F3F0FF;color:#4C1D95;padding:2px 6px;border-radius:4px;font-size:10px">admin</span>
-                                @elseif($i->type==='ajustement')<span style="background:#F0F0F0;color:#555;padding:2px 6px;border-radius:4px;font-size:10px">Ajustement</span>
+                                @elseif($i->type==='ajustement')<span style="background:#F0F0F0;color:#555;padding:2px 6px;border-radius:4px;font-size:10px">{{ $i->duree_minutes < 0 ? 'Report n-1' : 'Dépassement n-1' }}</span>
                                 @else<span style="background:#FFF3E6;color:#854F0B;padding:2px 6px;border-radius:4px;font-size:10px">flash {{ $i->flash_numero }}/3</span>
                                 @endif
                             </td>
@@ -205,7 +205,7 @@
                                 @if($intervention->type === 'site') <span style="background:#E6F1FB;color:#0C447C;padding:2px 6px;border-radius:4px;font-size:10px">sur site</span>
                                 @elseif($intervention->type === 'distance') <span style="background:#E1F5EE;color:#085041;padding:2px 6px;border-radius:4px;font-size:10px">à distance</span>
                                 @elseif($intervention->type === 'administrateur') <span style="background:#F3F0FF;color:#4C1D95;padding:2px 6px;border-radius:4px;font-size:10px">admin</span>
-                                @elseif($intervention->type === 'ajustement') <span style="background:#F0F0F0;color:#555;padding:2px 6px;border-radius:4px;font-size:10px">Ajustement</span>
+                                @elseif($intervention->type === 'ajustement') <span style="background:#F0F0F0;color:#555;padding:2px 6px;border-radius:4px;font-size:10px">{{ $intervention->duree_minutes < 0 ? 'Report n-1' : 'Dépassement n-1' }}</span>
                                 @else <span style="background:#FFF3E6;color:#854F0B;padding:2px 6px;border-radius:4px;font-size:10px">flash {{ $intervention->flash_numero }}/3</span>
                                 @endif
                                 @if($nonDed)<span style="font-size:10px;color:#777;background:#f0f0f0;border:1px solid #ddd;padding:1px 5px;border-radius:3px;margin-left:4px">Non déductible</span>@endif

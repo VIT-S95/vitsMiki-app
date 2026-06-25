@@ -160,7 +160,7 @@ tr { page-break-inside: avoid; }
                     @if($i->type==='site')<span class="tag-site">sur site</span>
                     @elseif($i->type==='distance')<span class="tag-dist">à distance</span>
                     @elseif($i->type==='administrateur')<span class="tag-admin">admin</span>
-                    @elseif($i->type==='ajustement')<span class="tag-ajustement">Ajustement</span>
+                    @elseif($i->type==='ajustement')<span class="tag-ajustement">{{ $i->duree_minutes < 0 ? 'Report n-1' : 'Dépassement n-1' }}</span>
                     @else<span class="tag-flash">flash {{ $i->flash_numero }}/3</span>@endif
                 </td>
                 <td style="padding:3px 6px;text-align:right;font-weight:bold">{{ $hiA>0?$hiA.'h ':'' }}{{ $miA>0?$miA.'min':'' }}</td>
@@ -216,7 +216,7 @@ tr { page-break-inside: avoid; }
                 @if($intervention->type === 'site')<span class="tag-site">sur site</span>
                 @elseif($intervention->type === 'distance')<span class="tag-dist">à distance</span>
                 @elseif($intervention->type === 'administrateur')<span class="tag-admin">admin</span>
-                @elseif($intervention->type === 'ajustement')<span class="tag-ajustement">Ajustement</span>
+                @elseif($intervention->type === 'ajustement')<span class="tag-ajustement">{{ $intervention->duree_minutes < 0 ? 'Report n-1' : 'Dépassement n-1' }}</span>
                 @else<span class="tag-flash">flash {{ $intervention->flash_numero }}/3</span>@endif
             </td>
             <td style="text-align:right;font-weight:bold">
