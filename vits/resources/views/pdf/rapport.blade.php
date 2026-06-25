@@ -89,6 +89,7 @@ tr { page-break-inside: avoid; }
     $labelRestantes  = $enDepassement ? 'Dépassement' : ($periodeCoursFinie ? 'Restantes (période terminée)' : 'Restantes (période en cours)');
 @endphp
 
+@if($periodesAvecInterventions->count() === 1)
 <table style="width:100%;border-collapse:collapse;margin-bottom:20px;border:1px solid #D3D1C7;border-radius:4px">
     <tr>
         <td style="width:33%;padding:10px;text-align:center;border-right:1px solid #D3D1C7">
@@ -105,6 +106,7 @@ tr { page-break-inside: avoid; }
         </td>
     </tr>
 </table>
+@endif
 
 <div class="section-title">Détail des interventions par période</div>
 
