@@ -39,16 +39,6 @@ tr { page-break-inside: avoid; }
 .row-ajustement { background: #EFF6FF; font-style: italic; }
 .technicien-systeme { font-style: italic; color: #999; }
 .total-row td { background: #F1EFE8; font-weight: bold; }
-.bilan { border-radius: 4px; padding: 10px 14px; margin: 12px 0; page-break-inside: avoid; }
-.bilan-credit { border: 2px solid #0F6E56; background: #F0FDF4; }
-.bilan-debit  { border: 2px solid #A32D2D; background: #FEF2F2; }
-.bilan-title-credit { font-size: 11px; font-weight: bold; color: #0F6E56; text-transform: uppercase; margin-bottom: 8px; }
-.bilan-title-debit  { font-size: 11px; font-weight: bold; color: #A32D2D; text-transform: uppercase; margin-bottom: 8px; }
-.bilan-grid { display: flex; gap: 10px; }
-.bilan-item { flex: 1; text-align: center; }
-.bilan-val { font-size: 15px; font-weight: bold; color: #1A1A1A; }
-.bilan-label-credit { font-size: 10px; color: #0F6E56; margin-top: 2px; }
-.bilan-label-debit  { font-size: 10px; color: #A32D2D; margin-top: 2px; }
 .divider { border: none; border-top: 1px solid #D3D1C7; margin: 15px 0; }
 .footer { margin-top: 20px; padding-top: 8px; border-top: 1px solid #D3D1C7; display: flex; justify-content: space-between; font-size: 10px; color: #888; }
 </style>
@@ -241,31 +231,37 @@ tr { page-break-inside: avoid; }
 @endforeach
 
 @if($periode['periode_finie'])
-<div class="bilan {{ $isCredit ? 'bilan-credit' : 'bilan-debit' }}">
-    <div class="{{ $isCredit ? 'bilan-title-credit' : 'bilan-title-debit' }}">
-        Bilan période {{ $periode['numero'] }} — {{ $periode['debut']->locale('fr')->isoFormat('MMMM YYYY') }} à {{ $periode['fin']->locale('fr')->isoFormat('MMMM YYYY') }}
-        · {{ $isCredit ? '✓ Crédit' : '⚠ Dépassement' }}
+@php
+    $bilanBg     = $isCredit ? '#f0faf5' : '#fff0f0';
+    $bilanBorder = $isCredit ? '#9fe1cb' : '#e2b4b4';
+    $bilanTitre  = $isCredit ? '#0f6e56' : '#a32d2d';
+    $bilanValeur = $isCredit ? '#085041' : '#791f1f';
+    $bilanIcone  = $isCredit ? '✓' : '⚠';
+    $bilanStatut = $isCredit ? 'Crédit' : 'Dépassement';
+    $bilanColTitre = $isCredit ? 'Restantes' : 'Dépassement';
+@endphp
+<div style="background: {{ $bilanBg }}; border: 1px solid {{ $bilanBorder }}; border-radius: 6px; padding: 12px 16px; margin-bottom: 16px;">
+    <div style="font-size: 11px; font-weight: bold; color: {{ $bilanTitre }}; text-transform: uppercase; margin-bottom: 8px;">
+        {{ $bilanIcone }} Bilan période {{ $periode['numero'] }} — {{ $periode['debut']->locale('fr')->isoFormat('MMMM YYYY') }} à {{ $periode['fin']->locale('fr')->isoFormat('MMMM YYYY') }} · {{ $bilanStatut }}
     </div>
-    <div class="bilan-grid">
-        <div class="bilan-item">
-            <div class="bilan-val">{{ $periode['heures_allouees'] }}h</div>
-            <div class="{{ $isCredit ? 'bilan-label-credit' : 'bilan-label-debit' }}">Allouées</div>
-        </div>
-        <div class="bilan-item">
-            <div class="bilan-val">{{ $pH }}h{{ $pM > 0 ? ' '.$pM.'min' : '' }}</div>
-            <div class="{{ $isCredit ? 'bilan-label-credit' : 'bilan-label-debit' }}">Consommées</div>
-        </div>
-        <div class="bilan-item">
-            <div class="bilan-val" style="color:{{ $isCredit ? '#0F6E56' : '#A32D2D' }}">
-                {{ $isCredit ? '+' : '-' }}{{ $dH }}h{{ $dM > 0 ? ' '.$dM.'min' : '' }}
-            </div>
-            <div class="{{ $isCredit ? 'bilan-label-credit' : 'bilan-label-debit' }}">{{ $isCredit ? 'Crédit' : 'Débit' }} d'heures</div>
-        </div>
-        <div class="bilan-item">
-            <div class="bilan-val">{{ $periode['pct'] }}%</div>
-            <div class="{{ $isCredit ? 'bilan-label-credit' : 'bilan-label-debit' }}">Taux de remplissage</div>
-        </div>
-    </div>
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 1px solid {{ $bilanBorder }};">
+                <th style="text-align: left; padding: 6px 8px; font-size: 11px; color: {{ $bilanTitre }};">Allouées</th>
+                <th style="text-align: left; padding: 6px 8px; font-size: 11px; color: {{ $bilanTitre }};">Consommées</th>
+                <th style="text-align: left; padding: 6px 8px; font-size: 11px; color: {{ $bilanTitre }};">{{ $bilanColTitre }}</th>
+                <th style="text-align: right; padding: 6px 8px; font-size: 11px; color: {{ $bilanTitre }};">Taux</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="padding: 8px; font-size: 16px; font-weight: bold; color: {{ $bilanValeur }};">{{ $periode['heures_allouees'] }}h</td>
+                <td style="padding: 8px; font-size: 16px; font-weight: bold; color: {{ $bilanValeur }};">{{ $pH }}h{{ $pM > 0 ? ' '.$pM.'min' : '' }}</td>
+                <td style="padding: 8px; font-size: 16px; font-weight: bold; color: {{ $bilanValeur }};">{{ $dH }}h{{ $dM > 0 ? ' '.$dM.'min' : '' }}</td>
+                <td style="padding: 8px; font-size: 16px; font-weight: bold; color: {{ $bilanValeur }}; text-align: right;">{{ $periode['pct'] }}%</td>
+            </tr>
+        </tbody>
+    </table>
 </div>
 
 @endif
