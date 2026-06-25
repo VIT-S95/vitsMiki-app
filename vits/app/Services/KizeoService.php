@@ -448,7 +448,13 @@ class KizeoService
         $rawData = $record;
 
         // Technicien
-        $technicien = trim(($record['_first_name'] ?? '') . ' ' . ($record['_last_name'] ?? '')) ?: null;
+        $technicien = null;
+        if (!empty($record['_user_name']) && preg_match('/\(.*\s+(\w+)\)/', $record['_user_name'], $m)) {
+            $technicien = $m[1];
+        }
+        if (!$technicien) {
+            $technicien = trim(($record['_first_name'] ?? '') . ' ' . ($record['_last_name'] ?? '')) ?: null;
+        }
 
         // Heure arrivée
         $heureArrivee = isset($record['_answer_time']) ? substr($record['_answer_time'], 11, 5) : null;
