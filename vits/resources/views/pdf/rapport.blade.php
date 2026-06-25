@@ -118,6 +118,58 @@ tr { page-break-inside: avoid; }
     $dM    = $dMin - ($dH * 60);
     $isCredit = $periode['credit'];
 @endphp
+@if(!$loop->first)
+<div style="page-break-before: always;"></div>
+
+<div class="header">
+    @if(file_exists(public_path('storage/logo/logo.png')))
+    <img src="{{ public_path('storage/logo/logo.png') }}" style="max-height:40px;width:auto;border:0;outline:0;box-shadow:none;display:block;margin-bottom:4px">
+    @else
+    <div class="logo-badge" style="margin-bottom:4px">VIT-S</div>
+    @endif
+    <div class="logo-sub">Services informatiques — Infogérance</div>
+    <div class="logo-sub">Rapport d'interventions — Généré le {{ now()->format('d/m/Y') }}</div>
+</div>
+
+<div class="client-band">
+    <div>
+        <div class="client-name">{{ $contrat->client->nom_societe }}</div>
+        <div class="client-meta">{{ $contrat->client->nom_signataire }} @if($contrat->client->email_signataire) · {{ $contrat->client->email_signataire }} @endif</div>
+        <div class="client-meta" style="margin-top:4px">
+            Contrat en cours · {{ $contrat->date_debut?->format('d/m/Y') }} – {{ $contrat->date_fin?->format('d/m/Y') }} ·
+            {{ $contrat->duree_mois == 12 ? '1 an' : ($contrat->duree_mois == 24 ? '2 ans' : '3 ans') }} ·
+            {{ $contrat->heures_par_periode }}h / période
+        </div>
+    </div>
+    <div class="contrat-ref">
+        <div>N° contrat</div>
+        <strong>{{ $contrat->numero_contrat_vits ?? '—' }}</strong>
+    </div>
+</div>
+
+@php
+    $periodeEnCours     = !$periode['periode_finie'];
+    $periodeConsCouleur = $periodeEnCours ? '#E8720C' : ($isCredit ? '#0F6E56' : '#A32D2D');
+    $periodeRestLabel   = $isCredit ? 'Restantes' : 'Dépassement';
+    $periodeRestCouleur = $isCredit ? '#0F6E56' : '#A32D2D';
+@endphp
+<table style="width:100%;border-collapse:collapse;margin-bottom:20px;border:1px solid #D3D1C7;border-radius:4px">
+    <tr>
+        <td style="width:33%;padding:10px;text-align:center;border-right:1px solid #D3D1C7">
+            <div style="font-size:16px;font-weight:bold;color:#1A1A1A">{{ $periode['heures_allouees'] }}h</div>
+            <div style="font-size:10px;color:#888;margin-top:2px">Allouées</div>
+        </td>
+        <td style="width:33%;padding:10px;text-align:center;border-right:1px solid #D3D1C7">
+            <div style="font-size:16px;font-weight:bold;color:{{ $periodeConsCouleur }}">{{ $pH }}h{{ $pM > 0 ? ' '.$pM.'min' : '' }}</div>
+            <div style="font-size:10px;color:#888;margin-top:2px">Consommées</div>
+        </td>
+        <td style="width:33%;padding:10px;text-align:center">
+            <div style="font-size:16px;font-weight:bold;color:{{ $periodeRestCouleur }}">{{ $dH }}h{{ $dM > 0 ? ' '.$dM.'min' : '' }}</div>
+            <div style="font-size:10px;color:#888;margin-top:2px">{{ $periodeRestLabel }}</div>
+        </td>
+    </tr>
+</table>
+@endif
 <div class="periode-title">
     <span>Année {{ $periode['numero'] }} — {{ $periode['debut']->format('d/m/Y') }} / {{ $periode['fin']->format('d/m/Y') }}</span>
     <span style="font-size:11px;font-weight:normal;color:#666">
