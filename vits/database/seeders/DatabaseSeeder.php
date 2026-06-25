@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(VitsSeeder::class);
+        $this->call(KizeoFieldMappingsSeeder::class);
 
         User::updateOrCreate(
             ['email' => 'sraza@vit-s.com'],
