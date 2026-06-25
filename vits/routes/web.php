@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PeriodeAjustementController;
 use Illuminate\Http\Request;
 
 Route::get('/', function () {
@@ -58,7 +59,6 @@ Route::middleware(['auth'])->group(function () {
 });
 
 use App\Http\Controllers\PdfController;
-use App\Http\Controllers\PeriodeAjustementController;
 Route::middleware(['auth'])->group(function () {
     Route::get('/contrats/{contrat}/pdf/choix', [PdfController::class, 'choix'])->name('contrats.pdf.choix');
     Route::get('/contrats/{contrat}/pdf', [PdfController::class, 'rapport'])->name('contrats.pdf');
