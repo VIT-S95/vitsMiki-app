@@ -154,6 +154,11 @@ tr { page-break-inside: avoid; }
     $periodeConsCouleur = $periodeEnCours ? '#E8720C' : ($isCredit ? '#0F6E56' : '#A32D2D');
     $periodeRestLabel   = $isCredit ? 'Restantes' : 'Dépassement';
     $periodeRestCouleur = $isCredit ? '#0F6E56' : '#A32D2D';
+    $pHCons = intdiv($periode['total_minutes'], 60);
+    $pMCons = $periode['total_minutes'] % 60;
+    $pDiff  = abs($periode['diff_minutes']);
+    $pHDiff = intdiv($pDiff, 60);
+    $pMDiff = $pDiff % 60;
 @endphp
 <table style="width:100%;border-collapse:collapse;margin-bottom:20px;border:1px solid #D3D1C7;border-radius:4px">
     <tr>
@@ -162,11 +167,11 @@ tr { page-break-inside: avoid; }
             <div style="font-size:10px;color:#888;margin-top:2px">Allouées</div>
         </td>
         <td style="width:33%;padding:10px;text-align:center;border-right:1px solid #D3D1C7">
-            <div style="font-size:16px;font-weight:bold;color:{{ $periodeConsCouleur }}">{{ $pH }}h{{ $pM > 0 ? ' '.$pM.'min' : '' }}</div>
+            <div style="font-size:16px;font-weight:bold;color:{{ $periodeConsCouleur }}">{{ $pHCons }}h{{ $pMCons > 0 ? ' '.$pMCons.'min' : '' }}</div>
             <div style="font-size:10px;color:#888;margin-top:2px">Consommées</div>
         </td>
         <td style="width:33%;padding:10px;text-align:center">
-            <div style="font-size:16px;font-weight:bold;color:{{ $periodeRestCouleur }}">{{ $dH }}h{{ $dM > 0 ? ' '.$dM.'min' : '' }}</div>
+            <div style="font-size:16px;font-weight:bold;color:{{ $periodeRestCouleur }}">{{ $pHDiff }}h{{ $pMDiff > 0 ? ' '.$pMDiff.'min' : '' }}</div>
             <div style="font-size:10px;color:#888;margin-top:2px">{{ $periodeRestLabel }}</div>
         </td>
     </tr>
