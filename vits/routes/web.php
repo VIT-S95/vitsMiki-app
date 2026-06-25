@@ -81,6 +81,12 @@ Route::middleware(['auth', 'admin.only'])->prefix('admin')->name('admin.')->grou
     Route::resource('users', UserController::class);
 });
 
+use App\Http\Controllers\Admin\ClientsTableauController;
+Route::middleware(['auth', 'admin.only'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/clients-tableau', [ClientsTableauController::class, 'index'])->name('clients-tableau.index');
+    Route::post('/clients-tableau/{client}', [ClientsTableauController::class, 'update'])->name('clients-tableau.update');
+});
+
 use App\Http\Controllers\PerformanceController;
 Route::middleware(['auth', 'admin.only'])->group(function () {
     Route::get('/performance', [PerformanceController::class, 'index'])->name('performance.index');

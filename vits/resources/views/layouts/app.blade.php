@@ -145,6 +145,9 @@
         <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
             <i class="ti ti-user-cog"></i> Utilisateurs
         </a>
+        <a href="{{ route('admin.clients-tableau.index') }}" class="nav-item {{ request()->routeIs('admin.clients-tableau.*') ? 'active' : '' }}">
+            <i class="ti ti-table"></i> Tableau clients
+        </a>
         @endif
         <a href="{{ route('logout') }}" class="nav-item"
            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
