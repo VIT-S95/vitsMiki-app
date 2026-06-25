@@ -245,12 +245,12 @@ tr { page-break-inside: avoid; }
         {{ $bilanIcone }} Bilan période {{ $periode['numero'] }} — {{ $periode['debut']->locale('fr')->isoFormat('MMMM YYYY') }} à {{ $periode['fin']->locale('fr')->isoFormat('MMMM YYYY') }} · {{ $bilanStatut }}
     </div>
     <table style="width: 100%; border-collapse: collapse;">
-        <thead>
+        <thead style="background: transparent;">
             <tr>
-                <th style="font-weight: normal; text-transform: none; font-size: 10px; color: {{ $bilanTitre }}; padding: 5px 8px; border-bottom: 1px solid {{ $bilanBorder }}; text-align: left;">Allouées</th>
-                <th style="font-weight: normal; text-transform: none; font-size: 10px; color: {{ $bilanTitre }}; padding: 5px 8px; border-bottom: 1px solid {{ $bilanBorder }}; text-align: left;">Consommées</th>
-                <th style="font-weight: normal; text-transform: none; font-size: 10px; color: {{ $bilanTitre }}; padding: 5px 8px; border-bottom: 1px solid {{ $bilanBorder }}; text-align: left;">{{ $bilanColTitre }}</th>
-                <th style="font-weight: normal; text-transform: none; font-size: 10px; color: {{ $bilanTitre }}; padding: 5px 8px; border-bottom: 1px solid {{ $bilanBorder }}; text-align: right;">Taux</th>
+                <th style="font-weight: normal; text-transform: none; font-size: 10px; color: {{ $bilanTitre }}; padding: 5px 8px; border-bottom: 1px solid {{ $bilanBorder }}; text-align: left; background: transparent;">Allouées</th>
+                <th style="font-weight: normal; text-transform: none; font-size: 10px; color: {{ $bilanTitre }}; padding: 5px 8px; border-bottom: 1px solid {{ $bilanBorder }}; text-align: left; background: transparent;">Consommées</th>
+                <th style="font-weight: normal; text-transform: none; font-size: 10px; color: {{ $bilanTitre }}; padding: 5px 8px; border-bottom: 1px solid {{ $bilanBorder }}; text-align: left; background: transparent;">{{ $bilanColTitre }}</th>
+                <th style="font-weight: normal; text-transform: none; font-size: 10px; color: {{ $bilanTitre }}; padding: 5px 8px; border-bottom: 1px solid {{ $bilanBorder }}; text-align: right; background: transparent;">Taux</th>
             </tr>
         </thead>
         <tbody>
