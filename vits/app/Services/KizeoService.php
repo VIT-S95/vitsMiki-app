@@ -690,20 +690,20 @@ class KizeoService
             return ['success' => false, 'message' => 'Clé API non configurée', 'synced' => 0];
         }
 
-        $clients = Client::withCount(['contrats' => function ($q) {
-                $q->where('statut', 'en-cours');
-            }])
+        $clients = Client::whereIn('statut', ['actif', 'sans_contrat'])
             ->orderBy('nom_societe')
             ->get();
 
-        $items = $clients->map(function ($client) {
+        $items = [' Autre client||||0|'];
+
+        foreach ($clients as $client) {
             $nom        = str_replace(['|', "\n", "\r"], ' ', $client->nom_societe ?? '');
             $email      = str_replace(['|', "\n", "\r"], ' ', $client->email_signataire ?? '');
             $signataire = str_replace(['|', "\n", "\r"], ' ', $client->nom_signataire ?? '');
             $code       = str_replace(['|', "\n", "\r"], ' ', $client->numero_client_kizeo ?? '');
-            $contrat    = $client->contrats_count > 0 ? '1' : '0';
-            return "{$nom}|{$email}|{$signataire}|{$code}|{$contrat}|";
-        })->values()->toArray();
+            $contrat    = $client->statut === 'actif' ? '1' : '0';
+            $items[]    = "{$nom}|{$email}|{$signataire}|{$code}|{$contrat}|";
+        }
 
         $response = Http::timeout(30)->withHeaders([
             'Authorization' => $this->apiKey,
