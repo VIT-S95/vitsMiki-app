@@ -17,6 +17,7 @@ class KizeoService
 
     const FORM_SITE     = '45252';
     const FORM_DISTANCE = '108738';
+    const FORM_NOUVEAU  = '1185604';
     const LIST_CLIENTS  = '21312';
 
     public function __construct()
@@ -97,7 +98,7 @@ class KizeoService
         $sansContrat = 0;
         $errors      = 0;
 
-        foreach ([self::FORM_SITE, self::FORM_DISTANCE] as $formId) {
+        foreach ([self::FORM_SITE, self::FORM_DISTANCE, self::FORM_NOUVEAU] as $formId) {
             $result      = $this->importerFormulaire($formId);
             $imported    += $result['imported'];
             $sansContrat += $result['sansContrat'] ?? 0;
@@ -143,7 +144,7 @@ class KizeoService
         $sansContrat = 0;
         $errors      = 0;
 
-        foreach ([self::FORM_SITE, self::FORM_DISTANCE] as $formId) {
+        foreach ([self::FORM_SITE, self::FORM_DISTANCE, self::FORM_NOUVEAU] as $formId) {
             $page = 0;
             do {
                 $response = Http::timeout(60)->retry(2, 3000)->withHeaders([
@@ -248,32 +249,81 @@ class KizeoService
         return compact('imported', 'skipped', 'sansContrat', 'errors');
     }
 
+    protected function chargerMappings(string $formId): array
+    {
+        return \DB::table('kizeo_field_mappings')
+            ->where('form_id', $formId)
+            ->where('is_active', true)
+            ->get()
+            ->keyBy('kizeo_field')
+            ->toArray();
+    }
+
+    protected function appliquerTransform(string $transform, $valeur, array $record): mixed
+    {
+        return match($transform) {
+            'substr_11_5'       => isset($record['_answer_time']) ? substr($record['_answer_time'], 11, 5) : null,
+            'heures_fois_60'    => (int)((float)$valeur * 60),
+            'parse_duree_20'    => $this->parserDuree((string)$valeur),
+            'bool_oui_non'      => strtolower(trim((string)$valeur)) === 'oui',
+            'cloture_ancien'    => strtolower(trim((string)$valeur)) === 'clôturée' ? 'traitee' : 'non-traitee',
+            'cloture_nouveau'   => (string)$valeur === '1' ? 'traitee' : 'non-traitee',
+            'logique_flash'     => strtolower(trim((string)$valeur)) === 'oui',
+            'type_nouveau'      => match(strtolower(trim((string)$valeur))) {
+                'sur site'  => 'site',
+                'a distance', 'à distance' => 'distance',
+                'atelier'   => 'site',
+                default     => 'site',
+            },
+            'concat_prenom_nom' => trim(($record['_first_name'] ?? '') . ' ' . ($record['_last_name'] ?? '')),
+            'file_attente'      => (string)$valeur,
+            'raw_data'          => null,
+            default             => $valeur,
+        };
+    }
+
     protected function traiterEnregistrement(array $record, string $formId): string
     {
         $bonNumero = (string)($record['_id'] ?? '');
         if (!$bonNumero) return 'error';
 
-        // Doublon : intervention déjà en base avec ce numéro de bon
         if (Intervention::where('numero_bon_kizeo', $bonNumero)->exists()) return 'skipped';
 
-        $nomClient = trim($record['client'] ?? '');
-        $date      = $record['date'] ?? null;
-
+        $date = $record['date'] ?? null;
         if (!$date) return 'error';
 
-        // Nettoyer le nom client (parenthèses ex: "(COEXPAU)")
+        // Nom client selon le formulaire
+        if ($formId === self::FORM_NOUVEAU) {
+            $nomClient = trim($record['societe'] ?? '');
+            $autreClientKey = 'autre_societe';
+        } else {
+            $nomClient = trim($record['client'] ?? '');
+            $autreClientKey = 'autre_client';
+        }
+
         $nomClient = trim($nomClient, '() ');
 
-        // Client inconnu : vérifier le champ libre saisi par le technicien
+        // Client inconnu → file d'attente
         if (in_array($nomClient, ['-', '?', ''], true)) {
-            $autreClient = trim($record['autre_client'] ?? '');
+            $autreClient = trim($record[$autreClientKey] ?? '');
             if (!$autreClient) return 'skipped';
 
-            // Créer directement en hors_contrat avec le nom libre
-            // (pas de lookup Client ni de contrat possible)
-            [$type, $estFlash, $dureeMinutes, $statut, $heureArrivee, $technicien, $dureeDevisMinutes]
-                = $this->extraireChampsTechniques($record, $formId);
+            [$type, $estFlash, $dureeMinutes, $statut, $heureArrivee, $technicien, $dureeDevisMinutes,
+             $commentaires, $horsHeureOuvree, $piecesDetachees, $demandeAnnexe, $donneurOrdre,
+             $nTicket, $nDevis, $rawData] = $this->extraireChampsTechniques($record, $formId);
 
+            // Stocker en file d'attente
+            \DB::table('intervention_pending_clients')->insert([
+                'nom_saisi'         => $autreClient,
+                'form_id'           => $formId,
+                'numero_bon_kizeo'  => $bonNumero,
+                'raw_data'          => json_encode($rawData),
+                'statut'            => 'en_attente',
+                'created_at'        => now(),
+                'updated_at'        => now(),
+            ]);
+
+            // Créer quand même l'intervention en hors_contrat
             Intervention::create([
                 'contrat_id'         => null,
                 'client_nom'         => $autreClient,
@@ -287,18 +337,26 @@ class KizeoService
                 'statut'             => $statut,
                 'type_tri'           => 'hors-contrat',
                 'source_kizeo'       => true,
-                'source_manuelle'    => true,
+                'source_manuelle'    => false,
                 'deductible'         => false,
                 'hors_contrat'       => true,
+                'commentaires'       => $commentaires ?: null,
+                'hors_heure_ouvree'  => $horsHeureOuvree,
+                'pieces_detachees'   => $piecesDetachees ?: null,
+                'demande_annexe'     => $demandeAnnexe ?: null,
+                'donneur_ordre'      => $donneurOrdre ?: null,
+                'n_ticket'           => $nTicket ?: null,
+                'n_devis'            => $nDevis ?: null,
+                'raw_data'           => $rawData,
             ]);
             return 'imported';
         }
 
-        // Normaliser les apostrophes
+        // Normaliser apostrophes
         $nomClient = str_replace("\u{2019}", "'", $nomClient);
         $nomClient = str_replace("\u{2018}", "'", $nomClient);
 
-        // Aliases : anciens noms -> noms actuels
+        // Aliases
         $aliases = [
             'ACTA PREVENTION' => 'VANBERG Prévention',
             'ACTA PRÉVENTION' => 'VANBERG Prévention',
@@ -306,9 +364,7 @@ class KizeoService
             'ULTRASERVICE'    => 'FLOLISVA',
             "L'AVENTURE"      => 'AWEN Propreté',
         ];
-        if (isset($aliases[$nomClient])) {
-            $nomClient = $aliases[$nomClient];
-        }
+        if (isset($aliases[$nomClient])) $nomClient = $aliases[$nomClient];
 
         // Trouver le client
         $client = Client::where('nom_societe', $nomClient)->first()
@@ -323,72 +379,24 @@ class KizeoService
             ]);
         }
 
-        // Trouver le contrat actif à la date de l'intervention
-        $contrat = Contrat::where('client_id', $client->id)
-            ->where('statut', 'en-cours')
-            ->first();
+        // Trouver le contrat
+        $contrat = Contrat::where('client_id', $client->id)->where('statut', 'en-cours')->first()
+            ?? Contrat::where('client_id', $client->id)->orderBy('date_fin', 'desc')->first();
 
-        if (!$contrat) {
-            $contrat = Contrat::where('client_id', $client->id)
-                ->orderBy('date_fin', 'desc')
-                ->first();
-        }
-
-        [$type, $estFlash, $dureeMinutes, $statut, $heureArrivee, $technicien, $dureeDevisMinutes]
-            = $this->extraireChampsTechniques($record, $formId);
-
-        if (!$contrat) {
-            Intervention::create([
-                'contrat_id'         => null,
-                'client_nom'         => $client->nom_societe,
-                'date_intervention'  => $date,
-                'heure_intervention' => $heureArrivee,
-                'technicien'         => $technicien,
-                'numero_bon_kizeo'   => $bonNumero,
-                'type'               => $type,
-                'duree_minutes'      => $estFlash ? 0 : $dureeMinutes,
-                'duree_devis_minutes'=> $dureeDevisMinutes,
-                'statut'             => $statut,
-                'type_tri'           => 'hors-contrat',
-                'source_kizeo'       => true,
-                'deductible'         => false,
-                'hors_contrat'       => true,
-            ]);
-            return 'imported';
-        }
-
-        // Si la date est antérieure au début du contrat → hors contrat, sans rattachement
-        if ($contrat->date_debut && \Carbon\Carbon::parse($date)->lt($contrat->date_debut)) {
-            Intervention::create([
-                'contrat_id'         => null,
-                'client_nom'         => $client->nom_societe,
-                'date_intervention'  => $date,
-                'heure_intervention' => $heureArrivee,
-                'technicien'         => $technicien,
-                'numero_bon_kizeo'   => $bonNumero,
-                'type'               => $type,
-                'duree_minutes'      => $estFlash ? 0 : $dureeMinutes,
-                'duree_devis_minutes'=> $dureeDevisMinutes,
-                'statut'             => $statut,
-                'type_tri'           => 'hors-contrat',
-                'source_kizeo'       => true,
-                'deductible'         => false,
-                'hors_contrat'       => true,
-            ]);
-            return 'imported';
-        }
+        [$type, $estFlash, $dureeMinutes, $statut, $heureArrivee, $technicien, $dureeDevisMinutes,
+         $commentaires, $horsHeureOuvree, $piecesDetachees, $demandeAnnexe, $donneurOrdre,
+         $nTicket, $nDevis, $rawData] = $this->extraireChampsTechniques($record, $formId);
 
         // Déductible
         $contratIndicateur = strtolower(trim($record['contrat'] ?? ''));
-        $forfaitIndicateur = strtolower(trim($record['forfait'] ?? ''));
-        $flashIndicateur   = strtolower(trim($record['flash']   ?? ''));
+        $forfaitIndicateur = strtolower(trim($record['forfait'] ?? $record['forfait_devis'] ?? ''));
+        $flashIndicateur   = strtolower(trim($record['flash'] ?? ''));
         $deductible = (bool)(
             ($flashIndicateur === 'oui')
             || ($contratIndicateur === 'oui' && $forfaitIndicateur !== 'oui')
         );
 
-        Intervention::create([
-            'contrat_id'         => $contrat->id,
+        $champCommuns = [
             'client_nom'         => $client->nom_societe,
             'date_intervention'  => $date,
             'heure_intervention' => $heureArrivee,
@@ -398,11 +406,32 @@ class KizeoService
             'duree_minutes'      => $estFlash ? 0 : $dureeMinutes,
             'duree_devis_minutes'=> $dureeDevisMinutes,
             'statut'             => $statut,
-            'type_tri'           => $deductible ? 'standard' : 'hors-contrat',
             'source_kizeo'       => true,
             'deductible'         => $deductible,
-            'hors_contrat'       => false,
-        ]);
+            'commentaires'       => $commentaires ?: null,
+            'hors_heure_ouvree'  => $horsHeureOuvree,
+            'pieces_detachees'   => $piecesDetachees ?: null,
+            'demande_annexe'     => $demandeAnnexe ?: null,
+            'donneur_ordre'      => $donneurOrdre ?: null,
+            'n_ticket'           => $nTicket ?: null,
+            'n_devis'            => $nDevis ?: null,
+            'raw_data'           => $rawData,
+        ];
+
+        if (!$contrat || ($contrat->date_debut && Carbon::parse($date)->lt($contrat->date_debut))) {
+            Intervention::create(array_merge($champCommuns, [
+                'contrat_id'  => null,
+                'type_tri'    => 'hors-contrat',
+                'hors_contrat'=> true,
+            ]));
+            return 'imported';
+        }
+
+        Intervention::create(array_merge($champCommuns, [
+            'contrat_id'  => $contrat->id,
+            'type_tri'    => $deductible ? 'standard' : 'hors-contrat',
+            'hors_contrat'=> false,
+        ]));
 
         if ($estFlash) {
             Intervention::recalculerFlash($contrat->id, $date);
@@ -413,42 +442,107 @@ class KizeoService
 
     protected function extraireChampsTechniques(array $record, string $formId): array
     {
-        $estFlash = false;
-        $type     = 'site';
+        $mappings = $this->chargerMappings($formId);
 
-        if ($formId === self::FORM_DISTANCE) {
-            $type     = 'distance';
-            $estFlash = strtolower($record['flash'] ?? 'non') === 'oui';
+        // raw_data = tout le payload brut
+        $rawData = $record;
+
+        // Technicien
+        $technicien = trim(($record['_first_name'] ?? '') . ' ' . ($record['_last_name'] ?? '')) ?: null;
+
+        // Heure arrivée
+        $heureArrivee = isset($record['_answer_time']) ? substr($record['_answer_time'], 11, 5) : null;
+
+        // Statut
+        $statut = 'non-traitee';
+        if ($formId === self::FORM_NOUVEAU) {
+            $statut = ($record['inter_cloture'] ?? '0') === '1' ? 'traitee' : 'non-traitee';
+        } else {
+            $statut = strtolower($record['intervention'] ?? '') === 'clôturée' ? 'traitee' : 'non-traitee';
+        }
+
+        // Type et flash
+        $estFlash = strtolower($record['flash'] ?? 'non') === 'oui';
+        $type = 'site';
+
+        if ($formId === self::FORM_NOUVEAU) {
+            $typeRaw = strtolower(trim($record['type_intervention'] ?? ''));
+            $type = match($typeRaw) {
+                'sur site'  => 'site',
+                'a distance', 'à distance' => 'distance',
+                'atelier'   => 'site',
+                default     => 'site',
+            };
+        } elseif ($formId === self::FORM_DISTANCE) {
+            $type = 'distance';
         }
 
         if ($estFlash) $type = 'flash';
 
+        // Durée
         $dureeMinutes = 0;
-        if ($formId === self::FORM_DISTANCE) {
+        if ($formId === self::FORM_NOUVEAU) {
+            if ($type === 'site') {
+                $dureeMinutes = (int)((float)($record['duree_inter_site_1'] ?? 0) * 60);
+            } else {
+                $d1 = trim($record['duree_inter_distant_1'] ?? '');
+                if ($d1 === 'autre') {
+                    $dureeMinutes = $this->parserDuree($record['duree_inter_distant_2'] ?? '');
+                } else {
+                    $dureeMinutes = $this->parserDuree($d1);
+                }
+            }
+        } elseif ($formId === self::FORM_DISTANCE) {
             $dureeMinutes = $this->parserDuree($record['forfait_temps'] ?? '');
             if ($dureeMinutes === 0) {
                 $dureeMinutes = $this->parserDuree($record['temps'] ?? '');
             }
         } else {
-            $heures = (float)($record['temps'] ?? 0);
-            $dureeMinutes = (int)($heures * 60);
+            $dureeMinutes = (int)((float)($record['temps'] ?? 0) * 60);
         }
 
+        // Durée devis
         $dureeDevisMinutes = 0;
-        if ($formId === self::FORM_SITE) {
-            $devisHeures       = (float)($record['temps_du_devis'] ?? 0);
-            $dureeDevisMinutes = (int)($devisHeures * 60);
+        if ($formId === self::FORM_NOUVEAU) {
+            $dureeDevisMinutes = (int)((float)($record['temps_complementaire'] ?? 0) * 60);
+        } elseif ($formId === self::FORM_SITE) {
+            $dureeDevisMinutes = (int)((float)($record['temps_du_devis'] ?? 0) * 60);
         }
 
-        $statut       = strtolower($record['intervention'] ?? '') === 'clôturée' ? 'traitee' : 'non-traitee';
-        $heureArrivee = isset($record['_answer_time']) ? substr($record['_answer_time'], 11, 5) : null;
-
-        $technicien = null;
-        if (preg_match('/\(.*\s+(\w+)\)/', $record['_user_name'] ?? '', $m)) {
-            $technicien = $m[1];
+        // Champs supplémentaires
+        $commentaires    = trim($record['commentaires'] ?? '');
+        $horsHeureOuvree = false;
+        if ($formId === self::FORM_NOUVEAU) {
+            $horsHeureOuvree = strtolower($record['hors_heure_ouvree'] ?? '') === 'oui';
+        } elseif ($formId === self::FORM_DISTANCE) {
+            $horsHeureOuvree = strtolower($record['heures_ouvrees'] ?? '') === 'oui';
+        } else {
+            $horsHeureOuvree = strtolower($record['intervention_en_dehors_des_he'] ?? '') === 'oui';
         }
 
-        return [$type, $estFlash, $dureeMinutes, $statut, $heureArrivee, $technicien, $dureeDevisMinutes];
+        $piecesDetachees = trim($record['pieces_detachees'] ?? '');
+        $demandeAnnexe   = trim($record['demande_annexe'] ?? $record['que_souhaite_le_client_'] ?? '');
+        $donneurOrdre    = trim($record['donneur_ordre'] ?? $record['demandeur'] ?? '');
+        $nTicket         = trim($record['n_ticket'] ?? $record['ticket'] ?? '');
+        $nDevis          = trim($record['n_devis'] ?? $record['n_de_devis'] ?? '');
+
+        return [
+            $type,
+            $estFlash,
+            $dureeMinutes,
+            $statut,
+            $heureArrivee,
+            $technicien,
+            $dureeDevisMinutes,
+            $commentaires,
+            $horsHeureOuvree,
+            $piecesDetachees,
+            $demandeAnnexe,
+            $donneurOrdre,
+            $nTicket,
+            $nDevis,
+            $rawData,
+        ];
     }
 
     public function parserDuree(string $duree): int
