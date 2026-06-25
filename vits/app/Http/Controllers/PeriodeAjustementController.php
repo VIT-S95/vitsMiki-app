@@ -42,7 +42,7 @@ class PeriodeAjustementController extends Controller
                 Intervention::create([
                     'contrat_id'        => $contrat->id,
                     'date_intervention' => $dateReport,
-                    'type'              => 'administrateur',
+                    'type'              => 'site',
                     'duree_minutes'     => -$solde, // négatif = crédit
                     'motif'             => $label,
                     'statut'            => 'traitee',
@@ -59,7 +59,7 @@ class PeriodeAjustementController extends Controller
                 Intervention::create([
                     'contrat_id'        => $contrat->id,
                     'date_intervention' => $dateReport,
-                    'type'              => 'administrateur',
+                    'type'              => 'site',
                     'duree_minutes'     => $abs, // positif = débit
                     'motif'             => $label,
                     'statut'            => 'traitee',
