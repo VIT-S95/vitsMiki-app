@@ -265,9 +265,9 @@ class KizeoService
             'substr_11_5'       => isset($record['_answer_time']) ? substr($record['_answer_time'], 11, 5) : null,
             'heures_fois_60'    => (int)((float)$valeur * 60),
             'parse_duree_20'    => $this->parserDuree((string)$valeur),
-            'bool_oui_non'      => strtolower(trim((string)$valeur)) === 'oui',
+            'bool_oui_non'      => in_array(strtolower(trim((string)$valeur)), ['oui', 'cochée', 'coché', '1']),
             'cloture_ancien'    => strtolower(trim((string)$valeur)) === 'clôturée' ? 'traitee' : 'non-traitee',
-            'cloture_nouveau'   => (string)$valeur === '1' ? 'traitee' : 'non-traitee',
+            'cloture_nouveau'   => in_array(strtolower(trim((string)$valeur)), ['1', 'cochée', 'coché', 'oui']) ? 'traitee' : 'non-traitee',
             'logique_flash'     => strtolower(trim((string)$valeur)) === 'oui',
             'type_nouveau'      => match(strtolower(trim((string)$valeur))) {
                 'sur site'  => 'site',
@@ -519,7 +519,7 @@ class KizeoService
         $commentaires    = trim($record['commentaires'] ?? '');
         $horsHeureOuvree = false;
         if ($formId === self::FORM_NOUVEAU) {
-            $horsHeureOuvree = strtolower($record['hors_heure_ouvree'] ?? '') === 'oui';
+            $horsHeureOuvree = in_array(strtolower(trim($record['hors_heure_ouvree'] ?? '')), ['oui', 'cochée', 'coché', '1']);
         } elseif ($formId === self::FORM_DISTANCE) {
             $horsHeureOuvree = strtolower($record['heures_ouvrees'] ?? '') === 'oui';
         } else {
