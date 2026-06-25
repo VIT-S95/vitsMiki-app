@@ -462,7 +462,7 @@ class KizeoService
         // Statut
         $statut = 'non-traitee';
         if ($formId === self::FORM_NOUVEAU) {
-            $statut = ($record['inter_cloture'] ?? '0') === '1' ? 'traitee' : 'non-traitee';
+            $statut = in_array(strtolower(trim($record['inter_cloture'] ?? '')), ['1', 'cochée', 'coché', 'oui']) ? 'traitee' : 'non-traitee';
         } else {
             $statut = strtolower($record['intervention'] ?? '') === 'clôturée' ? 'traitee' : 'non-traitee';
         }
