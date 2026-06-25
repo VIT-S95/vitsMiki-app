@@ -72,24 +72,21 @@ tr { page-break-inside: avoid; }
 </div>
 
 @php
-    $periodeCours = $periodesAvecInterventions->first(function($p) { return now()->between($p['debut'], $p['fin']); });
-    if (!$periodeCours) {
-        $periodeCours = $periodesAvecInterventions->last();
-    }
-    $totalMinutesCours = $periodeCours ? $periodeCours['total_minutes'] : 0;
+    $premiereP = $periodesAvecInterventions->first();
+    $totalMinutesCours = $premiereP ? $premiereP['total_minutes'] : 0;
     $hCons  = intdiv($totalMinutesCours, 60);
     $mCons  = $totalMinutesCours - ($hCons * 60);
-    $periodeCoursFinie = $periodeCours && $periodeCours['periode_finie'];
-    $diffMinCours = ($contrat->heures_par_periode * 60) - $totalMinutesCours;
-    $enDepassement = $periodeCoursFinie && $diffMinCours < 0;
-    $restMin = abs($diffMinCours);
+    $diffMin = $premiereP ? $premiereP['diff_minutes'] : 0;
+    $restMin = abs($diffMin);
     $hRest  = intdiv($restMin, 60);
     $mRest  = $restMin - ($hRest * 60);
+    $enDepassement = $premiereP ? !$premiereP['credit'] : false;
+    $periodeCoursFinie = $premiereP ? $premiereP['periode_finie'] : false;
     $labelConsommees = $periodeCoursFinie ? 'Consommées (période terminée)' : 'Consommées (période en cours)';
     $labelRestantes  = $enDepassement ? 'Dépassement' : ($periodeCoursFinie ? 'Restantes (période terminée)' : 'Restantes (période en cours)');
 @endphp
 
-@if($periodesAvecInterventions->count() === 1)
+@if(true)
 <table style="width:100%;border-collapse:collapse;margin-bottom:20px;border:1px solid #D3D1C7;border-radius:4px">
     <tr>
         <td style="width:33%;padding:10px;text-align:center;border-right:1px solid #D3D1C7">
