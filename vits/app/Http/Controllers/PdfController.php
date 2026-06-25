@@ -96,6 +96,14 @@ class PdfController extends Controller
             'margin_left'   => 15,
             'margin_right'  => 15,
         ]);
+        $mpdf->SetHTMLFooter('
+            <table width="100%" style="border-top: 0.5px solid #D3D1C7; padding-top: 4px;">
+                <tr>
+                    <td style="font-size: 9px; color: #888; text-align: left;">VIT-S — Document confidentiel — usage client uniquement</td>
+                    <td style="font-size: 9px; color: #888; text-align: right;">Page {PAGENO}/{nbpg}</td>
+                </tr>
+            </table>
+        ');
         $html = view('pdf.rapport', compact('contrat', 'periodesAvecInterventions', 'interventionsAnterieures'))->render();
         $mpdf->WriteHTML($html);
 

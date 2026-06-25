@@ -39,9 +39,7 @@ tr { page-break-inside: avoid; }
 .row-ajustement { background: #EFF6FF; font-style: italic; }
 .technicien-systeme { font-style: italic; color: #999; }
 .total-row td { background: #F1EFE8; font-weight: bold; }
-.divider { border: none; border-top: 1px solid #D3D1C7; margin: 15px 0; }
-.footer { margin-top: 20px; padding-top: 8px; border-top: 1px solid #D3D1C7; display: flex; justify-content: space-between; font-size: 10px; color: #888; }
-</style>
+.divider { border: none; border-top: 1px solid #D3D1C7; margin: 15px 0; }</style>
 </head>
 <body>
 
@@ -332,10 +330,6 @@ tr { page-break-inside: avoid; }
 @if(!$loop->last)<div class="divider"></div>@endif
 @endforeach
 
-<div class="footer">
-    <div>VIT-S — Document confidentiel — usage client uniquement</div>
-    <div>Généré le {{ now()->format('d/m/Y à H:i') }}</div>
-</div>
 
 </body>
 </html>
