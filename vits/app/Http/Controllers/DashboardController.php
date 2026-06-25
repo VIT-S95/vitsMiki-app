@@ -14,7 +14,7 @@ class DashboardController extends Controller
     {
         $seuilEcheanceMois = (int) config('vits.seuil_echeance_mois', 3);
         $seuilHeuresPct    = (int) config('vits.seuil_heures_pct', 80);
-        $totalClients      = Client::where('statut', 'actif')->count();
+        $totalClients      = Client::whereIn('statut', ['actif', 'sans_contrat'])->count();
         $totalContrats     = Contrat::where('statut', 'en-cours')->count();
         $interventionsMois = Intervention::whereMonth('date_intervention', now()->month)
                                 ->whereYear('date_intervention', now()->year)->count();
@@ -34,8 +34,8 @@ class DashboardController extends Controller
             ->latest('date_intervention')
             ->take(5)->get();
         $contratsBrouillon  = Contrat::where('statut', 'non-actif')->count();
-        $clientsSansContrat = Client::where('statut', 'actif')->whereDoesntHave('contrats')->count();
-        $clientsSansInfos   = Client::where('statut', 'actif')
+        $clientsSansContrat = Client::whereIn('statut', ['actif', 'sans_contrat'])->whereDoesntHave('contrats')->count();
+        $clientsSansInfos   = Client::whereIn('statut', ['actif', 'sans_contrat'])
             ->where(function($q) {
                 $q->whereNull('nom_signataire')->orWhere('nom_signataire', '');
             })->count();

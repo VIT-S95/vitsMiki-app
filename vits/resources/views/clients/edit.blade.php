@@ -32,6 +32,7 @@
                 <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Statut</label>
                 <select name="statut" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
                     <option value="actif" {{ $client->statut === 'actif' ? 'selected' : '' }}>Actif</option>
+                    <option value="sans_contrat" {{ $client->statut === 'sans_contrat' ? 'selected' : '' }}>Sans contrat</option>
                     <option value="inactif" {{ $client->statut === 'inactif' ? 'selected' : '' }}>Inactif</option>
                 </select>
             </div>

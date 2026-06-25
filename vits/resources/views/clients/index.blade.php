@@ -48,6 +48,8 @@
                 <td style="padding:10px 14px">
                     @if($client->statut === 'actif')
                         <span style="background:#f0fdf4;color:#166534;padding:3px 8px;border-radius:99px;font-size:11px;font-weight:500">✓ Actif</span>
+                    @elseif($client->statut === 'sans_contrat')
+                        <span style="background:#fffbeb;color:#92400e;padding:3px 8px;border-radius:99px;font-size:11px;font-weight:500">Sans contrat</span>
                     @else
                         <span style="background:#fef2f2;color:#dc2626;padding:3px 8px;border-radius:99px;font-size:11px;font-weight:500">Inactif</span>
                     @endif
