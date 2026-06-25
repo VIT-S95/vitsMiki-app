@@ -73,12 +73,20 @@ tr { page-break-inside: avoid; }
 
 @php
     $periodeCours = $periodesAvecInterventions->first(function($p) { return now()->between($p['debut'], $p['fin']); });
+    if (!$periodeCours) {
+        $periodeCours = $periodesAvecInterventions->last();
+    }
     $totalMinutesCours = $periodeCours ? $periodeCours['total_minutes'] : 0;
     $hCons  = intdiv($totalMinutesCours, 60);
     $mCons  = $totalMinutesCours - ($hCons * 60);
-    $restMin = max(0, ($contrat->heures_par_periode * 60) - $totalMinutesCours);
+    $periodeCoursFinie = $periodeCours && $periodeCours['periode_finie'];
+    $diffMinCours = ($contrat->heures_par_periode * 60) - $totalMinutesCours;
+    $enDepassement = $periodeCoursFinie && $diffMinCours < 0;
+    $restMin = abs($diffMinCours);
     $hRest  = intdiv($restMin, 60);
     $mRest  = $restMin - ($hRest * 60);
+    $labelConsommees = $periodeCoursFinie ? 'Consommées (période terminée)' : 'Consommées (période en cours)';
+    $labelRestantes  = $enDepassement ? 'Dépassement' : ($periodeCoursFinie ? 'Restantes (période terminée)' : 'Restantes (période en cours)');
 @endphp
 
 <table style="width:100%;border-collapse:collapse;margin-bottom:20px;border:1px solid #D3D1C7;border-radius:4px">
@@ -89,11 +97,11 @@ tr { page-break-inside: avoid; }
         </td>
         <td style="width:33%;padding:10px;text-align:center;border-right:1px solid #D3D1C7">
             <div style="font-size:16px;font-weight:bold;color:#E8720C">{{ $hCons }}h{{ $mCons > 0 ? ' '.$mCons.'min' : '' }}</div>
-            <div style="font-size:10px;color:#888;margin-top:2px">Consommées (période en cours)</div>
+            <div style="font-size:10px;color:#888;margin-top:2px">{{ $labelConsommees }}</div>
         </td>
         <td style="width:33%;padding:10px;text-align:center">
-            <div style="font-size:16px;font-weight:bold;color:#0F6E56">{{ $hRest }}h{{ $mRest > 0 ? ' '.$mRest.'min' : '' }}</div>
-            <div style="font-size:10px;color:#888;margin-top:2px">Restantes (période en cours)</div>
+            <div style="font-size:16px;font-weight:bold;color:{{ $enDepassement ? '#A32D2D' : '#0F6E56' }}">{{ $hRest }}h{{ $mRest > 0 ? ' '.$mRest.'min' : '' }}</div>
+            <div style="font-size:10px;color:#888;margin-top:2px">{{ $labelRestantes }}</div>
         </td>
     </tr>
 </table>
