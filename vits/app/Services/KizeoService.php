@@ -19,6 +19,7 @@ class KizeoService
     const FORM_DISTANCE = '108738';
     const FORM_NOUVEAU  = '1185604';
     const LIST_CLIENTS  = '21312';
+    const LIST_SOCIETES = '496527';
 
     public function __construct()
     {
@@ -681,5 +682,44 @@ class KizeoService
         }
 
         return $result;
+    }
+
+    public function syncClientsVersKizeo(): array
+    {
+        if (!$this->apiKey) {
+            return ['success' => false, 'message' => 'Clé API non configurée', 'synced' => 0];
+        }
+
+        $clients = Client::where('statut', 'actif')
+            ->orderBy('nom_societe')
+            ->get();
+
+        $items = $clients->map(function ($client) {
+            $nom        = str_replace(['|', "\n", "\r"], ' ', $client->nom_societe ?? '');
+            $email      = str_replace(['|', "\n", "\r"], ' ', $client->email_signataire ?? '');
+            $signataire = str_replace(['|', "\n", "\r"], ' ', $client->nom_signataire ?? '');
+            $code       = str_replace(['|', "\n", "\r"], ' ', $client->numero_client_kizeo ?? '');
+            return "{$nom}|{$email}|{$signataire}|{$code}|";
+        })->values()->toArray();
+
+        $response = Http::timeout(30)->withHeaders([
+            'Authorization' => $this->apiKey,
+            'Content-Type'  => 'application/json',
+        ])->put("{$this->baseUrl}/lists/" . self::LIST_SOCIETES, [
+            'items' => $items,
+        ]);
+
+        if (!$response->successful()) {
+            Log::error('Kizeo syncClientsVersKizeo erreur : ' . $response->status() . ' ' . $response->body());
+            return ['success' => false, 'message' => 'Erreur API Kizeo (' . $response->status() . ')', 'synced' => 0];
+        }
+
+        Log::info('Kizeo syncClientsVersKizeo : ' . count($items) . ' client(s) synchronisé(s)');
+
+        return [
+            'success' => true,
+            'message' => count($items) . ' client(s) synchronisé(s) vers Kizeo',
+            'synced'  => count($items),
+        ];
     }
 }
