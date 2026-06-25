@@ -19,7 +19,7 @@ class KizeoService
     const FORM_DISTANCE = '108738';
     const FORM_NOUVEAU  = '1185604';
     const LIST_CLIENTS  = '21312';
-    const LIST_SOCIETES = '496527';
+    const LIST_SOCIETES = '496529';
 
     public function __construct()
     {
