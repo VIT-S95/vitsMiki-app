@@ -86,7 +86,7 @@ class PdfController extends Controller
             ]);
         });
 
-        $filename = 'rapport-' . $contrat->client->nom_societe . '-' . now()->format('Y-m-d') . '.pdf';
+        $filename = 'Rapport de consommation - ' . $contrat->client->nom_societe . ' - ' . now()->format('d/m/Y') . '.pdf';
 
         $mpdf = new \Mpdf\Mpdf([
             'mode'          => 'utf-8',
