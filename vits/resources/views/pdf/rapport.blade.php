@@ -35,6 +35,9 @@ tr { page-break-inside: avoid; }
 .tag-dist { background: #E1F5EE; color: #085041; padding: 1px 5px; border-radius: 3px; font-size: 10px; }
 .tag-flash { background: #FFF3E6; color: #854F0B; padding: 1px 5px; border-radius: 3px; font-size: 10px; }
 .tag-admin { background: #F3F0FF; color: #4C1D95; padding: 1px 5px; border-radius: 3px; font-size: 10px; }
+.tag-ajustement { background: #F0F0F0; color: #555; padding: 1px 5px; border-radius: 3px; font-size: 10px; }
+.row-ajustement { background: #EFF6FF; font-style: italic; }
+.technicien-systeme { font-style: italic; color: #999; }
 .total-row td { background: #F1EFE8; font-weight: bold; }
 .bilan { border-radius: 4px; padding: 10px 14px; margin: 12px 0; page-break-inside: avoid; }
 .bilan-credit { border: 2px solid #0F6E56; background: #F0FDF4; }
@@ -147,13 +150,17 @@ tr { page-break-inside: avoid; }
         <tbody>
             @foreach($interventionsAnterieures as $i)
             @php $hiA=intdiv($i->duree_minutes,60); $miA=$i->duree_minutes%60; @endphp
-            <tr style="border-top:1px solid #f5ede5">
+            <tr style="border-top:1px solid #f5ede5" class="{{ $i->type === 'ajustement' ? 'row-ajustement' : '' }}">
                 <td style="padding:3px 6px;color:#888">{{ $i->date_intervention->format('d/m/Y') }}</td>
-                <td style="padding:3px 6px;color:#555">{{ $i->technicien ?? '—' }}</td>
+                <td style="padding:3px 6px;color:#555">
+                    @if($i->technicien === 'Système')<span class="technicien-systeme">{{ $i->technicien }}</span>
+                    @else{{ $i->technicien ?? '—' }}@endif
+                </td>
                 <td style="padding:3px 6px">
                     @if($i->type==='site')<span class="tag-site">sur site</span>
                     @elseif($i->type==='distance')<span class="tag-dist">à distance</span>
                     @elseif($i->type==='administrateur')<span class="tag-admin">admin</span>
+                    @elseif($i->type==='ajustement')<span class="tag-ajustement">Ajustement</span>
                     @else<span class="tag-flash">flash {{ $i->flash_numero }}/3</span>@endif
                 </td>
                 <td style="padding:3px 6px;text-align:right;font-weight:bold">{{ $hiA>0?$hiA.'h ':'' }}{{ $miA>0?$miA.'min':'' }}</td>
@@ -198,14 +205,18 @@ tr { page-break-inside: avoid; }
             $iHabs = intdiv(abs($intervention->duree_minutes), 60);
             $iMabs = abs($intervention->duree_minutes) - ($iHabs * 60);
         @endphp
-        <tr>
+        <tr class="{{ $intervention->type === 'ajustement' ? 'row-ajustement' : '' }}">
             <td>{{ $intervention->date_intervention->format('d/m/Y') }}</td>
             <td style="font-family:monospace;font-size:10px;color:#888">{{ $intervention->numero_bon_kizeo ?? '—' }}</td>
-            <td>{{ $intervention->technicien ?? '—' }}</td>
+            <td>
+                @if($intervention->technicien === 'Système')<span class="technicien-systeme">{{ $intervention->technicien }}</span>
+                @else{{ $intervention->technicien ?? '—' }}@endif
+            </td>
             <td>
                 @if($intervention->type === 'site')<span class="tag-site">sur site</span>
                 @elseif($intervention->type === 'distance')<span class="tag-dist">à distance</span>
                 @elseif($intervention->type === 'administrateur')<span class="tag-admin">admin</span>
+                @elseif($intervention->type === 'ajustement')<span class="tag-ajustement">Ajustement</span>
                 @else<span class="tag-flash">flash {{ $intervention->flash_numero }}/3</span>@endif
             </td>
             <td style="text-align:right;font-weight:bold">

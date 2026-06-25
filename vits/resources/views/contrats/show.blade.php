@@ -137,13 +137,20 @@
                     <tbody>
                         @foreach($interventionsAnterieures as $i)
                         @php $hi=floor($i->duree_minutes/60); $mi=$i->duree_minutes%60; @endphp
-                        <tr style="border-top:1px solid #f5ede5">
+                        <tr class="{{ $i->type === 'ajustement' ? 'bg-blue-50 italic' : '' }}" style="border-top:1px solid #f5ede5">
                             <td style="padding:4px 8px;color:#888">{{ $i->date_intervention->format('d/m/Y') }}</td>
-                            <td style="padding:4px 8px;color:#555">{{ $i->technicien ?? '—' }}</td>
+                            <td style="padding:4px 8px;color:#555">
+                                @if($i->technicien === 'Système')
+                                    <span style="font-style:italic;color:#999">{{ $i->technicien }}</span>
+                                @else
+                                    {{ $i->technicien ?? '—' }}
+                                @endif
+                            </td>
                             <td style="padding:4px 8px">
                                 @if($i->type==='site')<span style="background:#E6F1FB;color:#0C447C;padding:2px 6px;border-radius:4px;font-size:10px">sur site</span>
                                 @elseif($i->type==='distance')<span style="background:#E1F5EE;color:#085041;padding:2px 6px;border-radius:4px;font-size:10px">à distance</span>
                                 @elseif($i->type==='administrateur')<span style="background:#F3F0FF;color:#4C1D95;padding:2px 6px;border-radius:4px;font-size:10px">admin</span>
+                                @elseif($i->type==='ajustement')<span style="background:#F0F0F0;color:#555;padding:2px 6px;border-radius:4px;font-size:10px">Ajustement</span>
                                 @else<span style="background:#FFF3E6;color:#854F0B;padding:2px 6px;border-radius:4px;font-size:10px">flash {{ $i->flash_numero }}/3</span>
                                 @endif
                             </td>

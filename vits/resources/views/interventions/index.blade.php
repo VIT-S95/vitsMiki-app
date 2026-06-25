@@ -112,12 +112,19 @@ function setPeriode(val) {
                 $manuelle  = $intervention->source_manuelle ?? false;
                 $horsCtrat = $intervention->hors_contrat ?? false;
             @endphp
-            <tr @if($intervention->contrat_id) onclick="window.location='{{ route('contrats.show', $intervention->contrat_id) }}'" @endif
+            <tr class="{{ $intervention->type === 'ajustement' ? 'bg-blue-50 italic' : '' }}"
+                @if($intervention->contrat_id) onclick="window.location='{{ route('contrats.show', $intervention->contrat_id) }}'" @endif
                 style="{{ $intervention->contrat_id ? 'cursor:pointer;' : '' }}border-bottom:1px solid #f0f0f0;{{ $nonDed ? 'opacity:0.5' : '' }}"
                 onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='#fff'">
                 <td style="padding:10px 14px;color:#888">{{ $intervention->date_intervention->format('d/m/Y') }}{{ $intervention->heure_intervention ? ' '.$intervention->heure_intervention : '' }}</td>
                 <td style="padding:10px 14px;font-weight:500">{{ $intervention->client_nom ?? $intervention->contrat?->client?->nom_societe ?? '—' }}</td>
-                <td style="padding:10px 14px;color:#555;font-size:12px">{{ $intervention->technicien ?? '—' }}</td>
+                <td style="padding:10px 14px;color:#555;font-size:12px">
+                    @if($intervention->technicien === 'Système')
+                        <span style="font-style:italic;color:#999">{{ $intervention->technicien }}</span>
+                    @else
+                        {{ $intervention->technicien ?? '—' }}
+                    @endif
+                </td>
                 <td style="padding:10px 14px;font-family:monospace;font-size:11px;color:#888">{{ $intervention->numero_bon_kizeo ?? '—' }}</td>
                 <td style="padding:10px 14px">
                     @if($intervention->type === 'site')
@@ -126,6 +133,8 @@ function setPeriode(val) {
                         <span style="background:#E1F5EE;color:#085041;padding:2px 6px;border-radius:4px;font-size:10px">à distance</span>
                     @elseif($intervention->type === 'administrateur')
                         <span style="background:#F3F0FF;color:#4C1D95;padding:2px 6px;border-radius:4px;font-size:10px">admin</span>
+                    @elseif($intervention->type === 'ajustement')
+                        <span style="background:#F0F0F0;color:#555;padding:2px 6px;border-radius:4px;font-size:10px">Ajustement</span>
                     @else
                         <span style="background:#FFF3E6;color:#854F0B;padding:2px 6px;border-radius:4px;font-size:10px">flash {{ $intervention->flash_numero }}/3</span>
                     @endif
