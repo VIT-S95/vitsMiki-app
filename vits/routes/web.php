@@ -106,6 +106,9 @@ Route::middleware(['auth', 'admin.only'])->group(function () {
     Route::delete('/clients/{client}/portail-users/{user}', [PortailUserController::class, 'destroy'])->name('portail-users.destroy');
 });
 
+use App\Http\Controllers\CalculProrataController;
+Route::get('/calculs/prorata', [CalculProrataController::class, 'index'])->name('calculs.prorata')->middleware('auth');
+
 use App\Http\Controllers\ParametreController;
 use App\Http\Controllers\MailTemplateController;
 Route::middleware(['auth', 'admin.only'])->group(function () {

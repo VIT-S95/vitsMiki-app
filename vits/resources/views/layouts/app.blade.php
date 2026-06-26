@@ -66,7 +66,7 @@
         @php
             $user = auth()->user();
             $inInterventions = request()->routeIs('dashboard', 'clients.*', 'contrats.*', 'interventions.*', 'performance.*', 'clients.fusion*');
-            $inCalculs       = request()->routeIs('bitdefender.*');
+            $inCalculs       = request()->routeIs('bitdefender.*', 'calculs.*');
             $inFacturation   = false;
         @endphp
 
@@ -113,7 +113,10 @@
             </div>
             <div class="theme-items">
                 <a href="{{ route('bitdefender.index') }}" class="nav-sub {{ request()->routeIs('bitdefender.*') ? 'active' : '' }}">
-                    <i class="ti ti-shield"></i> Calcul prorata
+                    <i class="ti ti-shield"></i> Calcul BitDefender
+                </a>
+                <a href="{{ route('calculs.prorata') }}" class="nav-sub {{ request()->routeIs('calculs.prorata') ? 'active' : '' }}">
+                    <i class="ti ti-calculator"></i> Calcul prorata
                 </a>
             </div>
         </div>
