@@ -19,7 +19,7 @@
                 <input type="date" id="date_debut" style="padding:7px 10px;border:1px solid #ddd;border-radius:7px;font-size:13px;width:170px">
             </div>
             <div>
-                <label style="display:block;font-size:12px;color:#666;margin-bottom:4px">Date de fin</label>
+                <label style="display:block;font-size:12px;color:#666;margin-bottom:4px">Date anniversaire</label>
                 <input type="date" id="date_fin" style="padding:7px 10px;border:1px solid #ddd;border-radius:7px;font-size:13px;width:170px">
             </div>
             <div>
