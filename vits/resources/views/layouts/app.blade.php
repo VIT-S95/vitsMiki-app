@@ -138,6 +138,13 @@
 
         {{-- SYSTÈME --}}
         <div class="nav-section">Système</div>
+        @php $nbIdees = $user->isAdmin() ? App\Models\BoiteIdee::where('statut','en_attente')->count() : 0; @endphp
+        <a href="{{ route('boite-idees.index') }}" class="nav-item {{ request()->routeIs('boite-idees.*') ? 'active' : '' }}">
+            <i class="ti ti-bulb"></i> Boîte à idées
+            @if($nbIdees > 0)
+                <span style="margin-left:auto;background:#E8720C;color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:99px">{{ $nbIdees }}</span>
+            @endif
+        </a>
         @if($user->isAdmin())
         <a href="{{ route('parametres.index') }}" class="nav-item {{ request()->routeIs('parametres.*') && !request()->routeIs('mail-templates.*') ? 'active' : '' }}">
             <i class="ti ti-settings"></i> Paramètres

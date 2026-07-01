@@ -123,3 +123,14 @@ Route::middleware(['auth', 'admin.only'])->group(function () {
 
     Route::resource('mail-templates', MailTemplateController::class);
 });
+
+use App\Http\Controllers\BoiteIdeeController;
+Route::middleware(['auth'])->group(function () {
+    Route::get('/boite-idees', [BoiteIdeeController::class, 'index'])->name('boite-idees.index');
+    Route::post('/boite-idees', [BoiteIdeeController::class, 'store'])->name('boite-idees.store');
+    Route::post('/boite-idees/{boiteIdee}/vote', [BoiteIdeeController::class, 'vote'])->name('boite-idees.vote');
+});
+Route::middleware(['auth', 'admin.only'])->group(function () {
+    Route::post('/boite-idees/{boiteIdee}/statut', [BoiteIdeeController::class, 'updateStatut'])->name('boite-idees.statut');
+    Route::delete('/boite-idees/{boiteIdee}', [BoiteIdeeController::class, 'destroy'])->name('boite-idees.destroy');
+});
