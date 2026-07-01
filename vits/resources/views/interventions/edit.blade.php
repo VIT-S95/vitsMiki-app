@@ -1,11 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Modifier intervention')
 @section('content')
-@if($intervention->contrat_id)
-<a href="{{ route('contrats.show', $intervention->contrat_id) }}" style="display:flex;align-items:center;gap:6px;font-size:13px;color:#888;text-decoration:none;margin-bottom:1.25rem">← Retour au contrat — {{ $intervention->contrat?->client?->nom_societe }}</a>
-@else
 <a href="{{ route('interventions.index') }}" style="display:flex;align-items:center;gap:6px;font-size:13px;color:#888;text-decoration:none;margin-bottom:1.25rem">← Retour aux interventions</a>
-@endif
 <h1 style="font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:4px">Modifier l'intervention</h1>
 <p style="font-size:13px;color:#888;margin-bottom:1.5rem">Bon n° {{ $intervention->numero_bon_kizeo ?? $intervention->id }} — {{ $intervention->date_intervention->format('d/m/Y') }}</p>
 
@@ -32,11 +28,17 @@
                 </div>
                 <div>
                     <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Client</label>
-                    <input type="text" name="client_nom" value="{{ old('client_nom', $intervention->client_nom) }}" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+                    @php $clientNomVal = old('client_nom', $intervention->client_nom); @endphp
+                    <select name="client_nom" id="client-select" onchange="onClientChange()" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+                        <option value="">— Sélectionner —</option>
+                        @foreach($clients as $client)
+                        <option value="{{ $client->nom_societe }}" {{ $clientNomVal === $client->nom_societe ? 'selected' : '' }}>{{ $client->nom_societe }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Contrat</label>
-                    <select name="contrat_id" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+                    <select name="contrat_id" id="contrat-select" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
                         <option value="">— Hors contrat —</option>
                         @foreach($contratsActifs as $c)
                         <option value="{{ $c->id }}" {{ (old('contrat_id', $intervention->contrat_id) == $c->id) ? 'selected' : '' }}>
@@ -136,11 +138,7 @@
                     onclick="return confirm('Supprimer cette intervention ?')"
                     style="padding:8px 14px;font-size:12px;background:#fff;border:1px solid #fca5a5;color:#dc2626;border-radius:8px;cursor:pointer">&#128465; Supprimer</button>
             <div style="display:flex;gap:8px">
-                @if($intervention->contrat_id)
-                <a href="{{ route('contrats.show', $intervention->contrat_id) }}" style="padding:8px 16px;font-size:13px;border:1px solid #ddd;border-radius:8px;color:#666;text-decoration:none">Annuler</a>
-                @else
                 <a href="{{ route('interventions.index') }}" style="padding:8px 16px;font-size:13px;border:1px solid #ddd;border-radius:8px;color:#666;text-decoration:none">Annuler</a>
-                @endif
                 <button type="submit" form="form-intervention" style="padding:8px 20px;font-size:13px;font-weight:500;background:#E8720C;color:#fff;border:none;border-radius:8px;cursor:pointer">&#10003; Enregistrer</button>
             </div>
         </div>
@@ -151,4 +149,25 @@
 <form id="form-delete-intervention" method="POST" action="{{ route('interventions.destroy', $intervention) }}">
     @csrf @method('DELETE')
 </form>
+
+<script>
+const baseContratsParClientUrl = "{{ route('interventions.contrats-par-client', '__CLIENT__') }}";
+
+function onClientChange() {
+    const clientNom = document.getElementById('client-select').value;
+    const contratSelect = document.getElementById('contrat-select');
+    contratSelect.innerHTML = '<option value="">— Hors contrat —</option>';
+    if (!clientNom) return;
+    fetch(baseContratsParClientUrl.replace('__CLIENT__', encodeURIComponent(clientNom)))
+        .then(r => r.json())
+        .then(contrats => {
+            contrats.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.textContent = c.numero_contrat_vits || 'N/A';
+                contratSelect.appendChild(opt);
+            });
+        });
+}
+</script>
 @endsection

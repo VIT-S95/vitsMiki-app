@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 use App\Models\Intervention;
 use App\Models\Contrat;
+use App\Models\Client;
 use Illuminate\Http\Request;
 
 class InterventionController extends Controller
@@ -114,7 +115,18 @@ class InterventionController extends Controller
         $intervention->load('contrat.client');
         $contratsActifs = Contrat::with('client')->where('statut', 'en-cours')
             ->orderBy('client_id')->get();
-        return view('interventions.edit', compact('intervention', 'contratsActifs'));
+        $clients = Client::whereIn('statut', ['actif', 'sans_contrat'])
+            ->orderBy('nom_societe')->get();
+        return view('interventions.edit', compact('intervention', 'contratsActifs', 'clients'));
+    }
+
+    public function contratsPourClient(string $client_nom)
+    {
+        $client = Client::where('nom_societe', $client_nom)->first();
+        $contrats = $client
+            ? $client->contrats()->where('statut', 'en-cours')->get(['id', 'numero_contrat_vits'])
+            : collect();
+        return response()->json($contrats);
     }
 
     public function update(Request $request, Intervention $intervention)

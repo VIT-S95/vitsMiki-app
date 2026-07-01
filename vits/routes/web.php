@@ -45,6 +45,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/interventions', [InterventionController::class, 'index'])->name('interventions.index');
     Route::get('/interventions/create', [InterventionController::class, 'create'])->name('interventions.create');
     Route::post('/interventions', [InterventionController::class, 'store'])->name('interventions.store');
+    Route::get('/interventions/contrats-par-client/{client_nom}', [InterventionController::class, 'contratsPourClient'])->name('interventions.contrats-par-client');
     Route::get('/interventions/{intervention}', [InterventionController::class, 'show'])->name('interventions.show');
     Route::get('/interventions/{intervention}/edit', [InterventionController::class, 'edit'])->name('interventions.edit');
     Route::put('/interventions/{intervention}', [InterventionController::class, 'update'])->name('interventions.update');
