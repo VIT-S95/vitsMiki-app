@@ -1,11 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Intervention')
 @section('content')
-@if($intervention->contrat_id)
-<a href="{{ route('contrats.show', $intervention->contrat_id) }}" style="display:flex;align-items:center;gap:6px;font-size:13px;color:#888;text-decoration:none;margin-bottom:1.25rem">← Retour au contrat — {{ $intervention->contrat?->client?->nom_societe }}</a>
-@else
 <a href="{{ route('interventions.index') }}" style="display:flex;align-items:center;gap:6px;font-size:13px;color:#888;text-decoration:none;margin-bottom:1.25rem">← Retour aux interventions</a>
-@endif
 
 <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem">
     <div>
