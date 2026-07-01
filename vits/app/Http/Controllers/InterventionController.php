@@ -12,9 +12,7 @@ class InterventionController extends Controller
         $techniciens = Intervention::whereNotNull('technicien')
             ->distinct()->orderBy('technicien')->pluck('technicien');
 
-        $query = Intervention::with(['contrat.client'])
-            ->orderBy('date_intervention', 'desc')
-            ->orderBy('heure_intervention', 'desc');
+        $query = Intervention::with(['contrat.client']);
 
         if ($request->search) {
             $query->where(function($q) use ($request) {
@@ -48,10 +46,22 @@ class InterventionController extends Controller
             default    => null,
         };
 
+        $sort = $request->get('sort', 'date_intervention');
+        $dir  = $request->get('dir', 'desc');
+
+        $allowedSorts = ['date_intervention', 'client_nom', 'technicien', 'type', 'duree_minutes'];
+        if (!in_array($sort, $allowedSorts)) $sort = 'date_intervention';
+        if (!in_array($dir, ['asc', 'desc'])) $dir = 'desc';
+
+        $query->orderBy($sort, $dir);
+        if ($sort === 'date_intervention') {
+            $query->orderBy('heure_intervention', $dir);
+        }
+
         $interventions  = $query->paginate((int)request('per_page', 20))->withQueryString();
         $contratsActifs = Contrat::with('client')->where('statut', 'en-cours')
             ->orderBy('client_id')->get();
-        return view('interventions.index', compact('interventions', 'techniciens', 'contratsActifs'));
+        return view('interventions.index', compact('interventions', 'techniciens', 'contratsActifs', 'sort', 'dir'));
     }
 
         public function create(Request $request)

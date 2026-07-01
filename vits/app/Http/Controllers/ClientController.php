@@ -18,8 +18,15 @@ class ClientController extends Controller
         } elseif (!$request->search) {
             $query->whereHas('contrats');
         }
-        $clients = $query->orderBy('nom_societe')->paginate((int)request('per_page', 20))->withQueryString();
-        return view('clients.index', compact('clients'));
+        $sort = $request->get('sort', 'nom_societe');
+        $dir  = $request->get('dir', 'asc');
+
+        $allowedSorts = ['nom_societe', 'numero_client_kizeo', 'numero_contrat_vits', 'statut'];
+        if (!in_array($sort, $allowedSorts)) $sort = 'nom_societe';
+        if (!in_array($dir, ['asc', 'desc'])) $dir = 'asc';
+
+        $clients = $query->orderBy($sort, $dir)->paginate((int)request('per_page', 20))->withQueryString();
+        return view('clients.index', compact('clients', 'sort', 'dir'));
     }
     public function create() { return view('clients.create'); }
     public function store(Request $request)

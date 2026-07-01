@@ -4,7 +4,20 @@
 <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem">
     <div>
         <h1 style="font-size:18px;font-weight:500;color:#1a1a1a">Interventions</h1>
-        <p style="font-size:13px;color:#888;margin-top:2px">{{ $interventions->total() }} interventions — triées par date décroissante</p>
+        <p style="font-size:13px;color:#888;margin-top:2px">{{ $interventions->total() }} interventions</p>
+    </div>
+    <div style="position:relative;display:inline-block">
+        <button type="button" id="btn-colonnes" onclick="togglePanelColonnes()" style="padding:7px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;color:#444">
+            <i class="ti ti-columns" style="font-size:15px" aria-hidden="true"></i> Colonnes
+        </button>
+        <div id="panel-colonnes" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:12px;width:240px;z-index:100;box-shadow:0 4px 16px rgba(0,0,0,0.1)">
+            <div style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">Affichage des colonnes</div>
+            <div id="col-list-interventions"></div>
+            <div style="border-top:1px solid #f0f0f0;margin-top:10px;padding-top:10px;display:flex;justify-content:space-between">
+                <button onclick="resetColonnes()" style="font-size:12px;color:#888;background:none;border:none;cursor:pointer">Réinitialiser</button>
+                <button onclick="togglePanelColonnes()" style="font-size:12px;background:#E8720C;color:#fff;border:none;border-radius:6px;padding:5px 12px;cursor:pointer">Appliquer</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -96,13 +109,33 @@ function setPeriode(val) {
     <table style="width:100%;border-collapse:collapse;font-size:13px">
         <thead style="background:#f5f5f5">
             <tr>
-                <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">Date</th>
-                <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">Client</th>
-                <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">Technicien</th>
+                <th class="col-date" style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">
+                    <a href="{{ request()->fullUrlWithQuery(['sort'=>'date_intervention','dir'=>($sort=='date_intervention' && $dir=='asc')?'desc':'asc']) }}" style="color:#888;text-decoration:none">
+                        Date {{ $sort=='date_intervention' ? ($dir=='asc'?'↑':'↓') : '' }}
+                    </a>
+                </th>
+                <th class="col-client" style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">
+                    <a href="{{ request()->fullUrlWithQuery(['sort'=>'client_nom','dir'=>($sort=='client_nom' && $dir=='asc')?'desc':'asc']) }}" style="color:#888;text-decoration:none">
+                        Client {{ $sort=='client_nom' ? ($dir=='asc'?'↑':'↓') : '' }}
+                    </a>
+                </th>
+                <th class="col-tech" style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">
+                    <a href="{{ request()->fullUrlWithQuery(['sort'=>'technicien','dir'=>($sort=='technicien' && $dir=='asc')?'desc':'asc']) }}" style="color:#888;text-decoration:none">
+                        Technicien {{ $sort=='technicien' ? ($dir=='asc'?'↑':'↓') : '' }}
+                    </a>
+                </th>
                 <th style="padding:9px 8px;border-bottom:1px solid #e0e0e0"></th>
-                <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">N° Bon</th>
-                <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">Type</th>
-                <th style="padding:9px 14px;text-align:right;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">Durée</th>
+                <th class="col-bon" style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">N° Bon</th>
+                <th class="col-type" style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">
+                    <a href="{{ request()->fullUrlWithQuery(['sort'=>'type','dir'=>($sort=='type' && $dir=='asc')?'desc':'asc']) }}" style="color:#888;text-decoration:none">
+                        Type {{ $sort=='type' ? ($dir=='asc'?'↑':'↓') : '' }}
+                    </a>
+                </th>
+                <th class="col-duree" style="padding:9px 14px;text-align:right;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">
+                    <a href="{{ request()->fullUrlWithQuery(['sort'=>'duree_minutes','dir'=>($sort=='duree_minutes' && $dir=='asc')?'desc':'asc']) }}" style="color:#888;text-decoration:none">
+                        Durée {{ $sort=='duree_minutes' ? ($dir=='asc'?'↑':'↓') : '' }}
+                    </a>
+                </th>
                 <th style="padding:9px 14px;border-bottom:1px solid #e0e0e0"></th>
             </tr>
         </thead>
@@ -124,9 +157,9 @@ function setPeriode(val) {
                 data-duree="{{ $intervention->duree_formatee ?? '—' }}"
                 data-date="{{ $intervention->date_intervention->format('d/m/Y') }}"
                 data-type="{{ $intervention->type }}">
-                <td style="padding:10px 14px;color:#888">{{ $intervention->date_intervention->format('d/m/Y') }}{{ $intervention->heure_intervention ? ' '.$intervention->heure_intervention : '' }}</td>
-                <td style="padding:10px 14px;font-weight:500">{{ $intervention->client_nom ?? $intervention->contrat?->client?->nom_societe ?? '—' }}</td>
-                <td style="padding:10px 14px;color:#555;font-size:12px">
+                <td class="col-date" style="padding:10px 14px;color:#888">{{ $intervention->date_intervention->format('d/m/Y') }}{{ $intervention->heure_intervention ? ' '.$intervention->heure_intervention : '' }}</td>
+                <td class="col-client" style="padding:10px 14px;font-weight:500">{{ $intervention->client_nom ?? $intervention->contrat?->client?->nom_societe ?? '—' }}</td>
+                <td class="col-tech" style="padding:10px 14px;color:#555;font-size:12px">
                     @if($intervention->technicien === 'Système')
                         <span style="font-style:italic;color:#999">{{ $intervention->technicien }}</span>
                     @else
@@ -145,8 +178,8 @@ function setPeriode(val) {
                     <div style="width:28px"></div>
                     @endif
                 </td>
-                <td style="padding:10px 14px;font-family:monospace;font-size:11px;color:#888">{{ $intervention->numero_bon_kizeo ?? '—' }}</td>
-                <td style="padding:10px 14px">
+                <td class="col-bon" style="padding:10px 14px;font-family:monospace;font-size:11px;color:#888">{{ $intervention->numero_bon_kizeo ?? '—' }}</td>
+                <td class="col-type" style="padding:10px 14px">
                     @if($intervention->type === 'site')
                         <span style="background:#E6F1FB;color:#0C447C;padding:2px 6px;border-radius:4px;font-size:10px">sur site</span>
                     @elseif($intervention->type === 'distance')
@@ -161,7 +194,7 @@ function setPeriode(val) {
                     @if($nonDed)<span style="font-size:10px;color:#777;background:#f0f0f0;border:1px solid #ddd;padding:1px 5px;border-radius:3px;margin-left:4px">Non déductible</span>@endif
                     @if($manuelle)<span style="font-size:10px;color:#b84c00;background:#fff0e8;border:1px solid #f5b48a;padding:1px 5px;border-radius:3px;margin-left:4px">Saisie manuelle</span>@endif
                 </td>
-                <td style="padding:10px 14px;text-align:right;font-weight:500">
+                <td class="col-duree" style="padding:10px 14px;text-align:right;font-weight:500">
                     @php $h=floor($intervention->duree_minutes/60); $m=$intervention->duree_minutes%60; @endphp
                     @if($intervention->type === 'flash' && $intervention->flash_numero < 3) —
                     @else {{ $h>0?$h.'h ':'' }}{{ $m>0?$m.'min':'' }}
@@ -285,5 +318,107 @@ function ouvrirPopup(event, id) {
 function fermerPopup(event) {
     document.getElementById('popup-commentaire').style.display = 'none';
 }
+</script>
+
+<script>
+const PAGE_INTERVENTIONS = 'interventions-colonnes';
+const colonnesInterventions = [
+    { id: 'col-bon',    label: 'N° Bon',     visible: true },
+    { id: 'col-date',   label: 'Date',       visible: true },
+    { id: 'col-client', label: 'Client',     visible: true },
+    { id: 'col-tech',   label: 'Technicien', visible: true },
+    { id: 'col-type',   label: 'Type',       visible: true },
+    { id: 'col-duree',  label: 'Durée',      visible: true },
+];
+
+async function chargerPrefsInterventions() {
+    try {
+        const r = await fetch('/preferences/' + encodeURIComponent(PAGE_INTERVENTIONS));
+        const data = await r.json();
+        if (data && data.preferences) data.preferences.forEach(s => {
+            const c = colonnesInterventions.find(x => x.id === s.id);
+            if (c) c.visible = s.visible;
+        });
+    } catch(e) {}
+    appliquerColonnesInterventions();
+}
+
+async function sauvegarderPrefsInterventions() {
+    await fetch('/preferences', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+        body: JSON.stringify({ page: PAGE_INTERVENTIONS, preferences: colonnesInterventions })
+    });
+}
+
+function appliquerColonnesInterventions() {
+    colonnesInterventions.forEach(col => {
+        document.querySelectorAll('.' + col.id).forEach(el => {
+            el.style.display = col.visible ? '' : 'none';
+        });
+    });
+}
+
+function renderPanelColonnes() {
+    const list = document.getElementById('col-list-interventions');
+    list.innerHTML = '';
+    colonnesInterventions.forEach((col, i) => {
+        const row = document.createElement('div');
+        row.style = 'display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:6px;';
+        row.innerHTML = `
+            <i class="ti ti-grip-vertical" style="font-size:14px;color:#ccc" aria-hidden="true"></i>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1;font-size:13px;color:#1a1a1a">
+                <input type="checkbox" ${col.visible ? 'checked' : ''} onchange="toggleColonneInter(${i}, this.checked)" style="accent-color:#E8720C;width:15px;height:15px;">
+                ${col.label}
+            </label>
+            <div style="display:flex;flex-direction:column;gap:1px">
+                <button onclick="monterColonneInter(${i})" ${i===0?'disabled':''} style="background:none;border:none;cursor:pointer;padding:0;color:#aaa;font-size:11px">▲</button>
+                <button onclick="descendreColonneInter(${i})" ${i===colonnesInterventions.length-1?'disabled':''} style="background:none;border:none;cursor:pointer;padding:0;color:#aaa;font-size:11px">▼</button>
+            </div>
+        `;
+        list.appendChild(row);
+    });
+}
+
+function toggleColonneInter(i, checked) {
+    colonnesInterventions[i].visible = checked;
+    sauvegarderPrefsInterventions();
+    appliquerColonnesInterventions();
+}
+
+function monterColonneInter(i) {
+    if (i === 0) return;
+    [colonnesInterventions[i], colonnesInterventions[i-1]] = [colonnesInterventions[i-1], colonnesInterventions[i]];
+    renderPanelColonnes();
+    sauvegarderPrefsInterventions();
+}
+
+function descendreColonneInter(i) {
+    if (i === colonnesInterventions.length-1) return;
+    [colonnesInterventions[i], colonnesInterventions[i+1]] = [colonnesInterventions[i+1], colonnesInterventions[i]];
+    renderPanelColonnes();
+    sauvegarderPrefsInterventions();
+}
+
+function resetColonnes() {
+    colonnesInterventions.forEach(c => c.visible = true);
+    renderPanelColonnes();
+    sauvegarderPrefsInterventions();
+    appliquerColonnesInterventions();
+}
+
+function togglePanelColonnes() {
+    const p = document.getElementById('panel-colonnes');
+    p.style.display = p.style.display === 'none' ? 'block' : 'none';
+    if (p.style.display === 'block') renderPanelColonnes();
+}
+
+document.addEventListener('click', function(e) {
+    const panel = document.getElementById('panel-colonnes');
+    const btn = document.getElementById('btn-colonnes');
+    if (panel && btn && !panel.contains(e.target) && !btn.contains(e.target)) panel.style.display = 'none';
+});
+
+chargerPrefsInterventions();
 </script>
 @endsection
