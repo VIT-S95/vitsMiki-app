@@ -306,13 +306,10 @@ function ouvrirPopup(event, id) {
     const popup = document.getElementById('popup-commentaire');
     popup.style.display = 'block';
 
-    const rect = event.target.getBoundingClientRect();
     const contenu = document.getElementById('popup-contenu');
-    let top = rect.bottom + 8 + window.scrollY;
-    let left = rect.left;
-    if (left + 560 > window.innerWidth) left = window.innerWidth - 570;
-    contenu.style.top = top + 'px';
-    contenu.style.left = left + 'px';
+    contenu.style.top = '50%';
+    contenu.style.left = '50%';
+    contenu.style.transform = 'translate(-50%, -50%)';
 }
 
 function fermerPopup(event) {
