@@ -99,6 +99,7 @@ function setPeriode(val) {
                 <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">Date</th>
                 <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">Client</th>
                 <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">Technicien</th>
+                <th style="padding:9px 8px;border-bottom:1px solid #e0e0e0"></th>
                 <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">N° Bon</th>
                 <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">Type</th>
                 <th style="padding:9px 14px;text-align:right;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">Durée</th>
@@ -115,7 +116,14 @@ function setPeriode(val) {
             <tr class="{{ $intervention->type === 'ajustement' ? 'bg-blue-50 italic' : '' }}"
                 onclick="window.location='{{ route('interventions.show', $intervention) }}'"
                 style="cursor:pointer;border-bottom:1px solid #f0f0f0;{{ $nonDed ? 'opacity:0.5' : '' }}"
-                onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='#fff'">
+                onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='#fff'"
+                data-intervention-id="{{ $intervention->id }}"
+                data-commentaire="{{ e($intervention->commentaires ?? '') }}"
+                data-technicien="{{ $intervention->technicien ?? '—' }}"
+                data-client="{{ $intervention->client_nom ?? '—' }}"
+                data-duree="{{ $intervention->duree_formatee ?? '—' }}"
+                data-date="{{ $intervention->date_intervention->format('d/m/Y') }}"
+                data-type="{{ $intervention->type }}">
                 <td style="padding:10px 14px;color:#888">{{ $intervention->date_intervention->format('d/m/Y') }}{{ $intervention->heure_intervention ? ' '.$intervention->heure_intervention : '' }}</td>
                 <td style="padding:10px 14px;font-weight:500">{{ $intervention->client_nom ?? $intervention->contrat?->client?->nom_societe ?? '—' }}</td>
                 <td style="padding:10px 14px;color:#555;font-size:12px">
@@ -123,6 +131,18 @@ function setPeriode(val) {
                         <span style="font-style:italic;color:#999">{{ $intervention->technicien }}</span>
                     @else
                         {{ $intervention->technicien ?? '—' }}
+                    @endif
+                </td>
+                <td style="padding:10px 8px;width:36px">
+                    @if($intervention->commentaires)
+                    <button type="button"
+                        onclick="ouvrirPopup(event, {{ $intervention->id }})"
+                        style="width:28px;height:28px;border:1px solid #e0e0e0;border-radius:6px;background:#f5f5f5;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center"
+                        title="Voir commentaire">
+                        <i class="ti ti-message"></i>
+                    </button>
+                    @else
+                    <div style="width:28px"></div>
                     @endif
                 </td>
                 <td style="padding:10px 14px;font-family:monospace;font-size:11px;color:#888">{{ $intervention->numero_bon_kizeo ?? '—' }}</td>
@@ -155,7 +175,7 @@ function setPeriode(val) {
                 </td>
             </tr>
             @empty
-            <tr><td colspan="7" style="padding:2rem;text-align:center;color:#aaa;font-size:13px">Aucune intervention trouvée</td></tr>
+            <tr><td colspan="8" style="padding:2rem;text-align:center;color:#aaa;font-size:13px">Aucune intervention trouvée</td></tr>
             @endforelse
         </tbody>
     </table>
@@ -202,5 +222,68 @@ function closeRattacher() {
 document.getElementById('modal-rattacher').addEventListener('click', function(e) {
     if (e.target === this) closeRattacher();
 });
+</script>
+
+<div id="popup-commentaire" onclick="fermerPopup(event)" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.15)">
+    <div id="popup-contenu" onclick="event.stopPropagation()" style="position:absolute;background:#fff;border:1px solid #e0e0e0;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.15);padding:1.25rem;width:420px;max-width:90vw">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+            <span style="font-size:13px;font-weight:500;color:#1a1a1a" id="popup-titre">Intervention</span>
+            <button onclick="document.getElementById('popup-commentaire').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:18px;color:#888">×</button>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:1rem">
+            <tr style="border-bottom:1px solid #f0f0f0">
+                <td style="padding:6px 8px;color:#888;width:40%">Date</td>
+                <td style="padding:6px 8px;color:#1a1a1a" id="popup-date"></td>
+            </tr>
+            <tr style="border-bottom:1px solid #f0f0f0">
+                <td style="padding:6px 8px;color:#888">Client</td>
+                <td style="padding:6px 8px;color:#1a1a1a" id="popup-client"></td>
+            </tr>
+            <tr style="border-bottom:1px solid #f0f0f0">
+                <td style="padding:6px 8px;color:#888">Technicien</td>
+                <td style="padding:6px 8px;color:#1a1a1a" id="popup-technicien"></td>
+            </tr>
+            <tr style="border-bottom:1px solid #f0f0f0">
+                <td style="padding:6px 8px;color:#888">Type</td>
+                <td style="padding:6px 8px;color:#1a1a1a" id="popup-type"></td>
+            </tr>
+            <tr>
+                <td style="padding:6px 8px;color:#888">Durée</td>
+                <td style="padding:6px 8px;color:#1a1a1a" id="popup-duree"></td>
+            </tr>
+        </table>
+        <div style="font-size:12px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Commentaire</div>
+        <div id="popup-commentaire-texte" style="font-size:13px;color:#1a1a1a;background:#f8f8f8;border-radius:8px;padding:10px 12px;white-space:pre-wrap;max-height:200px;overflow-y:auto"></div>
+    </div>
+</div>
+
+<script>
+function ouvrirPopup(event, id) {
+    event.stopPropagation();
+    const tr = event.target.closest('tr');
+    document.getElementById('popup-titre').textContent = 'Intervention — ' + tr.dataset.client;
+    document.getElementById('popup-date').textContent = tr.dataset.date;
+    document.getElementById('popup-client').textContent = tr.dataset.client;
+    document.getElementById('popup-technicien').textContent = tr.dataset.technicien;
+    document.getElementById('popup-type').textContent = tr.dataset.type;
+    document.getElementById('popup-duree').textContent = tr.dataset.duree;
+    document.getElementById('popup-commentaire-texte').textContent = tr.dataset.commentaire || '—';
+
+    const popup = document.getElementById('popup-commentaire');
+    popup.style.display = 'block';
+
+    // Positionner près du bouton
+    const rect = event.target.getBoundingClientRect();
+    const contenu = document.getElementById('popup-contenu');
+    let top = rect.bottom + 8 + window.scrollY;
+    let left = rect.left;
+    if (left + 420 > window.innerWidth) left = window.innerWidth - 430;
+    contenu.style.top = top + 'px';
+    contenu.style.left = left + 'px';
+}
+
+function fermerPopup(event) {
+    document.getElementById('popup-commentaire').style.display = 'none';
+}
 </script>
 @endsection
