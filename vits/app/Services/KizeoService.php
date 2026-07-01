@@ -492,12 +492,7 @@ class KizeoService
             if ($type === 'site') {
                 $dureeMinutes = (int)((float)($record['duree_inter_site_1'] ?? 0) * 60);
             } else {
-                $d1 = trim($record['duree_inter_distant_1'] ?? '');
-                if ($d1 === 'autre') {
-                    $dureeMinutes = $this->parserDuree($record['duree_inter_distant_2'] ?? '');
-                } else {
-                    $dureeMinutes = $this->parserDuree($d1);
-                }
+                $dureeMinutes = $this->parserDuree($record['duree_inter_distant_2'] ?? '');
             }
         } elseif ($formId === self::FORM_DISTANCE) {
             $dureeMinutes = $this->parserDuree($record['forfait_temps'] ?? '');
