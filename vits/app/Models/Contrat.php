@@ -47,6 +47,23 @@ class Contrat extends Model
         return min(100, round(($ecoule / $total) * 100));
     }
 
+    public function getAvancementPeriodeAttribute() {
+        $periodes = $this->getPeriodes();
+        if ($periodes->isEmpty() || !$this->heures_par_periode) return 0;
+        $periodeActuelle = $periodes->first(fn($p) => now()->between($p['debut'], $p['fin'])) ?? $periodes->last();
+        $minutes = $this->interventions
+            ->where('deductible', true)
+            ->filter(fn($i) => $i->date_intervention >= $periodeActuelle['debut'] && $i->date_intervention <= $periodeActuelle['fin'])
+            ->sum('duree_minutes');
+        if ($periodeActuelle['numero'] === 1) {
+            $minutes += $this->interventions
+                ->where('deductible', true)
+                ->filter(fn($i) => $i->date_intervention < $this->date_debut)
+                ->sum('duree_minutes');
+        }
+        return round(($minutes / ($this->heures_par_periode * 60)) * 100);
+    }
+
     public function getPeriodes() {
         if (!$this->date_debut) return collect();
         $periodes = collect();

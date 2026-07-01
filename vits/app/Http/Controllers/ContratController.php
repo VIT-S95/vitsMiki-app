@@ -9,7 +9,7 @@ class ContratController extends Controller
 {
         public function index(Request $request)
     {
-        $query = Contrat::with('client')
+        $query = Contrat::with(['client', 'interventions'])
             ->join('clients', 'contrats.client_id', '=', 'clients.id')
             ->select('contrats.*');
 

@@ -22,7 +22,7 @@
         <option value="non-actif" {{ request('statut')=='non-actif'?'selected':'' }}>Non actifs</option>
     </select>
     <button type="submit" style="padding:7px 12px;background:#f5f5f5;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer">Filtrer</button>
-    <select name="per_page" onchange="this.form.submit()" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+    <select name="per_page" onchange="this.form.submit()" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;min-width:110px">
         <option value="20" {{ request('per_page',20)==20?'selected':'' }}>20 / page</option>
         <option value="50" {{ request('per_page',20)==50?'selected':'' }}>50 / page</option>
         <option value="100" {{ request('per_page',20)==100?'selected':'' }}>100 / page</option>
@@ -59,11 +59,6 @@
                         Avancement {{ $sort=='duree_periode_mois' ? ($dir=='asc'?'↑':'↓') : '' }}
                     </a>
                 </th>
-                <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">
-                    <a href="{{ request()->fullUrlWithQuery(['sort'=>'statut','dir'=>($sort=='statut' && $dir=='asc')?'desc':'asc']) }}" style="color:#888;text-decoration:none">
-                        Statut {{ $sort=='statut' ? ($dir=='asc'?'↑':'↓') : '' }}
-                    </a>
-                </th>
             </tr>
         </thead>
         <tbody>
@@ -72,7 +67,8 @@
                 $expire = $contrat->statut === 'expire';
                 $jours = $contrat->jours_restants;
                 $couleurEcheance = $expire ? '#aaa' : ($jours <= 30 ? '#dc2626' : ($jours <= 90 ? '#E8720C' : '#166534'));
-                $couleurBarre = $expire ? '#ccc' : ($contrat->avancement >= 80 ? '#E8720C' : '#166534');
+                $avancementPeriode = $contrat->avancement_periode;
+                $couleurBarre = $expire ? '#ccc' : ($avancementPeriode >= 80 ? '#E8720C' : '#166534');
             @endphp
             <tr onclick="window.location='{{ route('contrats.show', $contrat) }}'"
                 style="cursor:pointer;border-bottom:1px solid #f0f0f0;{{ $expire ? 'opacity:0.5' : '' }}"
@@ -89,26 +85,17 @@
                     @if($contrat->statut !== 'non-actif')
                     <div style="display:flex;align-items:center;gap:6px">
                         <div style="flex:1;height:5px;background:#f0f0f0;border-radius:99px;overflow:hidden;min-width:60px">
-                            <div style="width:{{ $contrat->avancement }}%;height:100%;background:{{ $couleurBarre }};border-radius:99px"></div>
+                            <div style="width:{{ min(100, $avancementPeriode) }}%;height:100%;background:{{ $couleurBarre }};border-radius:99px"></div>
                         </div>
-                        <span style="font-size:11px;color:#888">{{ $contrat->avancement }}%</span>
+                        <span style="font-size:11px;color:#888">{{ $avancementPeriode }}%</span>
                     </div>
                     @else
                         <span style="font-size:11px;color:#aaa">non démarré</span>
                     @endif
                 </td>
-                <td style="padding:10px 14px">
-                    @if($contrat->statut === 'en-cours')
-                        <span style="background:#FFF3E6;color:#E8720C;padding:3px 8px;border-radius:99px;font-size:11px;font-weight:500">En cours</span>
-                    @elseif($contrat->statut === 'expire')
-                        <span style="background:#f5f5f5;color:#aaa;padding:3px 8px;border-radius:99px;font-size:11px;font-weight:500">Expiré</span>
-                    @else
-                        <span style="background:#f5f5f5;color:#888;padding:3px 8px;border-radius:99px;font-size:11px;font-weight:500">Non actif</span>
-                    @endif
-                </td>
             </tr>
             @empty
-            <tr><td colspan="6" style="padding:2rem;text-align:center;color:#aaa;font-size:13px">Aucun contrat trouvé</td></tr>
+            <tr><td colspan="5" style="padding:2rem;text-align:center;color:#aaa;font-size:13px">Aucun contrat trouvé</td></tr>
             @endforelse
         </tbody>
     </table>
