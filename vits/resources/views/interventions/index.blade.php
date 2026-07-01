@@ -113,8 +113,8 @@ function setPeriode(val) {
                 $horsCtrat = $intervention->hors_contrat ?? false;
             @endphp
             <tr class="{{ $intervention->type === 'ajustement' ? 'bg-blue-50 italic' : '' }}"
-                @if($intervention->contrat_id) onclick="window.location='{{ route('contrats.show', $intervention->contrat_id) }}'" @endif
-                style="{{ $intervention->contrat_id ? 'cursor:pointer;' : '' }}border-bottom:1px solid #f0f0f0;{{ $nonDed ? 'opacity:0.5' : '' }}"
+                onclick="window.location='{{ route('interventions.show', $intervention) }}'"
+                style="cursor:pointer;border-bottom:1px solid #f0f0f0;{{ $nonDed ? 'opacity:0.5' : '' }}"
                 onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='#fff'">
                 <td style="padding:10px 14px;color:#888">{{ $intervention->date_intervention->format('d/m/Y') }}{{ $intervention->heure_intervention ? ' '.$intervention->heure_intervention : '' }}</td>
                 <td style="padding:10px 14px;font-weight:500">{{ $intervention->client_nom ?? $intervention->contrat?->client?->nom_societe ?? '—' }}</td>
@@ -152,7 +152,6 @@ function setPeriode(val) {
                     <button type="button" onclick="event.stopPropagation();openRattacher({{ $intervention->id }},'{{ addslashes($intervention->client_nom ?? '—') }}','{{ $intervention->date_intervention->format('d/m/Y') }}','{{ $intervention->duree_formatee }}')"
                             style="font-size:11px;color:#E8720C;background:#fff;border:1px solid #E8720C;padding:3px 8px;border-radius:6px;cursor:pointer;margin-right:4px">Rattacher</button>
                     @endif
-                    <a href="{{ route('interventions.edit', $intervention) }}" onclick="event.stopPropagation()" style="font-size:12px;color:#888;text-decoration:none;padding:4px 8px;border:1px solid #ddd;border-radius:6px">✏</a>
                 </td>
             </tr>
             @empty

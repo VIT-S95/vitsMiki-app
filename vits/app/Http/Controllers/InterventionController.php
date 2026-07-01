@@ -115,6 +115,12 @@ class InterventionController extends Controller
             ->with('success', 'Intervention ajoutée avec succès.');
     }
 
+    public function show(Intervention $intervention)
+    {
+        $intervention->load('contrat.client');
+        return view('interventions.show', compact('intervention'));
+    }
+
     public function edit(Intervention $intervention)
     {
         $intervention->load('contrat.client');
