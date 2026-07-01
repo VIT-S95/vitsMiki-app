@@ -6,22 +6,7 @@
         <h1 style="font-size:18px;font-weight:500;color:#1a1a1a">Contrats</h1>
         <p style="font-size:13px;color:#888;margin-top:2px">{{ $contrats->total() }} contrats</p>
     </div>
-    <div style="display:flex;align-items:center;gap:8px">
-        <div style="position:relative;display:inline-block">
-            <button type="button" id="btn-colonnes" onclick="togglePanelColonnesContrats()" style="padding:7px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;color:#444">
-                <i class="ti ti-columns" style="font-size:15px" aria-hidden="true"></i> Colonnes
-            </button>
-            <div id="panel-colonnes" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:12px;width:240px;z-index:100;box-shadow:0 4px 16px rgba(0,0,0,0.1)">
-                <div style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">Affichage des colonnes</div>
-                <div id="col-list-contrats"></div>
-                <div style="border-top:1px solid #f0f0f0;margin-top:10px;padding-top:10px;display:flex;justify-content:space-between">
-                    <button onclick="resetColonnesContrats()" style="font-size:12px;color:#888;background:none;border:none;cursor:pointer">Réinitialiser</button>
-                    <button onclick="togglePanelColonnesContrats()" style="font-size:12px;background:#E8720C;color:#fff;border:none;border-radius:6px;padding:5px 12px;cursor:pointer">Appliquer</button>
-                </div>
-            </div>
-        </div>
-        <a href="{{ route('contrats.create') }}" style="padding:7px 14px;background:#E8720C;color:#fff;border-radius:8px;font-size:13px;font-weight:500;text-decoration:none">+ Nouveau contrat</a>
-    </div>
+    <a href="{{ route('contrats.create') }}" style="padding:7px 14px;background:#E8720C;color:#fff;border-radius:8px;font-size:13px;font-weight:500;text-decoration:none">+ Nouveau contrat</a>
 </div>
 
 @if(session('success'))
@@ -43,6 +28,19 @@
         <option value="100" {{ request('per_page',20)==100?'selected':'' }}>100 / page</option>
     </select>
     @if(request('search') || request('statut'))<a href="{{ route('contrats.index') }}" style="font-size:13px;color:#888;padding:7px 0">Effacer</a>@endif
+    <div style="position:relative;display:inline-block;margin-left:auto">
+        <button type="button" id="btn-colonnes" onclick="togglePanelColonnesContrats()" style="padding:7px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;color:#444">
+            <i class="ti ti-columns" style="font-size:15px" aria-hidden="true"></i> Colonnes
+        </button>
+        <div id="panel-colonnes" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:12px;width:240px;z-index:100;box-shadow:0 4px 16px rgba(0,0,0,0.1)">
+            <div style="font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">Affichage des colonnes</div>
+            <div id="col-list-contrats"></div>
+            <div style="border-top:1px solid #f0f0f0;margin-top:10px;padding-top:10px;display:flex;justify-content:space-between">
+                <button type="button" onclick="resetColonnesContrats()" style="font-size:12px;color:#888;background:none;border:none;cursor:pointer">Réinitialiser</button>
+                <button type="button" onclick="appliquerColonnesEtFermerContrats()" style="font-size:12px;background:#E8720C;color:#fff;border:none;border-radius:6px;padding:5px 12px;cursor:pointer">Appliquer</button>
+            </div>
+        </div>
+    </div>
 </form>
 
 <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;overflow:hidden">
@@ -127,6 +125,9 @@ const colonnesContrats = [
     { id: 'col-avancement', label: 'Avancement',  visible: true },
 ];
 
+let dragSrcIndex = null;
+let dragOverRow = null;
+
 async function chargerPrefsContrats() {
     try {
         const r = await fetch('/preferences/' + encodeURIComponent(PAGE_CONTRATS));
@@ -155,23 +156,69 @@ function appliquerColonnesContrats() {
     });
 }
 
+function reorderTableDOMContrats(colonnes) {
+    const thead_tr = document.querySelector('thead tr');
+    const tbody_trs = document.querySelectorAll('tbody tr');
+    colonnes.forEach(col => {
+        const th = thead_tr.querySelector('.' + col.id);
+        if (th) thead_tr.appendChild(th);
+        tbody_trs.forEach(tr => {
+            const td = tr.querySelector('.' + col.id);
+            if (td) tr.appendChild(td);
+        });
+    });
+}
+
+function appliquerColonnesEtFermerContrats() {
+    appliquerColonnesContrats();
+    reorderTableDOMContrats(colonnesContrats);
+    sauvegarderPrefsContrats();
+    document.getElementById('panel-colonnes').style.display = 'none';
+}
+
 function renderPanelColonnesContrats() {
     const list = document.getElementById('col-list-contrats');
     list.innerHTML = '';
     colonnesContrats.forEach((col, i) => {
         const row = document.createElement('div');
+        row.draggable = true;
+        row.dataset.index = i;
         row.style = 'display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:6px;';
         row.innerHTML = `
-            <i class="ti ti-grip-vertical" style="font-size:14px;color:#ccc" aria-hidden="true"></i>
+            <i class="ti ti-grip-vertical" style="font-size:14px;color:#ccc;cursor:grab" aria-hidden="true"></i>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1;font-size:13px;color:#1a1a1a">
                 <input type="checkbox" ${col.visible ? 'checked' : ''} onchange="toggleColonneContrat(${i}, this.checked)" style="accent-color:#E8720C;width:15px;height:15px;">
                 ${col.label}
             </label>
-            <div style="display:flex;flex-direction:column;gap:1px">
-                <button onclick="monterColonneContrat(${i})" ${i===0?'disabled':''} style="background:none;border:none;cursor:pointer;padding:0;color:#aaa;font-size:11px">▲</button>
-                <button onclick="descendreColonneContrat(${i})" ${i===colonnesContrats.length-1?'disabled':''} style="background:none;border:none;cursor:pointer;padding:0;color:#aaa;font-size:11px">▼</button>
-            </div>
         `;
+        row.addEventListener('dragstart', function(e) {
+            e.stopPropagation();
+            dragSrcIndex = i;
+            e.dataTransfer.effectAllowed = 'move';
+        });
+        row.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (dragOverRow && dragOverRow !== row) dragOverRow.style.background = '';
+            row.style.background = '#f5f5f5';
+            dragOverRow = row;
+        });
+        row.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const destIndex = i;
+            if (dragSrcIndex !== null && dragSrcIndex !== destIndex) {
+                const [moved] = colonnesContrats.splice(dragSrcIndex, 1);
+                colonnesContrats.splice(destIndex, 0, moved);
+            }
+            renderPanelColonnesContrats();
+        });
+        row.addEventListener('dragend', function(e) {
+            e.stopPropagation();
+            if (dragOverRow) dragOverRow.style.background = '';
+            dragOverRow = null;
+            dragSrcIndex = null;
+        });
         list.appendChild(row);
     });
 }
@@ -180,20 +227,6 @@ function toggleColonneContrat(i, checked) {
     colonnesContrats[i].visible = checked;
     sauvegarderPrefsContrats();
     appliquerColonnesContrats();
-}
-
-function monterColonneContrat(i) {
-    if (i === 0) return;
-    [colonnesContrats[i], colonnesContrats[i-1]] = [colonnesContrats[i-1], colonnesContrats[i]];
-    renderPanelColonnesContrats();
-    sauvegarderPrefsContrats();
-}
-
-function descendreColonneContrat(i) {
-    if (i === colonnesContrats.length-1) return;
-    [colonnesContrats[i], colonnesContrats[i+1]] = [colonnesContrats[i+1], colonnesContrats[i]];
-    renderPanelColonnesContrats();
-    sauvegarderPrefsContrats();
 }
 
 function resetColonnesContrats() {
