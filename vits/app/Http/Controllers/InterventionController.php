@@ -56,15 +56,7 @@ class InterventionController extends Controller
         public function create(Request $request)
     {
         $contrat = Contrat::with('client')->findOrFail($request->contrat_id);
-        $motifs = config('vits.motifs_intervention', [
-            'Dépassement de quota n-1',
-            'Report période précédente',
-            'Intervention proactive',
-            'Mise à jour planifiée',
-            'Urgence hors contrat',
-            'Prestation complémentaire',
-        ]);
-        return view('interventions.create', compact('contrat', 'motifs'));
+        return view('interventions.create', compact('contrat'));
     }
 
     public function store(Request $request)
@@ -73,8 +65,6 @@ class InterventionController extends Controller
             'contrat_id'        => 'required|exists:contrats,id',
             'date_intervention' => 'required|date',
             'type'              => 'required|in:site,distance,flash,administrateur',
-            'motif'             => 'nullable|string|max:255',
-            'notes'             => 'nullable|string',
         ]);
 
         $dureeMinutes = (int)$request->input('duree_minutes', 0);
@@ -85,8 +75,6 @@ class InterventionController extends Controller
             'numero_bon_kizeo'  => $request->numero_bon_kizeo ?: null,
             'type'              => $request->type,
             'duree_minutes'     => $dureeMinutes,
-            'motif'             => $request->motif ?: null,
-            'notes'             => $request->notes ?: null,
             'statut'            => 'traitee',
             'type_tri'          => $request->boolean('deductible') ? 'standard' : 'hors-contrat',
             'deductible'        => $request->boolean('deductible'),
@@ -124,52 +112,30 @@ class InterventionController extends Controller
     public function edit(Intervention $intervention)
     {
         $intervention->load('contrat.client');
-        $motifs = config('vits.motifs_intervention', [
-            'Dépassement de quota n-1',
-            'Report période précédente',
-            'Intervention proactive',
-            'Mise à jour planifiée',
-            'Urgence hors contrat',
-            'Prestation complémentaire',
-        ]);
-        return view('interventions.edit', compact('intervention', 'motifs'));
+        $contratsActifs = Contrat::with('client')->where('statut', 'en-cours')
+            ->orderBy('client_id')->get();
+        return view('interventions.edit', compact('intervention', 'contratsActifs'));
     }
 
     public function update(Request $request, Intervention $intervention)
     {
         $request->validate([
             'date_intervention' => 'required|date',
-            'type'              => 'required|in:site,distance,flash,administrateur',
-            'motif'             => 'nullable|string|max:255',
-            'notes'             => 'nullable|string',
+            'type'              => 'required|in:site,distance,flash,ajustement',
+            'contrat_id'        => 'nullable|exists:contrats,id',
         ]);
 
-        $dureeMinutes = (int)$request->input('duree_minutes', 0);
-
-        $data = [
-            'date_intervention' => $request->date_intervention,
-            'numero_bon_kizeo'  => $request->numero_bon_kizeo ?: null,
-            'type'              => $request->type,
-            'duree_minutes'     => $dureeMinutes,
-            'motif'             => $request->motif ?: null,
-            'notes'             => $request->notes ?: null,
-            'type_tri'          => $request->boolean('deductible') ? 'standard' : 'hors-contrat',
-            'deductible'        => $request->boolean('deductible'),
-        ];
-
-        if ($request->type === 'flash') {
-            $flashNumero = (int)$request->input('flash_numero', 1);
-            $data['flash_numero']   = $flashNumero;
-            $data['flash_consomme'] = ($flashNumero === 3);
-            $data['duree_minutes']  = ($flashNumero === 3) ? 20 : 0;
-            $data['deductible']     = true;
-        }
+        $data = $request->only([
+            'date_intervention', 'heure_intervention', 'technicien', 'client_nom',
+            'type', 'donneur_ordre', 'n_ticket', 'n_devis', 'commentaires',
+        ]);
+        $data['contrat_id']        = $request->contrat_id ?: null;
+        $data['duree_minutes']     = (int)$request->input('duree_minutes', 0);
+        $data['deductible']        = $request->boolean('deductible');
+        $data['hors_heure_ouvree'] = $request->boolean('hors_heure_ouvree');
+        $data['type_tri']          = $data['deductible'] ? 'standard' : 'hors-contrat';
 
         $intervention->update($data);
-
-        if ($request->type === 'flash') {
-            Intervention::recalculerFlash($intervention->contrat_id, $request->date_intervention);
-        }
 
         $redirect = $intervention->contrat_id
             ? redirect()->route('contrats.show', $intervention->contrat_id)

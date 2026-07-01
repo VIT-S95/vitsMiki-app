@@ -4,7 +4,7 @@
 @if($intervention->contrat_id)
 <a href="{{ route('contrats.show', $intervention->contrat_id) }}" style="display:flex;align-items:center;gap:6px;font-size:13px;color:#888;text-decoration:none;margin-bottom:1.25rem">← Retour au contrat — {{ $intervention->contrat?->client?->nom_societe }}</a>
 @else
-<span style="display:flex;align-items:center;gap:6px;font-size:13px;color:#888;margin-bottom:1.25rem">Intervention hors contrat — {{ $intervention->client_nom ?? '—' }}</span>
+<a href="{{ route('interventions.index') }}" style="display:flex;align-items:center;gap:6px;font-size:13px;color:#888;text-decoration:none;margin-bottom:1.25rem">← Retour aux interventions</a>
 @endif
 <h1 style="font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:4px">Modifier l'intervention</h1>
 <p style="font-size:13px;color:#888;margin-bottom:1.5rem">Bon n° {{ $intervention->numero_bon_kizeo ?? $intervention->id }} — {{ $intervention->date_intervention->format('d/m/Y') }}</p>
@@ -13,7 +13,6 @@
     <form method="POST" action="{{ route('interventions.update', $intervention) }}" id="form-intervention">
         @csrf
         @method('PUT')
-        <input type="hidden" name="duree_minutes" id="duree_minutes_hidden" value="{{ $intervention->duree_minutes }}">
 
         {{-- IDENTIFICATION --}}
         <div style="margin-bottom:1.5rem">
@@ -24,107 +23,112 @@
                     <input type="date" name="date_intervention" value="{{ old('date_intervention', $intervention->date_intervention->format('Y-m-d')) }}" required style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
                 </div>
                 <div>
-                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">N° bon Kizeo</label>
-                    <input type="text" name="numero_bon_kizeo" value="{{ old('numero_bon_kizeo', $intervention->numero_bon_kizeo) }}" placeholder="9 chiffres (optionnel)" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Heure</label>
+                    <input type="time" name="heure_intervention" value="{{ old('heure_intervention', $intervention->heure_intervention) }}" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
                 </div>
-            </div>
-        </div>
-
-        {{-- MOTIF --}}
-        @php
-            $motifValeur = old('motif', $intervention->motif);
-            $motifDansListe = in_array($motifValeur, $motifs);
-            $motifListeVal = $motifDansListe ? $motifValeur : ($motifValeur ? '__autre__' : '');
-        @endphp
-        <div style="margin-bottom:1.5rem">
-            <div style="font-size:12px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:1rem;padding-bottom:6px;border-bottom:1px solid #f0f0f0">Motif</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
                 <div>
-                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Motif prédéfini</label>
-                    <select name="motif_liste" id="motif-liste" onchange="onMotifChange()" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
-                        <option value="">— Sélectionner —</option>
-                        @foreach($motifs as $motif)
-                            <option value="{{ $motif }}" {{ $motifListeVal==$motif?'selected':'' }}>{{ $motif }}</option>
+                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Technicien</label>
+                    <input type="text" name="technicien" value="{{ old('technicien', $intervention->technicien) }}" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+                </div>
+                <div>
+                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Client</label>
+                    <input type="text" name="client_nom" value="{{ old('client_nom', $intervention->client_nom) }}" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+                </div>
+                <div>
+                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Contrat</label>
+                    <select name="contrat_id" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+                        <option value="">— Hors contrat —</option>
+                        @foreach($contratsActifs as $c)
+                        <option value="{{ $c->id }}" {{ (old('contrat_id', $intervention->contrat_id) == $c->id) ? 'selected' : '' }}>
+                            {{ $c->client->nom_societe }} — {{ $c->numero_contrat_vits ?? 'N/A' }}
+                        </option>
                         @endforeach
-                        <option value="__autre__" {{ $motifListeVal=='__autre__'?'selected':'' }}>✏ Saisie libre…</option>
                     </select>
                 </div>
-                <div id="motif-libre-wrap" style="display:{{ $motifListeVal=='__autre__' ? 'block' : 'none' }}">
-                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Motif libre</label>
-                    <input type="text" name="motif_libre" id="motif-libre" value="{{ !$motifDansListe ? $motifValeur : '' }}" placeholder="Décrire le motif…" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
-                </div>
             </div>
-            <input type="hidden" name="motif" id="motif-hidden" value="{{ $motifValeur }}">
         </div>
 
         {{-- TYPE + DURÉE --}}
-        @php $typeVal = old('type', $intervention->type); @endphp
         <div style="margin-bottom:1.5rem">
             <div style="font-size:12px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:1rem;padding-bottom:6px;border-bottom:1px solid #f0f0f0">Type d'intervention</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
                 <div>
                     <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Type <span style="color:#E8720C">*</span></label>
-                    <select name="type" id="type-select" required onchange="onTypeChange()" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
-                        <option value="site"           {{ $typeVal=='site'?'selected':'' }}>Sur site</option>
-                        <option value="distance"       {{ $typeVal=='distance'?'selected':'' }}>À distance</option>
-                        <option value="flash"          {{ $typeVal=='flash'?'selected':'' }}>Flash</option>
-                        <option value="administrateur" {{ $typeVal=='administrateur'?'selected':'' }}>Administrateur</option>
+                    <select name="type" required style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+                        @php $typeVal = old('type', $intervention->type); @endphp
+                        <option value="site"       {{ $typeVal=='site'?'selected':'' }}>Sur site</option>
+                        <option value="distance"   {{ $typeVal=='distance'?'selected':'' }}>À distance</option>
+                        <option value="flash"      {{ $typeVal=='flash'?'selected':'' }}>Flash</option>
+                        <option value="ajustement" {{ $typeVal=='ajustement'?'selected':'' }}>Ajustement</option>
                     </select>
                 </div>
-
-                <div id="duree-site" style="display:none">
-                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Durée <span style="color:#E8720C">*</span></label>
-                    <select id="select-site" onchange="updateDuree()" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
-                        @for($h=1;$h<=12;$h++)
-                            <option value="{{ $h*60 }}" {{ $intervention->duree_minutes==$h*60?'selected':'' }}>{{ $h }}h</option>
-                        @endfor
-                    </select>
-                    <div style="font-size:11px;color:#aaa;margin-top:3px">Tranches de 1h</div>
-                </div>
-
-                <div id="duree-distance" style="display:none">
-                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Durée <span style="color:#E8720C">*</span></label>
-                    <select id="select-distance" onchange="updateDuree()" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
-                        @for($i=1;$i<=36;$i++)
-                            @php $mins=$i*20; $h=floor($mins/60); $m=$mins%60; @endphp
-                            <option value="{{ $mins }}" {{ $intervention->duree_minutes==$mins?'selected':'' }}>{{ $h>0?$h.'h':'' }}{{ $m>0?$m.'min':'' }}</option>
-                        @endfor
-                    </select>
-                    <div style="font-size:11px;color:#aaa;margin-top:3px">Tranches de 20min</div>
-                </div>
-
-                <div id="duree-admin" style="display:none">
-                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Durée (minutes)</label>
-                    <input type="number" id="input-admin" min="-999" max="999" step="1" value="{{ $intervention->duree_minutes }}" onchange="updateDuree()" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
-                    <div style="font-size:11px;color:#aaa;margin-top:3px">Valeur négative = crédit d'heures</div>
+                <div>
+                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Durée (minutes) <span style="color:#E8720C">*</span></label>
+                    <input type="number" name="duree_minutes" min="-999" max="999" step="1" value="{{ old('duree_minutes', $intervention->duree_minutes) }}" required style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
                 </div>
             </div>
-
-            <div id="flash-box" style="display:none;background:#f5f5f5;border:1px solid #e0e0e0;border-radius:8px;padding:12px 14px;margin-top:1rem">
-                <div style="font-size:12px;font-weight:500;color:#1a1a1a;margin-bottom:10px">⚡ Numéro de flash</div>
-                <div style="display:flex;gap:8px;margin-bottom:10px">
-                    @foreach([1,2,3] as $fn)
-                    <div onclick="selectFlash({{ $fn }})" id="fs{{ $fn }}" style="flex:1;border:{{ $intervention->flash_numero==$fn?'1px solid #E8720C':'1px solid #ddd' }};background:{{ $intervention->flash_numero==$fn?'#FFF3E6':'#fff' }};border-radius:8px;padding:8px;text-align:center;cursor:pointer">
-                        <div style="font-size:14px;font-weight:500;color:{{ $intervention->flash_numero==$fn?'#E8720C':'#1a1a1a' }}">{{ $fn }}/3</div>
-                        <div style="font-size:11px;color:#888;margin-top:2px">{{ $fn==3?'20 min débités':'0 min débité' }}</div>
-                    </div>
-                    @endforeach
-                </div>
-                <input type="hidden" name="flash_numero" id="flash-input" value="{{ $intervention->flash_numero }}">
-            </div>
-
-            <div id="deductible-wrap" style="display:{{ $typeVal!='flash'?'block':'none' }};margin-top:1rem">
+            <div style="display:flex;gap:1.5rem;margin-top:1rem">
                 <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#444">
-                    <input type="checkbox" name="deductible" id="deductible-check" value="1" {{ $intervention->deductible?'checked':'' }} style="width:16px;height:16px;accent-color:#E8720C">
+                    <input type="checkbox" name="deductible" value="1" {{ old('deductible', $intervention->deductible) ? 'checked' : '' }} style="width:16px;height:16px;accent-color:#E8720C">
                     Déductible du forfait contrat
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#444">
+                    <input type="checkbox" name="hors_heure_ouvree" value="1" {{ old('hors_heure_ouvree', $intervention->hors_heure_ouvree) ? 'checked' : '' }} style="width:16px;height:16px;accent-color:#E8720C">
+                    Hors heure ouvrée
                 </label>
             </div>
         </div>
 
-        {{-- NOTES --}}
+        {{-- DEMANDE --}}
         <div style="margin-bottom:1.5rem">
-            <div style="font-size:12px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:1rem;padding-bottom:6px;border-bottom:1px solid #f0f0f0">Notes internes</div>
-            <textarea name="notes" rows="3" placeholder="Commentaire interne…" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;resize:vertical">{{ old('notes', $intervention->notes) }}</textarea>
+            <div style="font-size:12px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:1rem;padding-bottom:6px;border-bottom:1px solid #f0f0f0">Demande</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem">
+                <div>
+                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Donneur d'ordre</label>
+                    <input type="text" name="donneur_ordre" value="{{ old('donneur_ordre', $intervention->donneur_ordre) }}" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+                </div>
+                <div>
+                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">N° ticket</label>
+                    <input type="text" name="n_ticket" value="{{ old('n_ticket', $intervention->n_ticket) }}" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+                </div>
+                <div>
+                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">N° devis</label>
+                    <input type="text" name="n_devis" value="{{ old('n_devis', $intervention->n_devis) }}" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+                </div>
+            </div>
+        </div>
+
+        {{-- COMMENTAIRES --}}
+        <div style="margin-bottom:1.5rem">
+            <div style="font-size:12px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:1rem;padding-bottom:6px;border-bottom:1px solid #f0f0f0">Commentaires</div>
+            <textarea name="commentaires" rows="3" placeholder="Commentaire…" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;resize:vertical">{{ old('commentaires', $intervention->commentaires) }}</textarea>
+        </div>
+
+        {{-- LECTURE SEULE --}}
+        <div style="margin-bottom:1.5rem">
+            <div style="font-size:12px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:1rem;padding-bottom:6px;border-bottom:1px solid #f0f0f0">Informations Kizeo (lecture seule)</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem">
+                <div>
+                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">N° bon Kizeo</label>
+                    <div style="width:100%;padding:8px 10px;border:1px solid #eee;border-radius:8px;font-size:13px;background:#f5f5f5;color:#888">{{ $intervention->numero_bon_kizeo ?? '—' }}</div>
+                </div>
+                <div>
+                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Statut</label>
+                    <div style="width:100%;padding:8px 10px;border:1px solid #eee;border-radius:8px;font-size:13px;background:#f5f5f5;color:#888">{{ $intervention->statut ?? '—' }}</div>
+                </div>
+                <div>
+                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Origine</label>
+                    <div style="width:100%;padding:8px 10px;border:1px solid #eee;border-radius:8px;font-size:13px;background:#f5f5f5;color:#888">{{ $intervention->source_kizeo ? 'Kizeo' : 'Manuel' }}</div>
+                </div>
+                <div style="grid-column:1/-1">
+                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Demande annexe</label>
+                    <div style="width:100%;padding:8px 10px;border:1px solid #eee;border-radius:8px;font-size:13px;background:#f5f5f5;color:#888;white-space:pre-wrap">{{ $intervention->demande_annexe ?? '—' }}</div>
+                </div>
+                <div style="grid-column:1/-1">
+                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Pièces détachées</label>
+                    <div style="width:100%;padding:8px 10px;border:1px solid #eee;border-radius:8px;font-size:13px;background:#f5f5f5;color:#888;white-space:pre-wrap">{{ $intervention->pieces_detachees ?? '—' }}</div>
+                </div>
+            </div>
         </div>
 
         <div style="display:flex;justify-content:space-between;align-items:center;padding-top:1.25rem;border-top:1px solid #f0f0f0">
@@ -147,55 +151,4 @@
 <form id="form-delete-intervention" method="POST" action="{{ route('interventions.destroy', $intervention) }}">
     @csrf @method('DELETE')
 </form>
-
-<script>
-function onTypeChange() {
-    const val = document.getElementById('type-select').value;
-    document.getElementById('duree-site').style.display     = val === 'site'           ? 'block' : 'none';
-    document.getElementById('duree-distance').style.display = val === 'distance'       ? 'block' : 'none';
-    document.getElementById('duree-admin').style.display    = val === 'administrateur' ? 'block' : 'none';
-    document.getElementById('flash-box').style.display      = val === 'flash'          ? 'block' : 'none';
-    document.getElementById('deductible-wrap').style.display = val && val !== 'flash'  ? 'block' : 'none';
-    updateDuree();
-}
-
-function updateDuree() {
-    const val = document.getElementById('type-select').value;
-    let minutes = 0;
-    if (val === 'site')           minutes = parseInt(document.getElementById('select-site').value)     || 0;
-    if (val === 'distance')       minutes = parseInt(document.getElementById('select-distance').value) || 0;
-    if (val === 'administrateur') minutes = parseInt(document.getElementById('input-admin').value)     || 0;
-    document.getElementById('duree_minutes_hidden').value = minutes;
-}
-
-function selectFlash(n) {
-    [1,2,3].forEach(i => {
-        const el = document.getElementById('fs'+i);
-        el.style.border = i===n ? '1px solid #E8720C' : '1px solid #ddd';
-        el.style.background = i===n ? '#FFF3E6' : '#fff';
-        el.querySelector('div').style.color = i===n ? '#E8720C' : '#1a1a1a';
-    });
-    document.getElementById('flash-input').value = n;
-    document.getElementById('duree_minutes_hidden').value = n===3 ? 20 : 0;
-}
-
-function onMotifChange() {
-    const val = document.getElementById('motif-liste').value;
-    const wrap = document.getElementById('motif-libre-wrap');
-    const hidden = document.getElementById('motif-hidden');
-    if (val === '__autre__') {
-        wrap.style.display = 'block';
-        hidden.value = document.getElementById('motif-libre').value;
-    } else {
-        wrap.style.display = 'none';
-        hidden.value = val;
-    }
-}
-
-document.getElementById('motif-libre').addEventListener('input', function() {
-    document.getElementById('motif-hidden').value = this.value;
-});
-
-onTypeChange();
-</script>
 @endsection

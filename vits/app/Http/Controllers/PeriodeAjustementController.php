@@ -45,7 +45,7 @@ class PeriodeAjustementController extends Controller
                     'type'      => 'ajustement',
                     'technicien' => 'Système',
                     'duree_minutes'     => -$solde, // négatif = crédit
-                    'motif'             => $label,
+                    'commentaires'      => $label,
                     'statut'            => 'traitee',
                     'type_tri'          => 'standard',
                     'deductible'        => true,
@@ -63,7 +63,7 @@ class PeriodeAjustementController extends Controller
                     'type'      => 'ajustement',
                     'technicien' => 'Système',
                     'duree_minutes'     => $abs, // positif = débit
-                    'motif'             => $label,
+                    'commentaires'      => $label,
                     'statut'            => 'traitee',
                     'type_tri'          => 'standard',
                     'deductible'        => true,

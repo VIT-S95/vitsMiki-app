@@ -31,28 +31,6 @@
             </div>
         </div>
 
-        {{-- MOTIF --}}
-        <div style="margin-bottom:1.5rem">
-            <div style="font-size:12px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:1rem;padding-bottom:6px;border-bottom:1px solid #f0f0f0">Motif</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-                <div>
-                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Motif prédéfini</label>
-                    <select name="motif_liste" id="motif-liste" onchange="onMotifChange()" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
-                        <option value="">— Sélectionner un motif —</option>
-                        @foreach($motifs as $motif)
-                            <option value="{{ $motif }}" {{ old('motif')==$motif?'selected':'' }}>{{ $motif }}</option>
-                        @endforeach
-                        <option value="__autre__" {{ old('motif_liste')=='__autre__'?'selected':'' }}>✏ Saisie libre…</option>
-                    </select>
-                </div>
-                <div id="motif-libre-wrap" style="display:{{ old('motif_liste')=='__autre__' ? 'block' : 'none' }}">
-                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Motif libre</label>
-                    <input type="text" name="motif" id="motif-libre" value="{{ old('motif') }}" placeholder="Décrire le motif…" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
-                </div>
-            </div>
-            <input type="hidden" name="motif" id="motif-hidden" value="{{ old('motif') }}">
-        </div>
-
         {{-- TYPE + DURÉE --}}
         <div style="margin-bottom:1.5rem">
             <div style="font-size:12px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:1rem;padding-bottom:6px;border-bottom:1px solid #f0f0f0">Type d'intervention</div>
@@ -135,12 +113,6 @@
             </div>
         </div>
 
-        {{-- NOTES --}}
-        <div style="margin-bottom:1.5rem">
-            <div style="font-size:12px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:1rem;padding-bottom:6px;border-bottom:1px solid #f0f0f0">Notes internes</div>
-            <textarea name="notes" rows="3" placeholder="Commentaire interne (optionnel)…" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;resize:vertical">{{ old('notes') }}</textarea>
-        </div>
-
         <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:1.25rem;border-top:1px solid #f0f0f0">
             <a href="{{ route('contrats.show', $contrat) }}" style="padding:8px 16px;font-size:13px;border:1px solid #ddd;border-radius:8px;color:#666;text-decoration:none">Annuler</a>
             <button type="submit" style="padding:8px 20px;font-size:13px;font-weight:500;background:#E8720C;color:#fff;border:none;border-radius:8px;cursor:pointer">✓ Enregistrer</button>
@@ -187,25 +159,7 @@ function selectFlash(n) {
     }
 }
 
-function onMotifChange() {
-    const val = document.getElementById('motif-liste').value;
-    const wrap = document.getElementById('motif-libre-wrap');
-    const hidden = document.getElementById('motif-hidden');
-    if (val === '__autre__') {
-        wrap.style.display = 'block';
-        hidden.value = document.getElementById('motif-libre').value;
-    } else {
-        wrap.style.display = 'none';
-        hidden.value = val;
-    }
-}
-
-document.getElementById('motif-libre').addEventListener('input', function() {
-    document.getElementById('motif-hidden').value = this.value;
-});
-
 // Init au chargement
 onTypeChange();
-onMotifChange();
 </script>
 @endsection

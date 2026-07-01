@@ -209,7 +209,7 @@
                                 @else <span style="background:#FFF3E6;color:#854F0B;padding:2px 6px;border-radius:4px;font-size:10px">flash {{ $intervention->flash_numero }}/3</span>
                                 @endif
                                 @if($nonDed)<span style="font-size:10px;color:#777;background:#f0f0f0;border:1px solid #ddd;padding:1px 5px;border-radius:3px;margin-left:4px">Non déductible</span>@endif
-                                @if($intervention->motif)<span style="font-size:10px;color:#aaa;margin-left:4px">— {{ $intervention->motif }}</span>@endif
+                                @if($intervention->commentaires)<span style="font-size:10px;color:#aaa;margin-left:4px">— {{ $intervention->commentaires }}</span>@endif
                             </td>
                             <td style="padding:6px 12px;text-align:right;font-weight:500;width:80px">
                                 @if($intervention->type === 'flash' && $intervention->flash_numero < 3) —

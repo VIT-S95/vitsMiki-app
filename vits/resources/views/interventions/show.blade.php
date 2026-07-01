@@ -119,10 +119,6 @@
                 <div style="font-size:13px;font-weight:500;margin-top:2px">{{ $intervention->n_devis ?? '—' }}</div>
             </div>
             <div style="grid-column:1/-1">
-                <div style="font-size:11px;color:#aaa;text-transform:uppercase">Motif</div>
-                <div style="font-size:13px;font-weight:500;margin-top:2px">{{ $intervention->motif ?? '—' }}</div>
-            </div>
-            <div style="grid-column:1/-1">
                 <div style="font-size:11px;color:#aaa;text-transform:uppercase">Demande annexe</div>
                 <div style="font-size:13px;margin-top:2px;white-space:pre-wrap">{{ $intervention->demande_annexe ?? '—' }}</div>
             </div>
@@ -140,10 +136,6 @@
             <div>
                 <div style="font-size:11px;color:#aaa;text-transform:uppercase">Commentaires</div>
                 <div style="font-size:13px;margin-top:2px;white-space:pre-wrap">{{ $intervention->commentaires ?? '—' }}</div>
-            </div>
-            <div style="grid-column:1/-1">
-                <div style="font-size:11px;color:#aaa;text-transform:uppercase">Notes internes</div>
-                <div style="font-size:13px;margin-top:2px;white-space:pre-wrap">{{ $intervention->notes ?? '—' }}</div>
             </div>
         </div>
     </div>

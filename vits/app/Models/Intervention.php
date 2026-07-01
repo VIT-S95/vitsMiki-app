@@ -8,7 +8,7 @@ class Intervention extends Model
     protected $fillable = [
         'contrat_id','client_nom','date_intervention','heure_intervention','technicien','numero_bon_kizeo',
         'type','flash_numero','flash_consomme','duree_minutes','duree_devis_minutes',
-        'motif','notes','statut','type_tri','source_kizeo','source_manuelle','deductible','hors_contrat',
+        'statut','type_tri','source_kizeo','source_manuelle','deductible','hors_contrat',
         'commentaires','pieces_detachees','demande_annexe','hors_heure_ouvree','donneur_ordre','n_ticket','n_devis','raw_data'
     ];
     protected $casts = [

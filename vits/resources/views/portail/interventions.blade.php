@@ -19,7 +19,6 @@
                     <th style="padding:10px 16px;text-align:left;font-size:11px;color:#aaa;text-transform:uppercase;font-weight:500">Date</th>
                     <th style="padding:10px 16px;text-align:left;font-size:11px;color:#aaa;text-transform:uppercase;font-weight:500">Technicien</th>
                     <th style="padding:10px 16px;text-align:left;font-size:11px;color:#aaa;text-transform:uppercase;font-weight:500">Type</th>
-                    <th style="padding:10px 16px;text-align:left;font-size:11px;color:#aaa;text-transform:uppercase;font-weight:500">Motif</th>
                     <th style="padding:10px 16px;text-align:right;font-size:11px;color:#aaa;text-transform:uppercase;font-weight:500">Durée</th>
                 </tr>
             </thead>
@@ -53,7 +52,6 @@
                             <span style="background:#f5f5f5;color:#aaa;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px">Non déductible</span>
                         @endif
                     </td>
-                    <td style="padding:10px 16px;color:#888;font-size:12px">{{ $i->motif ?? '' }}</td>
                     <td style="padding:10px 16px;text-align:right;font-weight:500;color:{{ $i->duree_minutes < 0 ? '#166534' : '#1a1a1a' }}">
                         {{ $i->duree_minutes < 0 ? '+' : '' }}{{ $dureeStr }}
                     </td>
