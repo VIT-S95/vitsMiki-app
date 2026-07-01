@@ -56,7 +56,7 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
                 <div>
                     <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Type <span style="color:#E8720C">*</span></label>
-                    <select name="type" required style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+                    <select name="type" id="type_intervention" onchange="onTypeChange()" required style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
                         @php $typeVal = old('type', $intervention->type); @endphp
                         <option value="site"       {{ $typeVal=='site'?'selected':'' }}>Sur site</option>
                         <option value="distance"   {{ $typeVal=='distance'?'selected':'' }}>À distance</option>
@@ -64,11 +64,39 @@
                         <option value="ajustement" {{ $typeVal=='ajustement'?'selected':'' }}>Ajustement</option>
                     </select>
                 </div>
-                <div>
-                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Durée (minutes) <span style="color:#E8720C">*</span></label>
-                    <input type="number" name="duree_minutes" min="-999" max="999" step="1" value="{{ old('duree_minutes', $intervention->duree_minutes) }}" required style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+
+                {{-- DURÉE SITE/DISTANCE --}}
+                <div id="bloc_duree_standard">
+                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Durée <span style="color:#E8720C">*</span></label>
+                    <div style="display:flex;align-items:center;gap:8px">
+                        <button type="button" onclick="changerDuree(-1)" style="width:36px;height:36px;border:1px solid #ddd;border-radius:8px;font-size:18px;cursor:pointer;background:#f5f5f5">−</button>
+                        <div id="duree_affichage" style="min-width:80px;text-align:center;font-size:15px;font-weight:500;color:#1a1a1a">—</div>
+                        <button type="button" onclick="changerDuree(+1)" style="width:36px;height:36px;border:1px solid #ddd;border-radius:8px;font-size:18px;cursor:pointer;background:#f5f5f5">+</button>
+                    </div>
+                </div>
+
+                {{-- DURÉE FLASH --}}
+                <div id="bloc_duree_flash" style="display:none">
+                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Flash</label>
+                    <div style="display:flex;gap:8px">
+                        @php $flashNum = old('flash_numero', $intervention->flash_numero ?? 1); @endphp
+                        <button type="button" onclick="setFlash(1)" id="flash_1" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer">1/3</button>
+                        <button type="button" onclick="setFlash(2)" id="flash_2" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer">2/3</button>
+                        <button type="button" onclick="setFlash(3)" id="flash_3" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer">3/3 — 20min</button>
+                    </div>
+                </div>
+
+                {{-- DURÉE AJUSTEMENT --}}
+                <div id="bloc_duree_ajustement" style="display:none">
+                    <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Durée (minutes)</label>
+                    <input type="number" id="duree_ajustement_input" onchange="document.getElementById('duree_minutes_hidden').value=this.value" min="-999" max="999" step="1" value="{{ old('duree_minutes', $intervention->duree_minutes) }}" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
                 </div>
             </div>
+
+            {{-- Champ hidden qui sera soumis --}}
+            <input type="hidden" name="duree_minutes" id="duree_minutes_hidden" value="{{ old('duree_minutes', $intervention->duree_minutes) }}">
+            <input type="hidden" name="flash_numero" id="flash_numero_hidden" value="{{ old('flash_numero', $intervention->flash_numero ?? 1) }}">
+
             <div style="display:flex;gap:1.5rem;margin-top:1rem">
                 <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#444">
                     <input type="checkbox" name="deductible" value="1" {{ old('deductible', $intervention->deductible) ? 'checked' : '' }} style="width:16px;height:16px;accent-color:#E8720C">
@@ -80,6 +108,64 @@
                 </label>
             </div>
         </div>
+
+        <script>
+        const TRANCHE_SITE     = 60;
+        const TRANCHE_DISTANCE = 20;
+        let dureeActuelle = {{ old('duree_minutes', $intervention->duree_minutes) }};
+        let flashActuel   = {{ old('flash_numero', $intervention->flash_numero ?? 1) }};
+
+        function formatDuree(min) {
+            if (min === 0) return '0min';
+            const h = Math.floor(Math.abs(min) / 60);
+            const m = Math.abs(min) % 60;
+            const sign = min < 0 ? '-' : '';
+            if (h > 0 && m > 0) return sign + h + 'h ' + m + 'min';
+            if (h > 0) return sign + h + 'h';
+            return sign + m + 'min';
+        }
+
+        function getType() {
+            return document.getElementById('type_intervention').value;
+        }
+
+        function changerDuree(delta) {
+            const type = getType();
+            const tranche = type === 'site' ? TRANCHE_SITE : TRANCHE_DISTANCE;
+            dureeActuelle += delta * tranche;
+            if (dureeActuelle < 0) dureeActuelle = 0;
+            document.getElementById('duree_minutes_hidden').value = dureeActuelle;
+            document.getElementById('duree_affichage').textContent = formatDuree(dureeActuelle);
+        }
+
+        function setFlash(num) {
+            flashActuel = num;
+            dureeActuelle = num === 3 ? 20 : 0;
+            document.getElementById('duree_minutes_hidden').value = dureeActuelle;
+            document.getElementById('flash_numero_hidden').value = flashActuel;
+            [1,2,3].forEach(n => {
+                const btn = document.getElementById('flash_' + n);
+                btn.style.background = n === num ? '#E8720C' : '#f5f5f5';
+                btn.style.color = n === num ? '#fff' : '#1a1a1a';
+                btn.style.borderColor = n === num ? '#E8720C' : '#ddd';
+            });
+        }
+
+        function onTypeChange() {
+            const type = getType();
+            document.getElementById('bloc_duree_standard').style.display   = (type === 'site' || type === 'distance') ? 'block' : 'none';
+            document.getElementById('bloc_duree_flash').style.display      = type === 'flash' ? 'block' : 'none';
+            document.getElementById('bloc_duree_ajustement').style.display = type === 'ajustement' ? 'block' : 'none';
+            if (type === 'site' || type === 'distance') {
+                document.getElementById('duree_affichage').textContent = formatDuree(dureeActuelle);
+            }
+            if (type === 'flash') setFlash(flashActuel);
+        }
+
+        // Init au chargement
+        onTypeChange();
+        if (getType() === 'flash') setFlash(flashActuel);
+        </script>
 
         {{-- DEMANDE --}}
         <div style="margin-bottom:1.5rem">

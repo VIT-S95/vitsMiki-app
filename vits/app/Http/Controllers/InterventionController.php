@@ -143,6 +143,7 @@ class InterventionController extends Controller
         ]);
         $data['contrat_id']        = $request->contrat_id ?: null;
         $data['duree_minutes']     = (int)$request->input('duree_minutes', 0);
+        $data['flash_numero']      = $request->input('flash_numero') !== null ? (int)$request->input('flash_numero') : null;
         $data['deductible']        = $request->boolean('deductible');
         $data['hors_heure_ouvree'] = $request->boolean('hors_heure_ouvree');
         $data['type_tri']          = $data['deductible'] ? 'standard' : 'hors-contrat';
