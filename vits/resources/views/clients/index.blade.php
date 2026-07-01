@@ -16,7 +16,7 @@
 <form method="GET" style="display:flex;gap:8px;margin-bottom:1rem">
     <input type="text" name="search" value="{{ request('search') }}" placeholder="Rechercher un client…" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;width:300px">
     <button type="submit" style="padding:7px 12px;background:#f5f5f5;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer">Rechercher</button>
-    <select name="per_page" onchange="this.form.submit()" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+    <select name="per_page" onchange="this.form.submit()" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;min-width:110px">
         <option value="20" {{ request('per_page',20)==20?'selected':'' }}>20 / page</option>
         <option value="50" {{ request('per_page',20)==50?'selected':'' }}>50 / page</option>
         <option value="100" {{ request('per_page',20)==100?'selected':'' }}>100 / page</option>
@@ -36,7 +36,6 @@
                 <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">N° Kizeo</th>
                 <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">N° Contrat VIT-S</th>
                 <th style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">Statut</th>
-                <th style="padding:9px 14px;border-bottom:1px solid #e0e0e0"></th>
             </tr>
         </thead>
         <tbody>
@@ -47,19 +46,16 @@
                 <td style="padding:10px 14px;color:#888;font-family:monospace;font-size:12px">{{ $client->contrats->first()->numero_contrat_vits ?? '—' }}</td>
                 <td style="padding:10px 14px">
                     @if($client->statut === 'actif')
-                        <span style="background:#f0fdf4;color:#166534;padding:3px 8px;border-radius:99px;font-size:11px;font-weight:500">✓ Actif</span>
+                        <span style="background:#f0fdf4;color:#166534;padding:3px 8px;border-radius:99px;font-size:11px;font-weight:500">✓ Sous contrat</span>
                     @elseif($client->statut === 'sans_contrat')
                         <span style="background:#fffbeb;color:#92400e;padding:3px 8px;border-radius:99px;font-size:11px;font-weight:500">Sans contrat</span>
                     @else
                         <span style="background:#fef2f2;color:#dc2626;padding:3px 8px;border-radius:99px;font-size:11px;font-weight:500">Inactif</span>
                     @endif
                 </td>
-                <td style="padding:10px 14px;text-align:right">
-                    <a href="{{ route('clients.edit', $client) }}" onclick="event.stopPropagation()" style="font-size:12px;color:#888;text-decoration:none;padding:4px 8px;border:1px solid #ddd;border-radius:6px">Modifier</a>
-                </td>
             </tr>
             @empty
-            <tr><td colspan="5" style="padding:2rem;text-align:center;color:#aaa;font-size:13px">Aucun client trouvé</td></tr>
+            <tr><td colspan="4" style="padding:2rem;text-align:center;color:#aaa;font-size:13px">Aucun client trouvé</td></tr>
             @endforelse
         </tbody>
     </table>

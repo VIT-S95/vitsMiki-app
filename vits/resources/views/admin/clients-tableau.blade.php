@@ -37,7 +37,7 @@
                 <td contenteditable="true" data-field="numero_client_kizeo" oninput="marquerModifie(this)" style="padding:10px 14px;color:#555;font-family:monospace;font-size:12px;min-width:100px">{{ $client->numero_client_kizeo }}</td>
                 <td style="padding:6px 10px">
                     <select data-field="statut" onchange="marquerModifie(this)" style="width:100%;padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px">
-                        <option value="actif" {{ $client->statut === 'actif' ? 'selected' : '' }}>Actif</option>
+                        <option value="actif" {{ $client->statut === 'actif' ? 'selected' : '' }}>Sous contrat</option>
                         <option value="sans_contrat" {{ $client->statut === 'sans_contrat' ? 'selected' : '' }}>Sans contrat</option>
                         <option value="inactif" {{ $client->statut === 'inactif' ? 'selected' : '' }}>Inactif</option>
                     </select>

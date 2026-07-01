@@ -15,4 +15,9 @@ class ClientObserver
     {
         app(KizeoService::class)->syncClientsVersKizeo();
     }
+
+    public function deleted(Client $client): void
+    {
+        app(KizeoService::class)->syncClientsVersKizeo();
+    }
 }
