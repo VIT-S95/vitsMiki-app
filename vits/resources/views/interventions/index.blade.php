@@ -225,33 +225,33 @@ document.getElementById('modal-rattacher').addEventListener('click', function(e)
 </script>
 
 <div id="popup-commentaire" onclick="fermerPopup(event)" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.15)">
-    <div id="popup-contenu" onclick="event.stopPropagation()" style="position:absolute;background:#fff;border:1px solid #e0e0e0;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.15);padding:1.25rem;width:420px;max-width:90vw">
+    <div id="popup-contenu" onclick="event.stopPropagation()" style="position:absolute;background:#fff;border:1px solid #e0e0e0;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.15);padding:1.25rem;width:560px;max-width:90vw">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
             <span style="font-size:13px;font-weight:500;color:#1a1a1a" id="popup-titre">Intervention</span>
             <button onclick="document.getElementById('popup-commentaire').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:18px;color:#888">×</button>
         </div>
-        <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:1rem">
-            <tr style="border-bottom:1px solid #f0f0f0">
-                <td style="padding:6px 8px;color:#888;width:40%">Date</td>
-                <td style="padding:6px 8px;color:#1a1a1a" id="popup-date"></td>
-            </tr>
-            <tr style="border-bottom:1px solid #f0f0f0">
-                <td style="padding:6px 8px;color:#888">Client</td>
-                <td style="padding:6px 8px;color:#1a1a1a" id="popup-client"></td>
-            </tr>
-            <tr style="border-bottom:1px solid #f0f0f0">
-                <td style="padding:6px 8px;color:#888">Technicien</td>
-                <td style="padding:6px 8px;color:#1a1a1a" id="popup-technicien"></td>
-            </tr>
-            <tr style="border-bottom:1px solid #f0f0f0">
-                <td style="padding:6px 8px;color:#888">Type</td>
-                <td style="padding:6px 8px;color:#1a1a1a" id="popup-type"></td>
-            </tr>
-            <tr>
-                <td style="padding:6px 8px;color:#888">Durée</td>
-                <td style="padding:6px 8px;color:#1a1a1a" id="popup-duree"></td>
-            </tr>
-        </table>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;margin-bottom:12px;font-size:13px">
+            <div style="padding:5px 0;border-bottom:1px solid #f0f0f0">
+                <span style="color:#aaa;font-size:11px;display:block">Date</span>
+                <span id="popup-date" style="color:#1a1a1a"></span>
+            </div>
+            <div style="padding:5px 0;border-bottom:1px solid #f0f0f0">
+                <span style="color:#aaa;font-size:11px;display:block">Technicien</span>
+                <span id="popup-technicien" style="color:#1a1a1a"></span>
+            </div>
+            <div style="padding:5px 0;border-bottom:1px solid #f0f0f0">
+                <span style="color:#aaa;font-size:11px;display:block">Client</span>
+                <span id="popup-client" style="color:#1a1a1a"></span>
+            </div>
+            <div style="padding:5px 0;border-bottom:1px solid #f0f0f0">
+                <span style="color:#aaa;font-size:11px;display:block">Type</span>
+                <span id="popup-type" style="color:#1a1a1a"></span>
+            </div>
+            <div style="padding:5px 0">
+                <span style="color:#aaa;font-size:11px;display:block">Durée</span>
+                <span id="popup-duree" style="color:#1a1a1a"></span>
+            </div>
+        </div>
         <div style="font-size:12px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Commentaire</div>
         <div id="popup-commentaire-texte" style="font-size:13px;color:#1a1a1a;background:#f8f8f8;border-radius:8px;padding:10px 12px;white-space:pre-wrap;max-height:200px;overflow-y:auto"></div>
     </div>
@@ -277,7 +277,7 @@ function ouvrirPopup(event, id) {
     const contenu = document.getElementById('popup-contenu');
     let top = rect.bottom + 8 + window.scrollY;
     let left = rect.left;
-    if (left + 420 > window.innerWidth) left = window.innerWidth - 430;
+    if (left + 560 > window.innerWidth) left = window.innerWidth - 570;
     contenu.style.top = top + 'px';
     contenu.style.left = left + 'px';
 }
