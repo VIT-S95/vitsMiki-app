@@ -37,7 +37,49 @@
                 <input type="text" name="numero_contrat_vits" value="{{ old('numero_contrat_vits') }}" placeholder="VIT-2026-051" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
                 <div style="font-size:11px;color:#aaa;margin-top:3px">Attribué lors de la première signature</div>
             </div>
+            <div>
+                <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Statut</label>
+                <select name="statut" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+                    <option value="actif" {{ old('statut') === 'actif' ? 'selected' : '' }}>Sous contrat</option>
+                    <option value="sans_contrat" {{ old('statut', 'sans_contrat') === 'sans_contrat' ? 'selected' : '' }}>Sans contrat</option>
+                    <option value="inactif" {{ old('statut') === 'inactif' ? 'selected' : '' }}>Inactif</option>
+                </select>
+            </div>
         </div>
+        {{-- Paramètres mail --}}
+        <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid #f0f0f0">
+            <div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:1rem">Paramètres mail</div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+                <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+                    <input type="checkbox" name="mail_alerte_fin_contrat" value="1"
+                           {{ old('mail_alerte_fin_contrat') ? 'checked' : '' }}
+                           style="width:16px;height:16px;margin-top:2px;accent-color:#E8720C;cursor:pointer;flex-shrink:0">
+                    <div>
+                        <div style="font-size:13px;color:#1a1a1a">Recevoir les alertes de fin de contrat</div>
+                        <div style="font-size:12px;color:#aaa;margin-top:2px">Un email est envoyé lorsque l'échéance du contrat approche</div>
+                    </div>
+                </label>
+                <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+                    <input type="checkbox" name="mail_rapport_periodique" value="1" id="chk-rapport"
+                           onchange="document.getElementById('freq-row').style.display=this.checked?'flex':'none'"
+                           {{ old('mail_rapport_periodique') ? 'checked' : '' }}
+                           style="width:16px;height:16px;margin-top:2px;accent-color:#E8720C;cursor:pointer;flex-shrink:0">
+                    <div>
+                        <div style="font-size:13px;color:#1a1a1a">Recevoir les rapports périodiques</div>
+                        <div style="font-size:12px;color:#aaa;margin-top:2px">Un rapport d'interventions est envoyé selon la fréquence choisie</div>
+                    </div>
+                </label>
+                <div id="freq-row" style="display:{{ old('mail_rapport_periodique') ? 'flex' : 'none' }};align-items:center;gap:10px;padding-left:26px">
+                    <label style="font-size:12px;color:#666;white-space:nowrap">Fréquence :</label>
+                    <select name="mail_frequence" style="padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+                        <option value="mensuel"     {{ old('mail_frequence') === 'mensuel'     ? 'selected' : '' }}>Mensuel</option>
+                        <option value="hebdo"       {{ old('mail_frequence') === 'hebdo'       ? 'selected' : '' }}>Hebdomadaire</option>
+                        <option value="trimestriel" {{ old('mail_frequence') === 'trimestriel' ? 'selected' : '' }}>Trimestriel</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
         <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:1.25rem;border-top:1px solid #f0f0f0">
             <a href="{{ route('clients.index') }}" style="padding:8px 16px;font-size:13px;border:1px solid #ddd;border-radius:8px;color:#666;text-decoration:none">Annuler</a>
             <button type="submit" style="padding:8px 20px;font-size:13px;font-weight:500;background:#E8720C;color:#fff;border:none;border-radius:8px;cursor:pointer">✓ Créer le client</button>

@@ -30,7 +30,14 @@ class ClientController extends Controller
             'email_signataire'    => 'nullable|email',
             'numero_client_kizeo' => 'nullable|string|unique:clients',
         ]);
-        Client::create($request->all());
+        Client::create(array_merge(
+            $request->only(['nom_societe','nom_signataire','email_signataire','numero_client_kizeo','numero_contrat_vits','statut']),
+            [
+                'mail_alerte_fin_contrat' => $request->boolean('mail_alerte_fin_contrat'),
+                'mail_rapport_periodique' => $request->boolean('mail_rapport_periodique'),
+                'mail_frequence'          => $request->input('mail_frequence', 'mensuel'),
+            ]
+        ));
         return redirect()->route('clients.index')->with('success', 'Client créé avec succès.');
     }
     public function show(Client $client)
