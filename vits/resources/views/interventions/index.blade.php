@@ -47,7 +47,7 @@
 <input type="hidden" name="periode" id="periode-input" value="{{ $periodeActive }}">
 
 {{-- Filtres texte / type --}}
-<div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap">
+<div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center">
     <input type="text" name="search" value="{{ request('search') }}" placeholder="Rechercher un client…" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;width:250px">
     <select name="type" onchange="this.form.submit()" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;min-width:140px">
         <option value="">Tous les types</option>
@@ -67,7 +67,7 @@
         <option value="1" {{ request('deductible')==='1'?'selected':'' }}>Déductibles</option>
         <option value="0" {{ request('deductible')==='0'?'selected':'' }}>Hors contrat</option>
     </select>
-<select name="per_page" onchange="this.form.submit()" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;min-width:110px">
+    <select name="per_page" onchange="this.form.submit()" style="padding:7px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;min-width:110px">
         <option value="20"  {{ request('per_page',20)==20?'selected':'' }}>20 / page</option>
         <option value="50"  {{ request('per_page',20)==50?'selected':'' }}>50 / page</option>
         <option value="100" {{ request('per_page',20)==100?'selected':'' }}>100 / page</option>
@@ -109,6 +109,7 @@ function setPeriode(val) {
     <table style="width:100%;border-collapse:collapse;font-size:13px">
         <thead style="background:#f5f5f5">
             <tr>
+                <th class="col-fixed-left" style="padding:9px 8px;border-bottom:1px solid #e0e0e0;width:36px"></th>
                 <th class="col-date" style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">
                     <a href="{{ request()->fullUrlWithQuery(['sort'=>'date_intervention','dir'=>($sort=='date_intervention' && $dir=='asc')?'desc':'asc']) }}" style="color:#888;text-decoration:none">
                         Date {{ $sort=='date_intervention' ? ($dir=='asc'?'↑':'↓') : '' }}
@@ -124,7 +125,6 @@ function setPeriode(val) {
                         Technicien {{ $sort=='technicien' ? ($dir=='asc'?'↑':'↓') : '' }}
                     </a>
                 </th>
-                <th style="padding:9px 8px;border-bottom:1px solid #e0e0e0"></th>
                 <th class="col-bon" style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">N° Bon</th>
                 <th class="col-type" style="padding:9px 14px;text-align:left;font-size:11px;color:#888;text-transform:uppercase;border-bottom:1px solid #e0e0e0">
                     <a href="{{ request()->fullUrlWithQuery(['sort'=>'type','dir'=>($sort=='type' && $dir=='asc')?'desc':'asc']) }}" style="color:#888;text-decoration:none">
@@ -136,7 +136,7 @@ function setPeriode(val) {
                         Durée {{ $sort=='duree_minutes' ? ($dir=='asc'?'↑':'↓') : '' }}
                     </a>
                 </th>
-                <th style="padding:9px 14px;border-bottom:1px solid #e0e0e0"></th>
+                <th class="col-fixed-right" style="padding:9px 14px;border-bottom:1px solid #e0e0e0"></th>
             </tr>
         </thead>
         <tbody>
@@ -157,16 +157,7 @@ function setPeriode(val) {
                 data-duree="{{ $intervention->duree_formatee ?? '—' }}"
                 data-date="{{ $intervention->date_intervention->format('d/m/Y') }}"
                 data-type="{{ $intervention->type }}">
-                <td class="col-date" style="padding:10px 14px;color:#888">{{ $intervention->date_intervention->format('d/m/Y') }}{{ $intervention->heure_intervention ? ' '.$intervention->heure_intervention : '' }}</td>
-                <td class="col-client" style="padding:10px 14px;font-weight:500">{{ $intervention->client_nom ?? $intervention->contrat?->client?->nom_societe ?? '—' }}</td>
-                <td class="col-tech" style="padding:10px 14px;color:#555;font-size:12px">
-                    @if($intervention->technicien === 'Système')
-                        <span style="font-style:italic;color:#999">{{ $intervention->technicien }}</span>
-                    @else
-                        {{ $intervention->technicien ?? '—' }}
-                    @endif
-                </td>
-                <td style="padding:10px 8px;width:36px">
+                <td class="col-fixed-left" style="padding:10px 8px;width:36px">
                     @if($intervention->commentaires)
                     <button type="button"
                         onclick="ouvrirPopup(event, {{ $intervention->id }})"
@@ -176,6 +167,15 @@ function setPeriode(val) {
                     </button>
                     @else
                     <div style="width:28px"></div>
+                    @endif
+                </td>
+                <td class="col-date" style="padding:10px 14px;color:#888">{{ $intervention->date_intervention->format('d/m/Y') }}{{ $intervention->heure_intervention ? ' '.$intervention->heure_intervention : '' }}</td>
+                <td class="col-client" style="padding:10px 14px;font-weight:500">{{ $intervention->client_nom ?? $intervention->contrat?->client?->nom_societe ?? '—' }}</td>
+                <td class="col-tech" style="padding:10px 14px;color:#555;font-size:12px">
+                    @if($intervention->technicien === 'Système')
+                        <span style="font-style:italic;color:#999">{{ $intervention->technicien }}</span>
+                    @else
+                        {{ $intervention->technicien ?? '—' }}
                     @endif
                 </td>
                 <td class="col-bon" style="padding:10px 14px;font-family:monospace;font-size:11px;color:#888">{{ $intervention->numero_bon_kizeo ?? '—' }}</td>
@@ -200,7 +200,7 @@ function setPeriode(val) {
                     @else {{ $h>0?$h.'h ':'' }}{{ $m>0?$m.'min':'' }}
                     @endif
                 </td>
-                <td style="padding:10px 14px;text-align:right;white-space:nowrap">
+                <td class="col-fixed-right" style="padding:10px 14px;text-align:right;white-space:nowrap">
                     @if($horsCtrat)
                     <button type="button" onclick="event.stopPropagation();openRattacher({{ $intervention->id }},'{{ addslashes($intervention->client_nom ?? '—') }}','{{ $intervention->date_intervention->format('d/m/Y') }}','{{ $intervention->duree_formatee }}')"
                             style="font-size:11px;color:#E8720C;background:#fff;border:1px solid #E8720C;padding:3px 8px;border-radius:6px;cursor:pointer;margin-right:4px">Rattacher</button>
@@ -214,6 +214,7 @@ function setPeriode(val) {
     </table>
     <div style="padding:10px 14px;border-top:1px solid #e0e0e0;font-size:12px;color:#888">{{ $interventions->links() }}</div>
 </div>
+
 {{-- Modal Rattacher --}}
 <div id="modal-rattacher" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9998;align-items:center;justify-content:center">
     <div style="background:#fff;border-radius:12px;padding:1.5rem;max-width:480px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.18)">
@@ -305,7 +306,6 @@ function ouvrirPopup(event, id) {
     const popup = document.getElementById('popup-commentaire');
     popup.style.display = 'block';
 
-    // Positionner près du bouton
     const rect = event.target.getBoundingClientRect();
     const contenu = document.getElementById('popup-contenu');
     let top = rect.bottom + 8 + window.scrollY;
@@ -365,6 +365,8 @@ function appliquerColonnesInterventions() {
 function reorderTableDOMInterventions(colonnes) {
     const thead_tr = document.querySelector('thead tr');
     const tbody_trs = document.querySelectorAll('tbody tr');
+
+    // Réordonne les colonnes gérées
     colonnes.forEach(col => {
         const th = thead_tr.querySelector('.' + col.id);
         if (th) thead_tr.appendChild(th);
@@ -372,6 +374,22 @@ function reorderTableDOMInterventions(colonnes) {
             const td = tr.querySelector('.' + col.id);
             if (td) tr.appendChild(td);
         });
+    });
+
+    // Remet la colonne fixe gauche (bulle) en première position
+    const thLeft = thead_tr.querySelector('.col-fixed-left');
+    if (thLeft) thead_tr.prepend(thLeft);
+    tbody_trs.forEach(tr => {
+        const td = tr.querySelector('.col-fixed-left');
+        if (td) tr.prepend(td);
+    });
+
+    // Remet la colonne fixe droite (rattacher) en dernière position
+    const thRight = thead_tr.querySelector('.col-fixed-right');
+    if (thRight) thead_tr.appendChild(thRight);
+    tbody_trs.forEach(tr => {
+        const td = tr.querySelector('.col-fixed-right');
+        if (td) tr.appendChild(td);
     });
 }
 
@@ -389,9 +407,9 @@ function renderPanelColonnes() {
         const row = document.createElement('div');
         row.draggable = true;
         row.dataset.index = i;
-        row.style = 'display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:6px;';
+        row.style = 'display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:6px;cursor:grab';
         row.innerHTML = `
-            <i class="ti ti-grip-vertical" style="font-size:14px;color:#ccc;cursor:grab" aria-hidden="true"></i>
+            <i class="ti ti-grip-vertical" style="font-size:14px;color:#ccc" aria-hidden="true"></i>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1;font-size:13px;color:#1a1a1a">
                 <input type="checkbox" ${col.visible ? 'checked' : ''} onchange="toggleColonneInter(${i}, this.checked)" style="accent-color:#E8720C;width:15px;height:15px;">
                 ${col.label}
@@ -406,7 +424,7 @@ function renderPanelColonnes() {
             e.preventDefault();
             e.stopPropagation();
             if (dragOverRow && dragOverRow !== row) dragOverRow.style.background = '';
-            row.style.background = '#f5f5f5';
+            row.style.background = '#f0f0f0';
             dragOverRow = row;
         });
         row.addEventListener('drop', function(e) {
