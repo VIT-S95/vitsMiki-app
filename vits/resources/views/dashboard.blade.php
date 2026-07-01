@@ -49,12 +49,6 @@
                     ☁
                 </button>
             </form>
-            <button id="btn-sync-clients" title="Synchroniser clients Kizeo"
-                style="width:32px;height:32px;border-radius:8px;background:#E6F0FF;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;padding:0;transition:background 0.2s"
-                onmouseover="this.style.background='#C2D8FF'" onmouseout="this.style.background='#E6F0FF'"
-                onclick="syncClientsKizeo(this)">
-                👥
-            </button>
             <div>
                 <div style="font-size:13px;font-weight:500">Synchronisation Kizeo
                     <span style="font-size:11px;font-weight:400;color:#aaa;margin-left:6px">— prochaine dans <span id="kizeo-countdown" style="color:#E8720C;font-weight:600">…</span></span>
@@ -153,25 +147,6 @@
     tick();
 })();
 
-function syncClientsKizeo(btn) {
-    btn.innerHTML = '⏳';
-    btn.disabled = true;
-    fetch('{{ route('kizeo.sync-clients') }}', {
-        method: 'POST',
-        headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json'}
-    })
-    .then(r => r.json())
-    .then(data => {
-        btn.innerHTML = '👥';
-        btn.disabled = false;
-        alert(data.message || 'Synchronisation terminée');
-    })
-    .catch(() => {
-        btn.innerHTML = '👥';
-        btn.disabled = false;
-        alert('Erreur lors de la synchronisation');
-    });
-}
 </script>
 
 {{-- GRILLE ALERTES --}}

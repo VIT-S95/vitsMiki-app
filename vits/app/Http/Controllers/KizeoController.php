@@ -12,9 +12,4 @@ class KizeoController extends Controller
             ->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
-    public function syncClients(KizeoService $kizeo)
-    {
-        $result = $kizeo->syncClientsDepuisListe();
-        return response()->json($result);
-    }
 }
