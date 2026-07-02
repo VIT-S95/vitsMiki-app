@@ -12,7 +12,7 @@
         *{box-sizing:border-box;margin:0;padding:0}
         body{font-family:Arial,sans-serif;background:#f5f5f5;display:flex;min-height:100vh}
         .sidebar{width:200px;background:#fff;border-right:1px solid #e0e0e0;padding:1rem 0;flex-shrink:0;display:flex;flex-direction:column}
-        .sidebar-logo{padding:0.75rem 1rem 1.25rem;border-bottom:1px solid #e0e0e0;margin-bottom:0.5rem;text-align:center}
+        .sidebar-logo{padding:0.75rem 0 1.25rem;border-bottom:1px solid #e0e0e0;margin-bottom:0.5rem;text-align:center;display:flex;flex-direction:column;align-items:center;width:100%}
         .logo-badge{background:#E8720C;color:#fff;font-size:13px;font-weight:500;padding:3px 10px;border-radius:6px;display:inline-block}
         .logo-sub{font-size:11px;color:#aaa;margin-top:4px}
         /* -- Sidebar nav -- */
