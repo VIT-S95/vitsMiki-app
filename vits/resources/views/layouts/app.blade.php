@@ -52,8 +52,7 @@
     </style>
 </head>
 <body data-page="{{ request()->route()?->getName() ?? '' }}">
-    <div class="sidebar">
-        <div class="sidebar-logo">
+            <div class="sidebar-logo">
             @php $logoPath = file_exists(public_path('storage/logo/logo.png')) ? asset('storage/logo/logo.png') : null; @endphp
             @if($logoPath)
                 <img src="{{ $logoPath }}" style="max-height:38px;max-width:140px;object-fit:contain">
@@ -61,6 +60,14 @@
                 <div class="logo-badge">VIT-S</div>
             @endif
             <div class="logo-sub">Application interne</div>
+            @php $nbIdees = auth()->check() && auth()->user()->isAdmin() ? App\Models\BoiteIdee::where('statut','en_attente')->count() : 0; @endphp
+            <a href="{{ route('boite-idees.index') }}" style="display:flex;align-items:center;justify-content:center;gap:7px;margin-top:10px;padding:7px 10px;background:#E8720C;color:#fff;border-radius:8px;font-size:12px;font-weight:500;text-decoration:none">
+                <i class="ti ti-bulb" style="font-size:14px" aria-hidden="true"></i>
+                <span>Boîte à idées</span>
+                @if($nbIdees > 0)
+                <span style="background:rgba(255,255,255,0.25);color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:99px">{{ $nbIdees }}</span>
+                @endif
+            </a>
         </div>
 
         @php
