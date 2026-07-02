@@ -9,6 +9,12 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+Route::get('/login', function () {
+    return view('auth.login');
+})->name('login');
+Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('login.post');
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', function (Request $request) {
