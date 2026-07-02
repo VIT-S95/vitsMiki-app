@@ -144,37 +144,32 @@ function reventilerClient(btn) {
 
         @if($contratActif)
         <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #f0f0f0">
-            <a href="{{ route('contrats.create', ['client_id' => $client->id]) }}" style="font-size:12px;color:#888;text-decoration:none">+ Nouveau contrat</a>
+            <div style="font-size:11px;font-weight:500;color:#aaa;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">Renouvellement</div>
+            <form action="{{ route('contrats.update-renouvellement', $contratActif) }}" method="POST">
+                @csrf @method('PATCH')
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#1a1a1a">
+                        <input type="checkbox" name="renouvellement_auto" value="1" {{ $contratActif->renouvellement_auto ? 'checked' : '' }}
+                            style="accent-color:#E8720C;width:15px;height:15px">
+                        Automatique
+                    </label>
+                    <div style="display:flex;align-items:center;gap:8px">
+                        <span style="font-size:12px;color:#888;white-space:nowrap">Alerte</span>
+                        <input type="number" name="notif_jours_avant" value="{{ $contratActif->notif_jours_avant ?? 30 }}" min="1" max="365"
+                            style="width:64px;padding:4px 8px;font-size:13px;border:1px solid #ddd;border-radius:6px">
+                        <span style="font-size:12px;color:#888;white-space:nowrap">jours avant</span>
+                    </div>
+                    <button type="submit" style="padding:5px 12px;font-size:12px;background:#E8720C;color:#fff;border:none;border-radius:6px;cursor:pointer;white-space:nowrap">Enregistrer</button>
+                </div>
+            </form>
+            <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid #f0f0f0">
+                <a href="{{ route('contrats.create', ['client_id' => $client->id]) }}" style="font-size:12px;color:#888;text-decoration:none">+ Nouveau contrat</a>
+            </div>
         </div>
         @else
         <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #f0f0f0">
             <a href="{{ route('contrats.create', ['client_id' => $client->id]) }}" style="padding:6px 12px;font-size:12px;background:#E8720C;color:#fff;border-radius:8px;text-decoration:none">+ Créer un contrat</a>
         </div>
-        @endif
-    </div>
-
-    {{-- RENOUVELLEMENT AUTOMATIQUE --}}
-    <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1.25rem;margin-top:1rem">
-        <div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:1rem">🔄 Renouvellement automatique</div>
-        @if($contratActif)
-        <form action="{{ route('contrats.update-renouvellement', $contratActif) }}" method="POST" style="display:flex;flex-direction:column;gap:12px">
-            @csrf @method('PATCH')
-            <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer">
-                <input type="checkbox" name="renouvellement_auto" value="1" {{ $contratActif->renouvellement_auto ? 'checked' : '' }}
-                    style="accent-color:#E8720C;width:16px;height:16px">
-                Renouvellement automatique activé
-            </label>
-            <div>
-                <label style="font-size:12px;color:#666;display:block;margin-bottom:4px">Alerte échéance (jours avant)</label>
-                <input type="number" name="notif_jours_avant" value="{{ $contratActif->notif_jours_avant ?? 30 }}" min="1" max="365"
-                    style="padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;width:120px">
-            </div>
-            <div>
-                <button type="submit" style="padding:6px 16px;font-size:12px;background:#E8720C;color:#fff;border:none;border-radius:8px;cursor:pointer">Enregistrer</button>
-            </div>
-        </form>
-        @else
-        <div style="font-size:13px;color:#aaa">Aucun contrat actif.</div>
         @endif
     </div>
 </div>
