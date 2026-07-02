@@ -34,7 +34,7 @@
             <div class="error">Email ou mot de passe incorrect.</div>
         @endif
 
-        <form method="POST" action="{{ route('login') }}">
+        <form method="POST" action="{{ route('login.post') }}">
             @csrf
             <div class="field">
                 <label for="email">Adresse email</label>
