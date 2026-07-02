@@ -52,7 +52,8 @@
     </style>
 </head>
 <body data-page="{{ request()->route()?->getName() ?? '' }}">
-            <div class="sidebar-logo">
+    <div class="sidebar">
+        <div class="sidebar-logo">
             @php $logoPath = file_exists(public_path('storage/logo/logo.png')) ? asset('storage/logo/logo.png') : null; @endphp
             @if($logoPath)
                 <img src="{{ $logoPath }}" style="max-height:38px;max-width:140px;object-fit:contain">
