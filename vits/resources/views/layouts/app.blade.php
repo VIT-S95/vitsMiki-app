@@ -12,7 +12,7 @@
         *{box-sizing:border-box;margin:0;padding:0}
         body{font-family:Arial,sans-serif;background:#f5f5f5;display:flex;min-height:100vh}
         .sidebar{width:200px;background:#fff;border-right:1px solid #e0e0e0;padding:1rem 0;flex-shrink:0;display:flex;flex-direction:column}
-        .sidebar-logo{padding:0.75rem 1rem 1.25rem;border-bottom:1px solid #e0e0e0;margin-bottom:0.5rem}
+        .sidebar-logo{padding:0.75rem 1rem 1.25rem;border-bottom:1px solid #e0e0e0;margin-bottom:0.5rem;text-align:center}
         .logo-badge{background:#E8720C;color:#fff;font-size:13px;font-weight:500;padding:3px 10px;border-radius:6px;display:inline-block}
         .logo-sub{font-size:11px;color:#aaa;margin-top:4px}
         /* -- Sidebar nav -- */
@@ -56,7 +56,7 @@
         <div class="sidebar-logo">
             @php $logoPath = file_exists(public_path('storage/logo/logo.png')) ? asset('storage/logo/logo.png') : null; @endphp
             @if($logoPath)
-                <img src="{{ $logoPath }}" style="max-height:38px;max-width:140px;object-fit:contain">
+                <img src="{{ $logoPath }}" style="max-height:55px;max-width:160px;object-fit:contain">
             @else
                 <div class="logo-badge">VIT-S</div>
             @endif
@@ -146,13 +146,7 @@
 
         {{-- SYSTÈME --}}
         <div class="nav-section">Système</div>
-        @php $nbIdees = $user->isAdmin() ? App\Models\BoiteIdee::where('statut','en_attente')->count() : 0; @endphp
-        <a href="{{ route('boite-idees.index') }}" class="nav-item {{ request()->routeIs('boite-idees.*') ? 'active' : '' }}">
-            <i class="ti ti-bulb"></i> Boîte à idées
-            @if($nbIdees > 0)
-                <span style="margin-left:auto;background:#E8720C;color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:99px">{{ $nbIdees }}</span>
-            @endif
-        </a>
+      
         @if($user->isAdmin())
         <a href="{{ route('parametres.index') }}" class="nav-item {{ request()->routeIs('parametres.*') && !request()->routeIs('mail-templates.*') ? 'active' : '' }}">
             <i class="ti ti-settings"></i> Paramètres
