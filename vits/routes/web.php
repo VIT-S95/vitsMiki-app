@@ -103,7 +103,7 @@ Route::middleware(['auth', 'admin.only'])->prefix('admin')->name('admin.')->grou
 });
 
 use App\Http\Controllers\PerformanceController;
-Route::middleware(['auth', 'admin.only'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/performance', [PerformanceController::class, 'index'])->name('performance.index');
 });
 
