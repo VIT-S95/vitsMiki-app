@@ -151,7 +151,7 @@ function setPeriode(val) {
                 style="cursor:pointer;border-bottom:1px solid #f0f0f0;{{ $nonDed ? 'opacity:0.5' : '' }}"
                 onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='#fff'"
                 data-intervention-id="{{ $intervention->id }}"
-                data-commentaire="{{ e($intervention->commentaires ?? '') }}"
+                data-commentaire="{{ $intervention->commentaires ?? '' }}"
                 data-technicien="{{ $intervention->technicien ?? '—' }}"
                 data-client="{{ $intervention->client_nom ?? '—' }}"
                 data-duree="{{ $intervention->duree_formatee ?? '—' }}"
