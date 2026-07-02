@@ -43,6 +43,7 @@ use App\Http\Controllers\ContratController;
 Route::resource('contrats', ContratController::class)->middleware('auth');
 Route::middleware(['auth'])->group(function () {
     Route::post('/contrats/{contrat}/reimport-kizeo', [ContratController::class, 'reimportKizeo'])->name('contrats.reimport-kizeo');
+    Route::patch('/contrats/{contrat}/renouvellement', [ContratController::class, 'updateRenouvellement'])->name('contrats.update-renouvellement');
 });
 
 use App\Http\Controllers\InterventionController;

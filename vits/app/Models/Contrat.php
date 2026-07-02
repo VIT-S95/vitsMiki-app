@@ -10,11 +10,13 @@ class Contrat extends Model
     protected $fillable = [
         'client_id','titre','numero_contrat_vits','date_debut','date_fin',
         'duree_mois','duree_periode_mois','heures_par_periode',
-        'numero_renouvellement','statut','pdf_contrat'
+        'numero_renouvellement','statut','pdf_contrat',
+        'renouvellement_auto','notif_jours_avant'
     ];
     protected $casts = [
-        'date_debut' => 'date',
-        'date_fin'   => 'date',
+        'date_debut'          => 'date',
+        'date_fin'            => 'date',
+        'renouvellement_auto' => 'boolean',
     ];
 
     public function client() { return $this->belongsTo(Client::class); }

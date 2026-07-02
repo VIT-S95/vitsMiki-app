@@ -18,3 +18,6 @@ Schedule::command('kizeo:reimport', [
     ->dailyAt('00:30')
     ->withoutOverlapping(30)
     ->appendOutputTo(storage_path('logs/kizeo_nuit.log'));
+
+Schedule::command('contrats:renouveler')->dailyAt('07:00');
+Schedule::command('contrats:alertes')->dailyAt('07:05');

@@ -93,8 +93,12 @@
                 <a href="{{ route('clients.index') }}" class="nav-sub {{ request()->routeIs('clients.*') ? 'active' : '' }}">
                     <i class="ti ti-users"></i> Clients
                 </a>
+                @php $alertesContrats = \Illuminate\Support\Facades\Cache::get('contrats_alertes_count', 0); @endphp
                 <a href="{{ route('contrats.index') }}" class="nav-sub {{ request()->routeIs('contrats.*') ? 'active' : '' }}">
                     <i class="ti ti-file-text"></i> Contrats
+                    @if($user->isAdmin() && $alertesContrats > 0)
+                        <span style="margin-left:auto;background:#dc2626;color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:99px">{{ $alertesContrats }}</span>
+                    @endif
                 </a>
                 <a href="{{ route('interventions.index') }}" class="nav-sub {{ request()->routeIs('interventions.*') ? 'active' : '' }}">
                     <i class="ti ti-list"></i> Interventions
