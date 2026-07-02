@@ -67,12 +67,59 @@ class ContratController extends Controller
             'duree_periode_mois' => 'required|in:1,3,6,12',
             'heures_par_periode' => 'required|integer|min:1',
         ]);
+
+        // Vérifier si un contrat en-cours existe déjà pour ce client
+        $contratExistant = Contrat::where('client_id', $request->client_id)
+            ->where('statut', 'en-cours')
+            ->first();
+
+        if ($contratExistant && !$request->boolean('confirme_nouveau_contrat')) {
+            return back()->withInput()->with('alerte_contrat_existant', [
+                'id'          => $contratExistant->id,
+                'numero'      => $contratExistant->numero_contrat_vits,
+                'date_debut'  => $contratExistant->date_debut->format('d/m/Y'),
+                'date_fin'    => $contratExistant->date_fin?->format('d/m/Y'),
+            ]);
+        }
+
+        // Si nouveau contrat confirmé avec remplacement, expirer l'ancien
+        if ($contratExistant && $request->boolean('confirme_nouveau_contrat')) {
+            $dateDebutNouv = Carbon::parse($request->date_debut);
+            $contratExistant->update([
+                'date_fin' => $dateDebutNouv->subDay()->toDateString(),
+                'statut'   => 'expire',
+            ]);
+            // Sortir les interventions postérieures de l'ancien contrat
+            \App\Models\Intervention::where('contrat_id', $contratExistant->id)
+                ->whereDate('date_intervention', '>=', $request->date_debut)
+                ->update([
+                    'contrat_id'   => null,
+                    'hors_contrat' => true,
+                    'deductible'   => false,
+                    'type_tri'     => 'hors-contrat',
+                ]);
+        }
+
         $data = $request->all();
         $data['date_fin'] = Carbon::parse($data['date_debut'])->addMonths((int) $data['duree_mois'])->toDateString();
         $data['statut'] = 'en-cours';
         $data['numero_renouvellement'] = 0;
         $contrat = Contrat::create($data);
         $client = Client::find($data['client_id']);
+
+        if ($request->boolean('confirme_nouveau_contrat')) {
+            \App\Models\Intervention::whereNull('contrat_id')
+                ->where('client_nom', $client->nom_societe)
+                ->whereDate('date_intervention', '>=', $request->date_debut)
+                ->whereDate('date_intervention', '<=', $data['date_fin'])
+                ->update([
+                    'contrat_id'   => $contrat->id,
+                    'hors_contrat' => false,
+                    'deductible'   => true,
+                    'type_tri'     => 'standard',
+                ]);
+        }
+
         if ($client) {
             app(KizeoService::class)->reventilerInterventionsHorsContrat($client);
         }
@@ -147,5 +194,36 @@ class ContratController extends Controller
             : "Erreur réimport : {$result['message']}";
 
         return redirect()->back()->with('success', $msg);
+    }
+
+    public function cloture(Request $request, Contrat $contrat)
+    {
+        $request->validate(['date_cloture' => 'required|date']);
+
+        $dateCloture = Carbon::parse($request->date_cloture);
+
+        // Mettre à jour la date de fin
+        $contrat->update(['date_fin' => $dateCloture->toDateString()]);
+
+        if ($dateCloture->lte(now())) {
+            // Clôture immédiate ou rétroactive
+            $contrat->update(['statut' => 'expire']);
+
+            // Sortir les interventions postérieures à la date de clôture
+            $nb = \App\Models\Intervention::where('contrat_id', $contrat->id)
+                ->whereDate('date_intervention', '>', $dateCloture->toDateString())
+                ->update([
+                    'contrat_id'   => null,
+                    'hors_contrat' => true,
+                    'deductible'   => false,
+                    'type_tri'     => 'hors-contrat',
+                ]);
+
+            $msg = "Contrat clôturé au {$dateCloture->format('d/m/Y')}. {$nb} intervention(s) sorties du contrat.";
+        } else {
+            $msg = "Date de fin mise à jour au {$dateCloture->format('d/m/Y')}. Le contrat sera clôturé automatiquement à cette date.";
+        }
+
+        return redirect()->route('contrats.show', $contrat)->with('success', $msg);
     }
 }

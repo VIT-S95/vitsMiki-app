@@ -1,6 +1,39 @@
 @extends('layouts.app')
 @section('title', 'Nouveau contrat')
 @section('content')
+@if(session('alerte_contrat_existant'))
+@php $alerte = session('alerte_contrat_existant'); @endphp
+<div id="modal-alerte-contrat" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:9999">
+    <div style="background:#fff;border-radius:12px;padding:1.5rem;max-width:480px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.18)">
+        <div style="font-size:15px;font-weight:500;color:#1a1a1a;margin-bottom:0.75rem">⚠️ Contrat actif existant</div>
+        <div style="font-size:13px;color:#555;background:#fff8f0;border:1px solid #fddcbf;border-radius:8px;padding:10px 12px;margin-bottom:1rem;line-height:1.7">
+            Ce client a déjà un contrat en cours :<br>
+            <strong>{{ $alerte['numero'] }}</strong> — du {{ $alerte['date_debut'] }} au {{ $alerte['date_fin'] }}
+        </div>
+        <div style="font-size:13px;color:#555;margin-bottom:1.25rem">Que souhaitez-vous faire ?</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+            <button onclick="document.getElementById('modal-alerte-contrat').remove()"
+                style="padding:9px 16px;font-size:13px;border:1px solid #ddd;border-radius:8px;color:#666;background:#fff;cursor:pointer;text-align:left">
+                ✖ Annuler — c'était une erreur de saisie
+            </button>
+            <button onclick="confirmerNouveauContrat()"
+                style="padding:9px 16px;font-size:13px;border:1px solid #E8720C;border-radius:8px;color:#E8720C;background:#fff8f3;cursor:pointer;text-align:left">
+                ✓ Nouveau contrat négocié — expirer l'ancien et basculer les interventions
+            </button>
+        </div>
+    </div>
+</div>
+<script>
+function confirmerNouveauContrat() {
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'confirme_nouveau_contrat';
+    input.value = '1';
+    document.querySelector('form').appendChild(input);
+    document.querySelector('form').submit();
+}
+</script>
+@endif
 <a href="{{ route('contrats.index') }}" style="display:flex;align-items:center;gap:6px;font-size:13px;color:#888;text-decoration:none;margin-bottom:1.25rem">← Retour</a>
 <h1 style="font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:1.5rem">Nouveau contrat</h1>
 

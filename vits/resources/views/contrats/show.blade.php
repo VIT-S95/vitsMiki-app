@@ -31,6 +31,7 @@
                 @csrf
                 <button type="submit" id="btn-reimport" style="padding:6px 12px;font-size:12px;border:1px solid #E8720C;border-radius:8px;color:#E8720C;background:#fff;cursor:pointer">🔄 Récupérer interventions manquantes</button>
             </form>
+            <button type="button" onclick="ouvrirCloture()" style="padding:6px 12px;font-size:12px;border:1px solid #dc2626;border-radius:8px;color:#dc2626;background:#fff;cursor:pointer">⏹ Clôturer</button>
             @endif
             <a href="{{ route('interventions.create', ['contrat_id' => $contrat->id]) }}" style="padding:6px 12px;font-size:12px;background:#E8720C;color:#fff;border-radius:8px;text-decoration:none">+ Intervention</a>
         </div>
@@ -271,4 +272,36 @@ function lancerReimport(form) {
     </div>
 </div>
 @endif
+
+<div id="modal-cloture" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9998;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:12px;padding:1.5rem;max-width:420px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.18)">
+        <div style="font-size:15px;font-weight:500;color:#1a1a1a;margin-bottom:0.75rem">Clôturer le contrat prématurément</div>
+        <div style="font-size:12px;color:#888;margin-bottom:1rem;line-height:1.6">
+            Choisissez la date de fin anticipée.<br>
+            • Si la date est <strong>future</strong> : le contrat sera clôturé automatiquement à cette date.<br>
+            • Si la date est <strong>aujourd'hui ou passée</strong> : le contrat expire immédiatement et les interventions postérieures sont sorties du contrat.
+        </div>
+        <form action="{{ route('contrats.cloture', $contrat) }}" method="POST">
+            @csrf
+            <div style="margin-bottom:1rem">
+                <label style="font-size:12px;color:#666;display:block;margin-bottom:5px">Date de clôture <span style="color:#dc2626">*</span></label>
+                <input type="date" name="date_cloture" required
+                    max="{{ $contrat->date_fin?->format('Y-m-d') }}"
+                    style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:8px">
+                <button type="button" onclick="document.getElementById('modal-cloture').style.display='none'" style="padding:8px 16px;font-size:13px;border:1px solid #ddd;border-radius:8px;color:#666;background:#fff;cursor:pointer">Annuler</button>
+                <button type="submit" style="padding:8px 20px;font-size:13px;font-weight:500;background:#dc2626;color:#fff;border:none;border-radius:8px;cursor:pointer">Clôturer</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+function ouvrirCloture() {
+    document.getElementById('modal-cloture').style.display = 'flex';
+}
+document.getElementById('modal-cloture').addEventListener('click', function(e) {
+    if (e.target === this) this.style.display = 'none';
+});
+</script>
 @endsection
