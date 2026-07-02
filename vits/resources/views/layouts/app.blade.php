@@ -160,6 +160,13 @@
         <a href="{{ route('admin.clients-tableau.index') }}" class="nav-item {{ request()->routeIs('admin.clients-tableau.*') ? 'active' : '' }}">
             <i class="ti ti-table"></i> Tableau clients
         </a>
+        @php $nbCorbeille = \App\Models\Intervention::onlyTrashed()->count(); @endphp
+        <a href="{{ route('corbeille.index') }}" class="nav-item {{ request()->routeIs('corbeille.*') ? 'active' : '' }}">
+            <i class="ti ti-trash"></i> Corbeille
+            @if($nbCorbeille > 0)
+                <span style="margin-left:auto;background:#dc2626;color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:99px">{{ $nbCorbeille }}</span>
+            @endif
+        </a>
         @endif
         <a href="{{ route('logout') }}" class="nav-item"
            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

@@ -59,6 +59,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/interventions/{intervention}/rattacher', [InterventionController::class, 'rattacher'])->name('interventions.rattacher');
 });
 
+use App\Http\Controllers\CorbeilleController;
+Route::middleware(['auth', 'admin.only'])->group(function () {
+    Route::get('/corbeille', [CorbeilleController::class, 'index'])->name('corbeille.index');
+    Route::post('/corbeille/{id}/restaurer', [CorbeilleController::class, 'restaurer'])->name('corbeille.restaurer');
+    Route::delete('/corbeille/{id}', [CorbeilleController::class, 'forceDelete'])->name('corbeille.force-delete');
+});
+
 use App\Http\Controllers\KizeoController;
 Route::middleware(['auth'])->group(function () {
     Route::post('/kizeo/forcer', [KizeoController::class, 'forcer'])->name('kizeo.forcer');

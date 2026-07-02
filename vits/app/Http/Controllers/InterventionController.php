@@ -183,6 +183,8 @@ class InterventionController extends Controller
         $contratId = $intervention->contrat_id;
         $estFlash  = $intervention->type === 'flash';
         $date      = $intervention->date_intervention;
+        $intervention->deleted_by = auth()->id();
+        $intervention->save();
         $intervention->delete();
         if ($estFlash) {
             Intervention::recalculerFlash($contratId, $date);
@@ -190,6 +192,6 @@ class InterventionController extends Controller
         $redirect = $contratId
             ? redirect()->route('contrats.show', $contratId)
             : redirect()->route('interventions.index');
-        return $redirect->with('success', 'Intervention supprimée.');
+        return $redirect->with('success', 'Intervention déplacée dans la corbeille.');
     }
 }

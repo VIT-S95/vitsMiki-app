@@ -2,14 +2,16 @@
 namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 class Intervention extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
     protected $fillable = [
         'contrat_id','client_nom','date_intervention','heure_intervention','technicien','numero_bon_kizeo',
         'type','flash_numero','flash_consomme','duree_minutes','duree_devis_minutes',
         'statut','type_tri','source_kizeo','source_manuelle','deductible','hors_contrat',
-        'commentaires','pieces_detachees','demande_annexe','hors_heure_ouvree','donneur_ordre','n_ticket','n_devis','raw_data'
+        'commentaires','pieces_detachees','demande_annexe','hors_heure_ouvree','donneur_ordre','n_ticket','n_devis','raw_data',
+        'deleted_by'
     ];
     protected $casts = [
         'date_intervention' => 'date',
@@ -24,6 +26,10 @@ class Intervention extends Model
     public function contrat()
     {
         return $this->belongsTo(Contrat::class);
+    }
+    public function deletedBy()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'deleted_by');
     }
     public function getDureeFormateeAttribute(): string
     {
