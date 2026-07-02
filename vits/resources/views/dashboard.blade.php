@@ -152,30 +152,6 @@
 {{-- GRILLE ALERTES --}}
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
 
-    {{-- Contrats expirés --}}
-    <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;overflow:hidden">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #e0e0e0">
-            <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500">
-                <span style="color:#dc2626">⚠</span> Contrats terminés non renouvelés
-            </div>
-            <span style="background:#fef2f2;color:#dc2626;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:500">{{ $contratsExpires->count() }}</span>
-        </div>
-        <div style="padding:4px 0">
-            @forelse($contratsExpires as $contrat)
-            <a href="{{ route('contrats.show', $contrat) }}" style="display:flex;align-items:center;justify-content:space-between;padding:7px 14px;text-decoration:none;color:#1a1a1a;border-bottom:1px solid #f5f5f5">
-                <div style="display:flex;align-items:center;gap:6px;font-size:12px">
-                    <span style="width:7px;height:7px;border-radius:50%;background:#fef2f2;border:1.5px solid #dc2626;display:inline-block"></span>
-                    {{ $contrat->client->nom_societe }}
-                </div>
-                <span style="font-size:11px;color:#aaa">fin le {{ $contrat->date_fin->format('d/m/Y') }}</span>
-            </a>
-            @empty
-            <div style="padding:12px 14px;font-size:12px;color:#aaa;text-align:center">Aucun contrat expiré</div>
-            @endforelse
-        </div>
-        <a href="{{ route('contrats.index', ['statut' => 'expire']) }}" style="display:block;font-size:11px;color:#E8720C;text-align:right;padding:6px 14px;border-top:1px solid #e0e0e0;text-decoration:none">Voir tous les contrats →</a>
-    </div>
-
     {{-- Contrats échéance --}}
     <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;overflow:hidden">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #e0e0e0">
