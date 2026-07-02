@@ -288,7 +288,8 @@ class KizeoService
         $bonNumero = (string)($record['_id'] ?? '');
         if (!$bonNumero) return 'error';
 
-        if (Intervention::where('numero_bon_kizeo', $bonNumero)->exists()) return 'skipped';
+        // Vérifier doublon — inclut les interventions soft-deleted
+        if (Intervention::withTrashed()->where('numero_bon_kizeo', $bonNumero)->exists()) return 'skipped';
 
         $date = $record['date'] ?? null;
         if (!$date) return 'error';
